@@ -31,7 +31,7 @@ Workflow:
 4.  The LLM generates a natural language response
 
 
-## Persoanlization 🎯
+## Personalization 🎯
 
 ### 1. Contextual adaptation
 
@@ -40,7 +40,7 @@ The system adapts explanations according to the visitor profile. Examples:
 - Adults → standard explanations
 - Experts → more in deep explainations
 - Elderly users → slower speech, clearer structure
-- Interests are also taken into account as promts
+- Interests are also taken into account as prompts
 
 This transforms the experience from a static guide into a customized educational interaction.
 
