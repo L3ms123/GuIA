@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GuIA Museum Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Design fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@300;400;700&family=Inter:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="surface" data-mode="regular">
+  <!-- Onboarding full-screen dialog -->
+  <div
+    id="onboarding"
+    class="onboarding-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="onboarding-title"
+    aria-describedby="onboarding-desc"
+  >
+    <section class="onboarding-panel">
+      <div class="onboarding-header">
+        <p id="onboarding-eyebrow" class="eyebrow">GuIA Museum Guide</p>
+        <h1 id="onboarding-title" class="headline">
+          Meet your guide.
+        </h1>
+        <p id="onboarding-desc" class="body-lg muted">
+          Choose how you would like GuIA to guide you through the Museu del Renaixement.
+        </p>
+        <p id="onboarding-hint" class="hint-muted">
+          Select a personality and language to continue.
+        </p>
+      </div>
+ 
+      <div class="onboarding-body">
+        <section class="onb-section" aria-label="Language selection">
+          <h2 id="label-language" class="section-label">Language</h2>
+          <div
+            id="language-group"
+            class="onb-grid-lang"
+            role="radiogroup"
+            aria-label="Select language"
+          >
+            <button
+              type="button"
+              class="card radio-card lang-card"
+              data-lang="en"
+              role="radio"
+              aria-checked="false"
+            >
+            <span class="flag">
+                <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect width="36" height="24" fill="#B22234"/>
+                  <rect y="1.85" width="36" height="1.85" fill="white"/>
+                  <rect y="5.54" width="36" height="1.85" fill="white"/>
+                  <rect y="9.23" width="36" height="1.85" fill="white"/>
+                  <rect y="12.92" width="36" height="1.85" fill="white"/>
+                  <rect y="16.62" width="36" height="1.85" fill="white"/>
+                  <rect y="20.31" width="36" height="1.85" fill="white"/>
+                  <rect width="14.4" height="12.92" fill="#3C3B6E"/>
+                </svg>
+              </span>
+              <h3 class="card-title">English</h3>
+            </button>
+            <button
+              type="button"
+              class="card radio-card lang-card"
+              data-lang="es"
+              role="radio"
+              aria-checked="false"
+            >
+              <span class="flag">
+                <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect width="36" height="24" fill="#c60b1e"/>
+                  <rect y="6" width="36" height="12" fill="#ffc400"/>
+                </svg>
+              </span>
+              <h3 class="card-title">Español</h3>
+            </button>
+            <button
+              type="button"
+              class="card radio-card lang-card"
+              data-lang="ca"
+              role="radio"
+              aria-checked="true"
+            >
+              <span class="flag">
+                <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect width="36" height="24" fill="#FCDD09"/>
+                  <rect y="0" width="36" height="3.43" fill="#DA121A"/>
+                  <rect y="6.86" width="36" height="3.43" fill="#DA121A"/>
+                  <rect y="13.71" width="36" height="3.43" fill="#DA121A"/>
+                  <rect y="20.57" width="36" height="3.43" fill="#DA121A"/>
+                </svg>
+              </span>
+              <h3 class="card-title">Català</h3>
+            </button>
+          </div>
+        </section>
+ 
+ 
+        <!-- Persona -->
+        <section class="onb-section" aria-label="Guide personality selection">
+          <h2 id="label-personality" class="section-label">Guide personality</h2>
+          <div
+            id="persona-group"
+            class="onb-grid"
+            role="radiogroup"
+            aria-label="Guide personality"
+          >
+            <button
+              type="button"
+              class="card radio-card"
+              data-persona="artist"
+              role="radio"
+              aria-checked="false"
+            >
+            <img class="card-icon" src="assets/artist-palette-svgrepo-com.svg" alt="" aria-hidden="true">
+              <h3 class="card-title">Artist</h3>
+              <p class="card-subtitle">
+                Focus on technique, medium, and the act of creation.
+              </p>
+            </button>
+            <button
+              type="button"
+              class="card radio-card"
+              data-persona="storyteller"
+              role="radio"
+              aria-checked="false"
+            >
+              <img class="card-icon" src="assets/storyteller-fairy-svgrepo-com.svg" alt="" aria-hidden="true">
+              <h3 class="card-title">Storyteller</h3>
+              <p class="card-subtitle">
+                Uncover the myths, histories, and hidden narratives.
+              </p>
+            </button>
+            <button
+              type="button"
+              class="card radio-card"
+              data-persona="explorer"
+              role="radio"
+              aria-checked="false"
+            >
+              <img class="card-icon" src="assets/explorer-svgrepo-com.svg" alt="" aria-hidden="true">
+              <h3 class="card-title">Explorer</h3>
+              <p class="card-subtitle">
+                A path through the most significant highlights.
+              </p>
+            </button>
+            <button
+              type="button"
+              class="card radio-card"
+              data-persona="scholar"
+              role="radio"
+              aria-checked="false"
+            >
+              <img class="card-icon" src="assets/scholar-svgrepo-com.svg" alt="" aria-hidden="true">
+              <h3 class="card-title">Scholar</h3>
+              <p class="card-subtitle">
+                In-depth historical and contextual analysis of each work.
+              </p>
+            </button>
+          </div>
+        </section>
+ 
+        <!-- Age -->
+        <section class="onb-section" aria-label="Visitor age selection">
+          <h2 id="label-visitor" class="section-label">Visitor type</h2>
+          <div
+            id="age-group"
+            class="onb-grid age-grid"
+            role="radiogroup"
+            aria-label="Visitor type"
+          >
+            <button
+              type="button"
+              class="chip radio-chip"
+              data-age="child"
+              role="radio"
+              aria-checked="false"
+            >
+              <img class="chip-icon" src="assets/child-svgrepo-com.svg" alt="" aria-hidden="true">
+              Child
+              <p class="card-subtitle">
+                (3-14 years)
+              </p>
+            </button>
+            <button
+              type="button"
+              class="chip radio-chip"
+              data-age="teen"
+              role="radio"
+              aria-checked="false"
+            >
+              <img class="chip-icon" src="assets/teenager-svgrepo-com.svg" alt="" aria-hidden="true">
+              Teenager
+              <p class="card-subtitle">
+                (15-19 years)
+              </p>
+            </button>
+            <button
+              type="button"
+              class="chip radio-chip"
+              data-age="adult"
+              role="radio"
+              aria-checked="false"
+            >
+              <img class="chip-icon" src="assets/adult-svgrepo-com.svg" alt="" aria-hidden="true">
+              Adult
+              <p class="card-subtitle">
+                (20-60 years)
+              </p>
+            </button>
+            <button
+              type="button"
+              class="chip radio-chip"
+              data-age="senior"
+              role="radio"
+              aria-checked="false"
+            >
+              <img class="chip-icon" src="assets/senior-svgrepo-com.svg" alt="" aria-hidden="true">
+              Senior
+              <p class="card-subtitle">
+                (60+ years)
+              </p>
+            </button>
+            
+          </div>
+          <div id="age-hint" class="hint-muted">
+            *The ages are just an indicative guideline to help tailor the content. It is optional to answer
+          </div>
+        </section>
+ 
+        <!-- CTA -->
+        <div class="onb-footer">
+          <button
+            id="onboarding-start"
+            type="button"
+            class="btn-primary wide"
+            disabled
+          >
+            Begin your visit
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+  <!-- Main application -->
+  <div class="app-shell">
+    <!-- Header (GuIA + language + audio) -->
+    <header class="top-bar" aria-label="Application header">
+      <div class="top-left">
+        <div class="title-main">GuIA Museum Guide</div>
+        <div class="context-indicator" aria-live="polite">
+          <span id="current-room">Room: Not set</span>
+          <span aria-hidden="true">·</span>
+          <span id="current-artwork">Artwork: Not set</span>
+        </div>
+      </div>
+
+      <div class="top-right">
+
+        <!-- Audio -->
+        <div class="audio-group" aria-label="Audio controls">
+          <button
+            id="mute-btn"
+            type="button"
+            class="icon-btn"
+            aria-label="Toggle mute"
+            aria-pressed="false"
+          >
+            🔈
+          </button>
+          <div
+            class="speed-group"
+            role="radiogroup"
+            aria-label="Speech speed"
+          >
+            <button
+              type="button"
+              class="speed-btn"
+              data-speed="slow"
+              role="radio"
+              aria-checked="false"
+            >
+              Slow
+            </button>
+            <button
+              type="button"
+              class="speed-btn active"
+              data-speed="normal"
+              role="radio"
+              aria-checked="true"
+            >
+              Normal
+            </button>
+            <button
+              type="button"
+              class="speed-btn"
+              data-speed="fast"
+              role="radio"
+              aria-checked="false"
+            >
+              Fast
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content: chat + context -->
+    <main class="main-layout">
+      <!-- Chat -->
+      <section
+        class="chat-panel"
+        aria-label="Chat conversation"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
+        <div id="chat-thread" class="chat-thread">
+          <div class="msg-row assistant">
+            <div class="msg-bubble assistant-bubble">
+              Welcome to the Museu del Renaixement. How would you like to begin?
+            </div>
+          </div>
+        </div>
+
+        <div id="typing-indicator" class="typing" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+
+        <div
+          id="suggestion-bar"
+          class="suggestion-row"
+          aria-label="Quick actions"
+        >
+          <button type="button" class="suggestion-btn">
+            Tell me about this artwork
+          </button>
+          <button type="button" class="suggestion-btn">
+            Repeat
+          </button>
+          <button type="button" class="suggestion-btn">
+            Go slower
+          </button>
+        </div>
+      </section>
+
+      <!-- Context column -->
+      <aside class="context-column" aria-label="Location context">
+        <button
+          id="where-am-i-btn"
+          type="button"
+          class="btn-secondary wide"
+        >
+          Where am I?
+        </button>
+
+        <div id="context-box" class="context-box" hidden>
+          <h2 class="context-heading">Choose your location</h2>
+
+          <label class="field-label" for="room-select">Room</label>
+          <select
+            id="room-select"
+            class="field-select"
+            aria-describedby="room-help"
+          >
+            <option value="">Select a room</option>
+            <option value="room-1">Room 1 – Early Renaissance</option>
+            <option value="room-2">Room 2 – High Renaissance</option>
+            <option value="room-3">Room 3 – Late Renaissance</option>
+          </select>
+          <p id="room-help" class="field-help muted">
+            Required for accurate guidance.
+          </p>
+
+          <label class="field-label" for="artwork-select">Artwork</label>
+          <select
+            id="artwork-select"
+            class="field-select"
+            aria-describedby="artwork-help"
+          >
+            <option value="">Select an artwork</option>
+            <option value="portrait-noblewoman">Portrait of a Noblewoman</option>
+            <option value="annunciation">The Annunciation</option>
+            <option value="last-supper">The Last Supper</option>
+          </select>
+          <p id="artwork-help" class="field-help muted">
+            Optional, but helps GuIA focus on what you see.
+          </p>
+
+          <button
+            id="set-context-btn"
+            type="button"
+            class="btn-primary wide"
+          >
+            Confirm location
+          </button>
+
+          <p id="context-error" class="field-error" aria-live="assertive"></p>
+
+          <div id="context-suggestion" class="context-suggestion">
+            Are you in Room 2, looking at the Portrait of a Noblewoman?
+            <button id="confirm-suggestion-btn" type="button" class="link-btn">
+              Yes, that is correct
+            </button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Bottom input -->
+    <footer class="bottom-bar" aria-label="Message input">
+      <p class="helper-text muted">
+        You can type or tap the microphone to speak.
+      </p>
+      <div class="input-shell">
+        <label class="sr-only" for="chat-input">Type your message</label>
+        <input
+          id="chat-input"
+          class="chat-input"
+          type="text"
+          placeholder="Ask GuIA about the room, the artwork, or the museum..."
+        />
+        <button
+          id="mic-btn"
+          type="button"
+          class="icon-btn"
+          aria-label="Start voice input"
+          aria-pressed="false"
+        >
+          <span class="material-symbols-outlined">mic</span>
+        </button>
+        <button id="send-btn" type="button" class="btn-primary">
+          Send
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

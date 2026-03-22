@@ -1,0 +1,275 @@
+{
+  "en": {
+    "onboarding": {
+      "eyebrow": "GuIA Museum Guide",
+      "title": "Meet your guide.",
+      "description": "Choose how you would like GuIA to guide you through the Museu del Renaixement.",
+      "hint": "Select a personality and language to continue.",
+      "language": "Language",
+      "personality": "Guide personality",
+      "visitor": "Visitor type",
+      "start": "Begin your visit"
+    },
+    "personas": {
+      "artist": {
+        "title": "Artist",
+        "subtitle": "Focus on technique, medium, and the act of creation."
+      },
+      "storyteller": {
+        "title": "Storyteller",
+        "subtitle": "Uncover the myths, histories, and hidden narratives."
+      },
+      "explorer": {
+        "title": "Explorer",
+        "subtitle": "A path through the most significant highlights."
+      },
+      "scholar": {
+        "title": "Scholar",
+        "subtitle": "In-depth historical and contextual analysis of each work."
+      }
+    },
+    "ages": {
+        "child": {
+            "title": "Child",
+            "subtitle": "(3-14 years)"
+            },
+        "teen": {
+            "title": "Teen",
+            "subtitle": "(15-19 years)"
+            },
+        "adult": {
+            "title": "Adult",
+            "subtitle": "(20-60 years)"
+            },
+        "senior": {
+            "title": "Senior",
+            "subtitle": "(60+ years)"
+            }
+    },
+    "ageHint": "*The ages are just an indicative guideline to help tailor the content. It is optional to answer",
+    "app": {
+      "title": "GuIA Museum Guide",
+      "room": "Room",
+      "artwork": "Artwork",
+      "whereAmI": "Where am I?",
+      "chooseLocation": "Choose your location",
+      "roomLabel": "Room",
+      "artworkLabel": "Artwork",
+      "roomHelp": "Required for accurate guidance.",
+      "artworkHelp": "Optional, but helps GuIA focus on what you see.",
+      "confirmLocation": "Confirm location",
+      "contextError": "Please select a room so GuIA can guide you accurately.",
+      "contextSuggestion": "Are you in Room 2, looking at the Portrait of a Noblewoman?",
+      "confirmSuggestion": "Yes, that is correct"
+    },
+    "chat": {
+      "placeholder": "Ask GuIA about the room, the artwork, or the museum...",
+      "helper": "You can type or tap the microphone to speak.",
+      "send": "Send",
+      "suggestions": [
+        "Tell me about this artwork",
+        "Repeat",
+        "Go slower"
+      ],
+      "welcome": "Welcome to the Museu del Renaixement. How would you like to begin?"
+    },
+    "audio": {
+      "mute": "Toggle mute",
+      "voice": "Start voice input",
+      "slow": "Slow",
+      "normal": "Normal", 
+      "fast": "Fast"
+    },
+    "context": {
+      "room1": "Room 1 – Early Renaissance",
+      "room2": "Room 2 – High Renaissance",
+      "room3": "Room 3 – Late Renaissance",
+      "portrait": "Portrait of a Noblewoman",
+      "annunciation": "The Annunciation",
+      "lastSupper": "The Last Supper",
+      "notSet": "Not set"
+    }
+  },
+  "es": {
+    "onboarding": {
+      "eyebrow": "GuIA Guía de Museo",
+      "title": "Conoce a tu guía.",
+      "description": "Elige cómo quieres que GuIA te guíe por el Museu del Renaixement.",
+      "hint": "Selecciona una personalidad e idioma para continuar.",
+      "language": "Idioma",
+      "personality": "Personalidad del guía",
+      "visitor": "Tipo de visitante",
+      "start": "Comenzar visita"
+    },
+    "personas": {
+      "artist": {
+        "title": "Artista",
+        "subtitle": "Enfocado en técnica, medio y acto de creación."
+      },
+      "storyteller": {
+        "title": "Narrador",
+        "subtitle": "Descubre mitos, historias y narrativas ocultas."
+      },
+      "explorer": {
+        "title": "Explorador",
+        "subtitle": "Un camino por los puntos más destacados."
+      },
+      "scholar": {
+        "title": "Erudito",
+        "subtitle": "Análisis histórico y contextual profundo de cada obra."
+      }
+    },
+    "ages": {
+        "child": {
+            "title": "Niño",
+            "subtitle": "(3-14 años)"
+            },
+        "teen": {
+            "title": "Adolescente",
+            "subtitle": "(15-19 años)"
+            },
+        "adult": {
+            "title": "Adulto",
+            "subtitle": "(20-60 años)"
+            },
+        "senior": {
+            "title": "Senior",
+            "subtitle": "(60+ años)"
+            }
+    },
+    "ageHint": "*Las edades son solo una guía indicativa para personalizar el contenido. Es opcional responder",
+    "app": {
+      "title": "GuIA Guía de Museo",
+      "room": "Sala",
+      "artwork": "Obra",
+      "whereAmI": "¿Dónde estoy?",
+      "chooseLocation": "Elige tu ubicación",
+      "roomLabel": "Sala",
+      "artworkLabel": "Obra",
+      "roomHelp": "Requerido para orientación precisa.",
+      "artworkHelp": "Opcional, pero ayuda a GuIA a centrarse en lo que ves.",
+      "confirmLocation": "Confirmar ubicación",
+      "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
+      "contextSuggestion": "¿Estás en la Sala 2, mirando el Retrato de una Dama Noble?",
+      "confirmSuggestion": "Sí, correcto"
+    },
+    "chat": {
+      "placeholder": "Pregunta a GuIA sobre la sala, la obra o el museo...",
+      "helper": "Puedes escribir o pulsar el micrófono para hablar.",
+      "send": "Enviar",
+      "suggestions": [
+        "Cuéntame sobre esta obra",
+        "Repite",
+        "Más lento"
+      ],
+      "welcome": "Bienvenido al Museu del Renaixement. ¿Cómo quieres empezar?"
+    },
+    "audio": {
+      "mute": "Activar/desactivar silencio",
+      "voice": "Iniciar entrada de voz",
+      "slow": "Lento",
+      "normal": "Normal",
+      "fast": "Rápido"
+    },
+    "context": {
+      "room1": "Sala 1 – Renacimiento Temprano",
+      "room2": "Sala 2 – Renacimiento Alto",
+      "room3": "Sala 3 – Renacimiento Tardío",
+      "portrait": "Retrato de una Dama Noble",
+      "annunciation": "La Anunciación",
+      "lastSupper": "La Última Cena",
+      "notSet": "No establecido"
+    }
+  },
+  "ca": {
+    "onboarding": {
+      "eyebrow": "GuIA Guia de Museu",
+      "title": "Coneix el teu guia.",
+      "description": "Tria com vols que GuIA et guiï pel Museu del Renaixement.",
+      "hint": "Selecciona una personalitat i llengua per continuar.",
+      "language": "Llengua",
+      "personality": "Personalitat del guia",
+      "visitor": "Tipus de visitant",
+      "start": "Començar visita"
+    },
+    "personas": {
+      "artist": {
+        "title": "Artista",
+        "subtitle": "Centrat en tècnica, medi i acte de creació."
+      },
+      "storyteller": {
+        "title": "Contacontes",
+        "subtitle": "Descobreix mites, històries i narratives amagades."
+      },
+      "explorer": {
+        "title": "Explorador",
+        "subtitle": "Un camí pels punts més destacats."
+      },
+      "scholar": {
+        "title": "Erudit",
+        "subtitle": "Anàlisi històric i contextual profund de cada obra."
+      }
+    },
+    "ages": {
+        "child": {
+            "title": "Nen",
+            "subtitle": "(3-14 anys)"
+            },
+        "teen": {
+            "title": "Adolescent",
+            "subtitle": "(15-19 anys)"
+            },
+        "adult": {
+            "title": "Adult",
+            "subtitle": "(20-60 anys)"
+            },
+        "senior": {
+            "title": "Senior",
+            "subtitle": "(60+ anys)"
+            }
+    },
+    "ageHint": "*Les edats són només una guia indicativa per personalitzar el contingut. És opcional respondre",
+    "app": {
+      "title": "GuIA Guia de Museu",
+      "room": "Sala",
+      "artwork": "Obra",
+      "whereAmI": "On sóc?",
+      "chooseLocation": "Tria la teva ubicació",
+      "roomLabel": "Sala",
+      "artworkLabel": "Obra",
+      "roomHelp": "Requisit per a orientació precisa.",
+      "artworkHelp": "Opcional, però ajuda GuIA a centrar-se en el que veus.",
+      "confirmLocation": "Confirmar ubicació",
+      "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
+      "contextSuggestion": "Estàs a la Sala 2, mirant el Retrato d'una Dona Noble?",
+      "confirmSuggestion": "Sí, correcte"
+    },
+    "chat": {
+      "placeholder": "Pregunta a GuIA sobre la sala, l'obra o el museu...",
+      "helper": "Pots escriure o prémer el micròfon per parlar.",
+      "send": "Enviar",
+      "suggestions": [
+        "Explica'm aquesta obra",
+        "Repeteix",
+        "Més lent"
+      ],
+      "welcome": "Benvingut al Museu del Renaixement. Com vols començar?"
+    },
+    "audio": {
+      "mute": "Activa/desactiva silenci",
+      "voice": "Inicia entrada de veu",
+      "slow": "Lent",
+      "normal": "Normal",
+      "fast": "Ràpid"
+    },
+    "context": {
+      "room1": "Sala 1 – Renaixement Primerenc",
+      "room2": "Sala 2 – Renaixement Alt",
+      "room3": "Sala 3 – Renaixement Tardà",
+      "portrait": "Retrat d'una Dona Noble",
+      "annunciation": "L'Anunciació",
+      "lastSupper": "L'Últim Sopar",
+      "notSet": "No establert"
+    }
+  }
+}
