@@ -258,12 +258,7 @@
     <!-- Header (GuIA + language + audio) -->
     <header class="top-bar" aria-label="Application header">
       <div class="top-left">
-        <div class="title-main">GuIA Museum Guide</div>
-        <div class="context-indicator" aria-live="polite">
-          <span id="current-room">Room: Not set</span>
-          <span aria-hidden="true">·</span>
-          <span id="current-artwork">Artwork: Not set</span>
-        </div>
+        <div class="app-title" id="app-title">GuIA Museum Guide</div>
       </div>
 
       <div class="top-right">
@@ -366,37 +361,31 @@
         </button>
 
         <div id="context-box" class="context-box" hidden>
-          <h2 class="context-heading">Choose your location</h2>
+          <h2 class="context-heading" id="choose-location">Choose your location</h2>
 
-          <label class="field-label" for="room-select">Room</label>
+          <label class="field-label" id="room">Room</label>
           <select
             id="room-select"
             class="field-select"
             aria-describedby="room-help"
           >
             <option value="">Select a room</option>
-            <option value="room-1">Room 1 – Early Renaissance</option>
-            <option value="room-2">Room 2 – High Renaissance</option>
-            <option value="room-3">Room 3 – Late Renaissance</option>
+            <option value="room-1">Room 1 </option>
+            <option value="room-2">Room 2 </option>
+            <option value="room-3">Room 3 </option>
           </select>
-          <p id="room-help" class="field-help muted">
-            Required for accurate guidance.
-          </p>
 
-          <label class="field-label" for="artwork-select">Artwork</label>
+          <label class="field-label" id="artwork">Artwork</label>
           <select
             id="artwork-select"
             class="field-select"
             aria-describedby="artwork-help"
           >
             <option value="">Select an artwork</option>
-            <option value="portrait-noblewoman">Portrait of a Noblewoman</option>
-            <option value="annunciation">The Annunciation</option>
-            <option value="last-supper">The Last Supper</option>
+            <option value="portrait-noblewoman">Artwork 1</option>
+            <option value="annunciation">Artwork 2</option>
+            <option value="last-supper">Artwork 3</option>
           </select>
-          <p id="artwork-help" class="field-help muted">
-            Optional, but helps GuIA focus on what you see.
-          </p>
 
           <button
             id="set-context-btn"

@@ -304,21 +304,16 @@ body.surface {
 
 .top-left {
   display: flex;
+  margin: 2rem 0;
   flex-direction: column;
   gap: 0.2rem;
+
 }
 
-.title-main {
+.app-title {
   font-family: var(--font-serif);
   font-size: 1.1rem;
   letter-spacing: 0.2em;
-}
-
-.context-indicator {
-  font-size: 0.8rem;
-  color: var(--on-surface-variant);
-  display: flex;
-  gap: 0.3rem;
 }
 
 .top-right {
@@ -347,40 +342,61 @@ body.surface {
   color: var(--on-surface);
 }
 
-/* audio controls */
+/* ── AUDIO CONTROLS ───────────────────────────────────────── */
 .audio-group {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .icon-btn {
-  width: 2.3rem;
-  height: 2.3rem;
-  background: var(--surface-lowest);
+  width: 3rem;
+  height: 3rem;
+  background: var(--surface-low);
+  border-radius: 50%;
+  color: var(--on-surface-variant);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.615);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  transition: background 0.15s;
 }
 
-/* speed group as radios */
+.icon-btn:hover {
+  background: var(--surface-high);
+}
+
+/* ── SPEED GROUP ──────────────────────────────────────────── */
 .speed-group {
   display: flex;
   background: var(--surface-low);
+  border-radius: 2rem;
+  padding: 0.2rem;
+  gap: 0.1rem;
 }
 
 .speed-btn {
-  padding: 0.25rem 0.55rem;
-  font-size: 0.7rem;
-  text-transform: none;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
   background: none;
   color: var(--on-surface-variant);
+  border-radius: 2rem;
+  transition: background 0.15s, color 0.15s;
+  border: none;
+  cursor: pointer;
 }
 
-.speed-btn.active {
-  background: var(--surface-high);
+.speed-btn.active,
+.speed-btn[aria-checked="true"] {
+  background: var(--surface-lowest);
   color: var(--on-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.615);
+}
+
+.speed-btn:hover {
+  background: var(--surface-high);
 }
 
 /* Layout main */
@@ -568,7 +584,7 @@ body.surface {
 
 .helper-text {
   font-size: 0.8rem;
-  margin: 0 0 0.25rem;
+  margin: 2 2 2 2;
 }
 
 .input-shell {
@@ -641,7 +657,7 @@ body[data-mode="senior"] .msg-bubble {
 
   .top-bar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.35rem;
   }
 

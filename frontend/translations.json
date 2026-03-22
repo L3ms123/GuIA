@@ -55,8 +55,6 @@
       "chooseLocation": "Choose your location",
       "roomLabel": "Room",
       "artworkLabel": "Artwork",
-      "roomHelp": "Required for accurate guidance.",
-      "artworkHelp": "Optional, but helps GuIA focus on what you see.",
       "confirmLocation": "Confirm location",
       "contextError": "Please select a room so GuIA can guide you accurately.",
       "contextSuggestion": "Are you in Room 2, looking at the Portrait of a Noblewoman?",
@@ -71,7 +69,7 @@
         "Repeat",
         "Go slower"
       ],
-      "welcome": "Welcome to the Museu del Renaixement. How would you like to begin?"
+      "welcome": "Welcome to the Museu del Renaixement. Select where you'd like to start your visit or ask me anything about the museum!"
     },
     "audio": {
       "mute": "Toggle mute",
@@ -81,6 +79,8 @@
       "fast": "Fast"
     },
     "context": {
+      "selectRoom": "Select a room",
+      "selectArtwork": "Select an artwork",
       "room1": "Room 1 – Early Renaissance",
       "room2": "Room 2 – High Renaissance",
       "room3": "Room 3 – Late Renaissance",
@@ -146,8 +146,6 @@
       "chooseLocation": "Elige tu ubicación",
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
-      "roomHelp": "Requerido para orientación precisa.",
-      "artworkHelp": "Opcional, pero ayuda a GuIA a centrarse en lo que ves.",
       "confirmLocation": "Confirmar ubicación",
       "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
       "contextSuggestion": "¿Estás en la Sala 2, mirando el Retrato de una Dama Noble?",
@@ -162,7 +160,7 @@
         "Repite",
         "Más lento"
       ],
-      "welcome": "Bienvenido al Museu del Renaixement. ¿Cómo quieres empezar?"
+      "welcome": "Bienvenido al Museu del Renaixement. Selecciona dónde te gustaría comenzar tu visita o pregúntame cualquier cosa sobre el museo."
     },
     "audio": {
       "mute": "Activar/desactivar silencio",
@@ -172,6 +170,8 @@
       "fast": "Rápido"
     },
     "context": {
+      "selectRoom": "Selecciona una sala",
+      "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renacimiento Temprano",
       "room2": "Sala 2 – Renacimiento Alto",
       "room3": "Sala 3 – Renacimiento Tardío",
@@ -237,8 +237,6 @@
       "chooseLocation": "Tria la teva ubicació",
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
-      "roomHelp": "Requisit per a orientació precisa.",
-      "artworkHelp": "Opcional, però ajuda GuIA a centrar-se en el que veus.",
       "confirmLocation": "Confirmar ubicació",
       "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
       "contextSuggestion": "Estàs a la Sala 2, mirant el Retrato d'una Dona Noble?",
@@ -253,7 +251,7 @@
         "Repeteix",
         "Més lent"
       ],
-      "welcome": "Benvingut al Museu del Renaixement. Com vols començar?"
+      "welcome": "Benvingut al Museu del Renaixement. Selecciona on t'agradaria començar la teva visita o pregunta'm qualsevol cosa sobre el museu."
     },
     "audio": {
       "mute": "Activa/desactiva silenci",
@@ -263,6 +261,8 @@
       "fast": "Ràpid"
     },
     "context": {
+      "selectRoom": "Selecciona una sala",
+      "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renaixement Primerenc",
       "room2": "Sala 2 – Renaixement Alt",
       "room3": "Sala 3 – Renaixement Tardà",
