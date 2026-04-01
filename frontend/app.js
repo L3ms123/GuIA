@@ -3,6 +3,19 @@ let selectedPersona = null;
 let selectedAge     = null;
 let selectedLang    = null; 
 let translations    = {};
+let currentContext  = { room: '', artwork: '' };
+let conversationHistory = [];
+let isSending = false;
+
+// New: prompt selection and model access now go through the Python backend.
+const BACKEND_CHAT_URL = 'http://127.0.0.1:8000/api/chat';
+const BACKEND_CHAT_STREAM_URL = 'http://127.0.0.1:8000/api/chat/stream';
+
+const BACKEND_ERRORS = {
+  en: 'GuIA could not reach the backend service. Make sure the Python backend is running.',
+  es: 'GuIA no ha podido contactar con el backend. Asegurate de que el backend de Python este en ejecucion.',
+  ca: "GuIA no ha pogut contactar amb el backend. Assegura't que el backend de Python estigui en execucio."
+};
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 
@@ -140,6 +153,117 @@ function addBubble(role, text) {
   row.appendChild(bubble);
   chatThread.appendChild(row);
   chatThread.scrollTop = chatThread.scrollHeight;
+  return bubble;
+}
+
+function setTyping(isVisible) {
+  const indicator = el('typing-indicator');
+  if (!indicator) return;
+  indicator.style.display = isVisible ? 'inline-flex' : 'none';
+  indicator.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+}
+
+function getBackendErrorMessage() {
+  return BACKEND_ERRORS[selectedLang] || BACKEND_ERRORS.ca;
+}
+
+// New: send the selected persona, language, age, and museum context to the backend.
+async function requestAssistantReply(message) {
+  const response = await fetch(BACKEND_CHAT_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message,
+      persona: selectedPersona,
+      age: selectedAge,
+      language: selectedLang,
+      context: currentContext,
+      history: conversationHistory
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (!payload.reply) {
+    throw new Error('Empty backend response.');
+  }
+
+  return payload.reply;
+}
+
+// New: read streamed chunks from the backend so the assistant writes progressively.
+async function streamAssistantReply(message, bubble) {
+  const response = await fetch(BACKEND_CHAT_STREAM_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message,
+      persona: selectedPersona,
+      age: selectedAge,
+      language: selectedLang,
+      context: currentContext,
+      history: conversationHistory
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+
+  if (!response.body) {
+    return requestAssistantReply(message);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let reply = '';
+  let hasStarted = false;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+
+    let lineBreak = buffer.indexOf('\n');
+    while (lineBreak !== -1) {
+      const line = buffer.slice(0, lineBreak).trim();
+      buffer = buffer.slice(lineBreak + 1);
+
+      if (line) {
+        const event = JSON.parse(line);
+
+        if (event.type === 'chunk') {
+          reply += event.text || '';
+          bubble.textContent = reply;
+          if (!hasStarted) {
+            hasStarted = true;
+            setTyping(false);
+          }
+        } else if (event.type === 'error') {
+          throw new Error(event.text || getBackendErrorMessage());
+        }
+      }
+
+      lineBreak = buffer.indexOf('\n');
+    }
+
+    if (done) break;
+  }
+
+  if (!reply) {
+    throw new Error('Empty backend response.');
+  }
+
+  return reply;
 }
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
@@ -224,6 +348,8 @@ function initStartButton() {
 // ─── Main app ─────────────────────────────────────────────────────────────────
 
 function initApp() {
+  setTyping(false);
+
   // Speed radios
   const speedBtns = Array.from(document.querySelectorAll('.speed-btn'));
   speedBtns.forEach((btn) => {
@@ -274,7 +400,7 @@ function initApp() {
       : '';
 
     applyContext(roomText, artworkText);
-});
+  });
 
   el('confirm-suggestion-btn').addEventListener('click', () => {
     applyContext(t('context.room2'), t('context.portrait'));
@@ -284,12 +410,30 @@ function initApp() {
   const chatThread = el('chat-thread');
   const chatInput  = el('chat-input');
 
-  function handleSend() {
+  async function handleSend() {
     const value = chatInput.value.trim();
-    if (!value) return;
+    if (!value || isSending) return;
+
     addBubble('user', value);
+    const assistantBubble = addBubble('assistant', '');
     chatInput.value = '';
-    setTimeout(() => addBubble('assistant', 'This is where GuIA would respond.'), 500);
+    isSending = true;
+    el('send-btn').disabled = true;
+    setTyping(true);
+
+    try {
+      // New: the assistant reply now streams from the backend instead of appearing all at once.
+      const reply = await streamAssistantReply(value, assistantBubble);
+      conversationHistory.push({ role: 'user', text: value });
+      conversationHistory.push({ role: 'assistant', text: reply });
+    } catch (error) {
+      console.error('Backend request failed:', error);
+      assistantBubble.textContent = error.message || getBackendErrorMessage();
+    } finally {
+      isSending = false;
+      el('send-btn').disabled = false;
+      setTyping(false);
+    }
   }
 
   el('send-btn').addEventListener('click', handleSend);
@@ -299,6 +443,9 @@ function initApp() {
 }
 
 function applyContext(roomText, artworkText) {
+  // New: keep the selected museum context so the backend can adapt the prompt.
+  currentContext = { room: roomText, artwork: artworkText };
+
   // Solo actualiza el header si los elementos existen
   const roomEl    = el('current-room');
   const artworkEl = el('current-artwork');
