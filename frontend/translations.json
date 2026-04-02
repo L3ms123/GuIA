@@ -61,6 +61,7 @@
       "confirmSuggestion": "Yes, that is correct"
     },
     "chat": {
+      "inputLabel": "Type your message",
       "placeholder": "Ask GuIA about the room, the artwork, or the museum...",
       "helper": "You can type or tap the microphone to speak.",
       "send": "Send",
@@ -152,6 +153,7 @@
       "confirmSuggestion": "Sí, correcto"
     },
     "chat": {
+      "inputLabel": "Escribe tu mensaje",
       "placeholder": "Pregunta a GuIA sobre la sala, la obra o el museo...",
       "helper": "Puedes escribir o pulsar el micrófono para hablar.",
       "send": "Enviar",
@@ -239,10 +241,11 @@
       "artworkLabel": "Obra",
       "confirmLocation": "Confirmar ubicació",
       "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
-      "contextSuggestion": "Estàs a la Sala 2, mirant el Retrato d'una Dona Noble?",
+      "contextSuggestion": "Estàs a la Sala 2, mirant el Retrat d'una Dona Noble?",
       "confirmSuggestion": "Sí, correcte"
     },
     "chat": {
+      "inputLabel": "Escriu el teu missatge",
       "placeholder": "Pregunta a GuIA sobre la sala, l'obra o el museu...",
       "helper": "Pots escriure o prémer el micròfon per parlar.",
       "send": "Enviar",

@@ -1,7 +1,8 @@
 param(
   [int]$BackendPort = 8000,
   [int]$FrontendPort = 8080,
-  [string]$Model = "llama3.2:3b",
+  [string]$Model = "qwen2.5:3b",
+  [string]$CatalanModel = "gemma3n:e2b",
   [switch]$NoBrowser
 )
 
@@ -154,10 +155,22 @@ if (@($models) -notcontains $Model) {
   }
 }
 
+if ($CatalanModel -and ($CatalanModel -ne $Model) -and (@($models) -notcontains $CatalanModel)) {
+  if (-not $ollamaCommand) {
+    throw "Model '$CatalanModel' is missing and Ollama could not be located to pull it."
+  }
+
+  Write-Host "Pulling Ollama model '$CatalanModel'..." -ForegroundColor Cyan
+  & $ollamaCommand pull $CatalanModel
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not pull Ollama model '$CatalanModel'."
+  }
+}
+
 if (-not (Test-Url "http://127.0.0.1:$BackendPort/health")) {
   Write-Host "Starting backend on port $BackendPort..." -ForegroundColor Cyan
   # Activate the existing backend virtualenv, then launch Uvicorn in its own window.
-  Start-Window -WorkingDirectory $backendDir -Command "& '$venvActivate'; `$env:OLLAMA_URL='$ollamaBaseUrl'; uvicorn app:app --reload --host 127.0.0.1 --port $BackendPort"
+  Start-Window -WorkingDirectory $backendDir -Command "& '$venvActivate'; `$env:OLLAMA_URL='$ollamaBaseUrl'; `$env:OLLAMA_MODEL='$Model'; `$env:OLLAMA_MODEL_CA='$CatalanModel'; uvicorn app:app --reload --host 127.0.0.1 --port $BackendPort"
   if (-not (Wait-Url "http://127.0.0.1:$BackendPort/health" 30)) {
     throw "Backend did not become ready on http://127.0.0.1:$BackendPort/health"
   }

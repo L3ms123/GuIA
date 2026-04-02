@@ -54,13 +54,33 @@ ollama --version
 
 ### 3. Download the model
 
-Pull the model once:
+Pull the default models once:
 
 ```powershell
-ollama pull llama3.2:3b
+ollama pull qwen2.5:3b
+ollama pull gemma3n:e2b
 ```
 
 The backend expects Ollama at `http://127.0.0.1:11434`.
+
+This repo now defaults to:
+
+- `gemma3n:e2b` for Catalan
+- `qwen2.5:3b` for Spanish and English
+
+This keeps a multilingual model that fits better on low-memory machines for Catalan while preserving a lighter default for the other languages.
+
+### 4. Install the speech prerequisites
+
+For higher-quality backend narration, install the backend requirements and `espeak-ng` on Windows.
+
+Install `espeak-ng` from:
+
+```text
+https://github.com/espeak-ng/espeak-ng/releases
+```
+
+After installing it, reopen PowerShell so the phonemizer can find it.
 
 ## Start everything with one command
 
@@ -81,7 +101,8 @@ Optional examples:
 
 ```powershell
 .\start-dev.ps1 -NoBrowser
-.\start-dev.ps1 -Model mistral:7b
+.\start-dev.ps1 -Model qwen2.5:3b
+.\start-dev.ps1 -Model qwen2.5:3b -CatalanModel gemma3n:e2b
 ```
 
 The launcher supports both:
@@ -100,7 +121,7 @@ From the repository root:
 ```powershell
 .\.venv\Scripts\activate
 cd .\backend
-uvicorn app:app --reload --host 0.0.0.0 --port 8000
+uvicorn app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 ### Frontend
@@ -121,6 +142,20 @@ ollama serve
 ```
 
 If Ollama is already running, you do not need to start it again.
+
+### Voice features
+
+Voice input and narration now go through the Python backend:
+
+- backend ASR with `faster-whisper` for microphone transcription
+- live dictation updates the input field while audio chunks are being transcribed
+- the microphone stops when you click it again, and the transcribed text stays in the input until you press send
+- backend TTS for narrated answers instead of browser `speechSynthesis`
+- Catalan narration through Piper voices
+- Spanish and English narration through Kokoro by default, with Piper fallback if Kokoro is unavailable
+- child mode choosing the child-oriented voice when one is configured for that language
+
+The first ASR request may take longer because the Whisper model is downloaded and cached locally. The first TTS request may also take longer because Piper voice files are downloaded and cached locally.
 
 ## Quick tests
 
@@ -192,6 +227,9 @@ The backend is meant to expose API routes such as:
 
 - `GET /health`
 - `POST /api/chat`
+- `POST /api/chat/stream`
+- `POST /api/tts`
+- `POST /api/transcribe`
 
 ## If something fails
 
@@ -217,7 +255,8 @@ Usually Ollama is not running, the model has not been pulled yet, or `localhost`
 Check:
 
 ```powershell
-ollama pull llama3.2:3b
+ollama pull qwen2.5:3b
+ollama pull gemma3n:e2b
 ollama serve
 ```
 
@@ -236,14 +275,31 @@ Do not open `index.html` directly from the filesystem.
 
 - `OLLAMA_URL`
 - `OLLAMA_MODEL`
+- `OLLAMA_MODEL_CA`
+- `OLLAMA_MODEL_ES`
+- `OLLAMA_MODEL_EN`
 - `OLLAMA_TIMEOUT`
+- `ASR_MODEL`
+- `ASR_DEVICE`
+- `ASR_COMPUTE_TYPE`
+- `TTS_ENGINE_CA`
+- `TTS_ENGINE_ES`
+- `TTS_ENGINE_EN`
 
 Example:
 
 ```powershell
-$env:OLLAMA_MODEL = "mistral:7b"
+$env:OLLAMA_MODEL_CA = "gemma3n:e2b"
+$env:OLLAMA_MODEL_ES = "qwen2.5:3b"
+$env:OLLAMA_MODEL_EN = "qwen2.5:3b"
+$env:ASR_MODEL = "small"
+$env:ASR_DEVICE = "cpu"
+$env:ASR_COMPUTE_TYPE = "int8"
+$env:TTS_ENGINE_CA = "piper"
+$env:TTS_ENGINE_ES = "kokoro"
+$env:TTS_ENGINE_EN = "kokoro"
 cd .\backend
-uvicorn app:app --reload --host 0.0.0.0 --port 8000
+uvicorn app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 ## API
@@ -268,6 +324,36 @@ Expected JSON body:
 ```
 
 `graph_context` is optional and is already supported for later RAG integration.
+
+`POST /api/tts`
+
+Expected JSON body:
+
+```json
+{
+  "text": "Benvinguts al museu.",
+  "language": "ca",
+  "age": "child",
+  "speed": "normal"
+}
+```
+
+Response:
+
+- `audio/wav`
+
+`POST /api/transcribe`
+
+Expected multipart form fields:
+
+- `file`: recorded audio file, for example `audio/webm`
+- `language`: optional language hint such as `ca`, `es`, or `en`
+
+Expected JSON fields:
+
+- `text`
+- `language`
+- `language_probability`
 
 ## Model files and Git
 

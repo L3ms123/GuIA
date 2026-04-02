@@ -6,6 +6,18 @@ LANGUAGE_NAMES = {
     "ca": "Catalan",
 }
 
+LANGUAGE_INSTRUCTIONS = {
+    "en": (
+        "Use natural English throughout the answer."
+    ),
+    "es": (
+        "Usa un espanol natural y claro durante toda la respuesta. No cambies de idioma salvo que el visitante lo pida."
+    ),
+    "ca": (
+        "Fes servir un catala natural i fluid durant tota la resposta. No canviis al castella si el visitant no ho demana."
+    ),
+}
+
 PERSONA_INSTRUCTIONS = {
     "artist": (
         "Focus on artistic technique, materials, composition, and creative decisions. "
@@ -48,6 +60,10 @@ AGE_INSTRUCTIONS = {
 def build_system_prompt(language, persona, age, context):
     """Create the system prompt from the frontend selections and current museum context."""
     response_language = LANGUAGE_NAMES.get(language, "Catalan")
+    language_instruction = LANGUAGE_INSTRUCTIONS.get(
+        language,
+        "Use the requested language consistently.",
+    )
     persona_instruction = PERSONA_INSTRUCTIONS.get(
         persona,
         "Use a balanced museum-guide tone that is informative and easy to follow.",
@@ -72,6 +88,7 @@ def build_system_prompt(language, persona, age, context):
         [
             "You are GuIA, an adaptive museum guide for the Museu del Renaixement.",
             f"Always answer in {response_language}.",
+            language_instruction,
             "",
             f"Guide persona: {persona or 'general museum guide'}.",
             persona_instruction,

@@ -1,3 +1,12 @@
 fastapi==0.117.1
+faster-whisper
+huggingface-hub
 httpx==0.28.1
+kokoro
+misaki[en]
+numpy
+onnxruntime
+piper-tts
+python-multipart
+soundfile
 uvicorn==0.36.0
