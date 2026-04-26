@@ -246,9 +246,64 @@ function initApp() {
 
   // Mic
   const micBtn = el('mic-btn');
-  micBtn.addEventListener('click', () => {
-    const on = micBtn.getAttribute('aria-pressed') === 'true';
-    micBtn.setAttribute('aria-pressed', on ? 'false' : 'true');
+  if (!micBtn) return;
+
+  let mediaRecorder;
+  let audioChunks = [];
+
+  async function startRecording() {
+    try {
+      console.log("🎤 intentando acceder al micro...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("✅ micro concedido", stream);
+      mediaRecorder = new MediaRecorder(stream);
+      
+
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+
+        // send to backend
+        const formData = new FormData();
+        formData.append('file', blob);
+        formData.append('lang', selectedLang);
+
+        const res = await fetch('http://127.0.0.1:5000/transcribe', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        el('chat-input').value = data.text;
+      };
+
+      mediaRecorder.start();
+      
+
+    } catch (err) {
+      console.error("❌ error acceso micro:", err);
+    }
+  }
+
+  function stopRecording() {
+    mediaRecorder.stop();
+  }
+
+  let isRecording = false;
+
+  micBtn.addEventListener('click', async () => {
+    if (!isRecording) {
+      await startRecording();
+      micBtn.setAttribute('aria-pressed', 'true');
+      isRecording = true;
+    } else {
+      stopRecording();
+      micBtn.setAttribute('aria-pressed', 'false');
+      isRecording = false;
+    }
   });
 
   // Where am I panel
