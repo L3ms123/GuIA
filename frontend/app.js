@@ -3,6 +3,7 @@ let selectedPersona = null;
 let selectedAge     = null;
 let selectedLang    = null; 
 let translations    = {};
+window.USE_KOKORO = true;
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 
@@ -336,6 +337,65 @@ function initApp() {
   });
 
   // Chat
+  function speakBrowser(text, lang = selectedLang, persona = "adult") {
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    const langMap = {
+      en: "en-US",
+      es: "es-ES",
+      ca: "ca-ES"
+    };
+
+    utterance.lang = langMap[lang];
+
+    const config = {
+      child:  { pitch: 1.6, rate: 1.05 },
+      teen:   { pitch: 1.2, rate: 1.0 },
+      adult:  { pitch: 1.0, rate: 0.95 },
+      senior: { pitch: 0.9, rate: 0.9 }
+    };
+
+    const style = config[persona] || config.adult;
+
+    utterance.pitch = style.pitch;
+    utterance.rate = style.rate;
+
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
+  }
+
+  async function speakKokoro(text, lang = selectedLang) {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, lang })
+      });
+
+      if (!res.ok) {
+        console.error("TTS error:", await res.text());
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      const audio = new Audio(url);
+      audio.play();
+    } catch (e) {
+      console.error("Kokoro fail:", e);
+    }
+  }
+
+  function speak(text, lang = selectedLang, persona = selectedPersona || "adult") {
+    if (window.USE_KOKORO) {
+      speakKokoro(text, lang);
+    } else {
+      speakBrowser(text, lang, persona);
+    }
+  }
+
+
   const chatThread = el('chat-thread');
   const chatInput  = el('chat-input');
 
@@ -344,7 +404,15 @@ function initApp() {
     if (!value) return;
     addBubble('user', value);
     chatInput.value = '';
-    setTimeout(() => addBubble('assistant', 'This is where GuIA would respond.'), 500);
+    const replies = {
+      en: "This is where GuIA would respond.",
+      es: "Aquí es donde GuIA respondería.",
+      ca: "Aquí és on GuIA respondria."
+    };
+
+    const reply = replies[selectedLang] || replies.en;
+    addBubble('assistant', reply);
+    speak(reply);
   }
 
   el('send-btn').addEventListener('click', handleSend);
