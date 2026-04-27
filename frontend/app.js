@@ -1,7 +1,9 @@
 // ─── State ────────────────────────────────────────────────────────────────────
 let selectedPersona = null;
 let selectedAge     = null;
-let selectedLang    = null; 
+let selectedLang    = null;
+let currentRoom     = null;
+let currentArtwork  = null;
 let translations    = {};
 window.USE_KOKORO = true;
 
@@ -399,20 +401,40 @@ function initApp() {
   const chatThread = el('chat-thread');
   const chatInput  = el('chat-input');
 
-  function handleSend() {
+  async function handleSend() {
     const value = chatInput.value.trim();
     if (!value) return;
     addBubble('user', value);
     chatInput.value = '';
-    const replies = {
-      en: "This is where GuIA would respond.",
-      es: "Aquí es donde GuIA respondería.",
-      ca: "Aquí és on GuIA respondria."
-    };
 
-    const reply = replies[selectedLang] || replies.en;
-    addBubble('assistant', reply);
-    speak(reply);
+    try {
+      // Send message with user preferences and context to backend
+      const res = await fetch("http://127.0.0.1:5002/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: value,
+          language: selectedLang,
+          age_range: selectedAge || "Adult 20-60 years old",
+          personality: selectedPersona,
+          room: currentRoom,
+          artwork: currentArtwork
+        })
+      });
+
+      if (!res.ok) {
+        addBubble('assistant', "Sorry, I had trouble connecting to the guide system.");
+        return;
+      }
+
+      const data = await res.json();
+      const reply = data.response || "I couldn't generate a response.";
+      addBubble('assistant', reply);
+      speak(reply);
+    } catch (e) {
+      console.error("Chat error:", e);
+      addBubble('assistant', "Sorry, I'm having trouble connecting right now.");
+    }
   }
 
   el('send-btn').addEventListener('click', handleSend);
@@ -423,6 +445,12 @@ function initApp() {
 
 function applyContext(roomText, artworkText) {
   // Solo actualiza el header si los elementos existen
+  
+  // Store context
+  currentRoom = roomText;
+  currentArtwork = artworkText;
+
+  // Update header
   const roomEl    = el('current-room');
   const artworkEl = el('current-artwork');
   if (roomEl)    roomEl.textContent    = t('app.room') + ': ' + roomText;
@@ -434,4 +462,14 @@ function applyContext(roomText, artworkText) {
   const msg = artworkText ? `${roomText} · ${artworkText}` : roomText;
   addBubble('user', msg);
   el('context-box').setAttribute('hidden', '');
+
+  // Send context to LLM backend
+  fetch("http://127.0.0.1:5002/context", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      room: roomText,
+      artwork: artworkText
+    })
+  }).catch(e => console.warn("Could not send context to backend:", e));
 }
