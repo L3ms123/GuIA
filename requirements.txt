@@ -1,0 +1,29 @@
+# Web framework and API
+Flask>=2.3.0
+flask-cors>=4.0.0
+
+# LLM and AI packages
+cohere>=4.0.0
+openai-whisper>=20230314
+chromadb>=0.3.21
+sentence-transformers>=2.2.0
+
+# Text-to-speech
+edge-tts>=6.1.1
+
+# Database
+neo4j>=5.0.0
+
+# Utilities
+python-dotenv>=0.21.0
+python-docx>=0.8.11
+
+# Data science essentials
+pandas>=1.5.0
+numpy>=1.23.0
+scipy>=1.9.0
+
+# Jupyter notebooks
+jupyter>=1.0.0
+jupyterlab>=3.5.0
+ipython>=8.10.0

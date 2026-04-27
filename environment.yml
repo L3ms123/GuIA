@@ -1,0 +1,44 @@
+name: guia-project
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Python version
+  - python=3.10
+  
+  # Web framework and API
+  - flask
+  - flask-cors
+  
+  # LLM and AI packages
+  - chromadb
+  - sentence-transformers
+  
+  # Database
+  - neo4j
+  
+  # Utilities
+  - python-dotenv
+  - python-docx
+  
+  # Data science essentials
+  - pandas
+  - numpy
+  - scipy
+  
+  # Jupyter notebooks
+  - jupyter
+  - jupyterlab
+  - ipython
+  
+  # Development tools
+  - pip
+  - black
+  - flake8
+
+# pip-only packages that may not be available in conda
+# Install these via pip after creating the environment
+pip:
+  - cohere
+  - openai-whisper
+  - edge-tts
