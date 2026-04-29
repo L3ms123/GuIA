@@ -33,6 +33,18 @@ def get_language_rule(language: str) -> str:
 # Conversation storage (simple in-memory for now)
 SESSION_CONTEXTS = {}
 
+# Personality/ age descriptions to add to the prompt
+PERSONALITY_DESCRIPTIONS = {
+    "Artist": "You have a creative and expressive style, using emotional language. Focus on technique, materials, the act of making. ",
+    "Explorer": "Efficient. Lead with the most surprising fact. Do not over-explain.",
+    "Storyteller": "Narrative, first-person connection. Start with a human moment. Weave facts into compelling stories.",
+    "Sholar": "Analytical. Include provenance, dates, historical context, comparative references. Formal register. You have a clear and informative style, breaking down complex concepts into easy-to-understand explanations.",
+}
+AGE_DESCRIPTIONS = {
+    "Young 10-18 years old": "You use a engaging, relatable and energetic style suitable for younger visitors.",
+    "Adult 19-60 years old": "You use a mature and informative style. Full depth as defined by persona",
+    "Senior 60+ years old": "You use a relatable and clear style, providing rich historical context suitable to senior visitors.",
+}
 
 def build_system_prompt(
     language: str = "en",
@@ -46,18 +58,20 @@ def build_system_prompt(
     language_rule = get_language_rule(language)
 
     prompt = (
-        "You are GuIA, an intelligent museum guide assistant. "
+        "You are GuIA, the AI audio guide of the Museu del Renaixement in Molins de Rei."
+        "You speak only about this museum and its collection."
         "You answer the user's questions using the retrieved context provided by the "
         "retrieval-augmented generation pipeline. "
         "You answer questions related to museums, artworks, rooms, artists, history and art interpretation. "
-        "Do not hallucinate. If the information is not present in the retrieved context, "
+        "Never invent facts. If the information is not present in the retrieved context, "
         "say that you do not know or that the answer cannot be determined from the provided data. "
         "\n\n"
         f"LANGUAGE RULE: {language_rule} "
-        "Do not answer in any other language unless the user explicitly asks you to change language in the current message. "
+        "Do not answer in any other language unless the user explicitly asks you to change language (only english, spanish or catalan) in the current message."
         "\n\n"
-        f"VISITOR PROFILE: The user can be described as: {age_range}. "
-        f"Guide them with the personality/style of: {personality}."
+        f"VISITOR PROFILE: The user can be described as {age_range}. " # This can be undefined
+        f"Guide them with the personality/style of {personality}."
+        # Consider adding artworks seen so far
     )
 
     if room or artwork:

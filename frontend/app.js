@@ -50,7 +50,7 @@ function applyOnboardingTranslations() {
   });
 
   // Age chips
-  ['child', 'teen', 'adult', 'senior'].forEach((key) => {
+  ['young', 'adult', 'senior'].forEach((key) => {
       const btn = document.querySelector(`[data-age="${key}"]`);
       if (!btn) return;
       const sub = btn.querySelector('.card-subtitle');
@@ -249,11 +249,21 @@ function initApp() {
     });
   });
 
-// Mute
-const muteBtn = el('mute-btn');
-let isMuted = false;
-let unmuteWaiters = [];
+  // ─── Volume slider + Mute ─────────────────────────────────────────────────────
+const muteBtn      = el('mute-btn');
+const volumeSlider = el('volume-slider');
+let isMuted        = false;
+let currentVolume = 0.5;
+let unmuteWaiters  = [];
 
+function updateMuteIcon() {
+  const muted = isMuted || (volumeSlider && Number(volumeSlider.value) === 0);
+  muteBtn.textContent = muted ? '🔇' : '🔈';
+  muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+  muteBtn.setAttribute('aria-label', muted ? 'Unmute audio' : 'Mute audio');
+}
+
+// Mute
 function waitUntilUnmuted() {
   if (!isMuted) return Promise.resolve();
 
@@ -284,12 +294,33 @@ function resumeAudioOutput() {
       console.error("Audio resume failed:", err);
     });
   }
-
   if (speechSynthesis.paused) {
     speechSynthesis.resume();
   }
+  releaseUnmuteWaiters();  // ← esto sí va aquí dentro
+}
 
-  releaseUnmuteWaiters();
+// Volume slider: fuera de resumeAudioOutput ↓
+if (volumeSlider) {
+  volumeSlider.addEventListener('input', () => {
+    const value = Number(volumeSlider.value);
+    currentVolume = value / 100;
+
+    if (value === 0) {
+      if (!isMuted) {
+        isMuted = true;
+        pauseAudioOutput();
+      }
+    } else {
+      if (isMuted) {
+        isMuted = false;
+        resumeAudioOutput();
+      }
+      if (currentAudio) currentAudio.volume = currentVolume;
+    }
+    updateMuteIcon();
+  });
+  updateMuteIcon();
 }
 
 muteBtn.addEventListener('click', () => {
@@ -303,10 +334,29 @@ muteBtn.addEventListener('click', () => {
   );
 
   if (isMuted) {
+    if (volumeSlider) volumeSlider.value = 0;
     pauseAudioOutput();
   } else {
+    if (volumeSlider && Number(volumeSlider.value) === 0) {
+      volumeSlider.value = 50;
+    }
     resumeAudioOutput();
   }
+  updateMuteIcon();
+});
+
+function speakInitialWelcome() {
+  const firstBubble = document.querySelector(".assistant-bubble");
+  const text = firstBubble?.textContent?.trim();
+  if (!text) return;
+  resetSpeechQueue();
+  queueSpeech(text, selectedLang, selectedPersona || "adult");
+}
+
+el("onboarding-start").addEventListener("click", () => {
+  setTimeout(() => {
+    speakInitialWelcome();
+  }, 0);
 });
 
   // Mic
@@ -569,7 +619,7 @@ muteBtn.addEventListener('click', () => {
       micBtn.setAttribute('aria-pressed', 'false');
       isRecording = false;
     }
-  });
+  }); 
 
   */
 
@@ -662,6 +712,7 @@ muteBtn.addEventListener('click', () => {
     return new Promise(async (resolve) => {
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
+      audio.volume = currentVolume;
       currentAudio = audio;
 
       const cleanup = () => {

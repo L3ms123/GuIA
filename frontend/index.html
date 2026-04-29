@@ -14,6 +14,7 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="assets/favicon.png">
 </head>
 <body class="surface" data-mode="regular">
   <!-- Onboarding full-screen dialog -->
@@ -27,7 +28,7 @@
   >
     <section class="onboarding-panel">
       <div class="onboarding-header">
-        <p id="onboarding-eyebrow" class="eyebrow">GuIA Museum Guide</p>
+        <p id="onboarding-eyebrow" class="eyebrow">GuIA Museu del Renaixamen Guide</p>
         <h1 id="onboarding-title" class="headline">
           Meet your guide.
         </h1>
@@ -182,27 +183,14 @@
             <button
               type="button"
               class="chip radio-chip"
-              data-age="child"
-              role="radio"
-              aria-checked="false"
-            >
-              <img class="chip-icon" src="assets/child-svgrepo-com.svg" alt="" aria-hidden="true">
-              Child
-              <p class="card-subtitle">
-                (3-14 years)
-              </p>
-            </button>
-            <button
-              type="button"
-              class="chip radio-chip"
-              data-age="teen"
+              data-age="young"
               role="radio"
               aria-checked="false"
             >
               <img class="chip-icon" src="assets/teenager-svgrepo-com.svg" alt="" aria-hidden="true">
-              Teenager
+                Young
               <p class="card-subtitle">
-                (15-19 years)
+                (10-18 years)
               </p>
             </button>
             <button
@@ -274,6 +262,22 @@
           >
             🔈
           </button>
+
+          <div class="volume-wrap" aria-label="Volume control">
+            <input
+              id="volume-slider"
+              class="volume-slider"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+              step="1"
+              aria-label="Volume"
+            />
+          </div>
+
+          
+
           <div
             class="speed-group"
             role="radiogroup"
@@ -333,21 +337,8 @@
           <span></span><span></span><span></span>
         </div>
 
-        <div
-          id="suggestion-bar"
-          class="suggestion-row"
-          aria-label="Quick actions"
-        >
-          <button type="button" class="suggestion-btn">
-            Tell me about this artwork
-          </button>
-          <button type="button" class="suggestion-btn">
-            Repeat
-          </button>
-          <button type="button" class="suggestion-btn">
-            Go slower
-          </button>
-        </div>
+        <!-- suggestion bar -->
+        <div id="suggestion-bar" class="suggestion-bar" ></div>
       </section>
 
       <!-- Context column -->

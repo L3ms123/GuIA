@@ -1,7 +1,7 @@
 {
   "en": {
     "onboarding": {
-      "eyebrow": "GuIA Museum Guide",
+      "eyebrow": "GuIA Museu del Renaixamen Guide",
       "title": "Meet your guide.",
       "description": "Choose how you would like GuIA to guide you through the Museu del Renaixement.",
       "hint": "Select a personality and language to continue.",
@@ -29,13 +29,9 @@
       }
     },
     "ages": {
-        "child": {
-            "title": "Child",
-            "subtitle": "(3-14 years)"
-            },
-        "teen": {
-            "title": "Teen",
-            "subtitle": "(15-19 years)"
+        "young": {
+            "title": "Young",
+            "subtitle": "(10-18 years)"
             },
         "adult": {
             "title": "Adult",
@@ -48,7 +44,7 @@
     },
     "ageHint": "*The ages are just an indicative guideline to help tailor the content. It is optional to answer",
     "app": {
-      "title": "GuIA Museum Guide",
+      "title": "GuIA Museu del Renaixement Guide",
       "room": "Room",
       "artwork": "Artwork",
       "whereAmI": "Where am I?",
@@ -101,7 +97,7 @@
   },
   "es": {
     "onboarding": {
-      "eyebrow": "GuIA Guía de Museo",
+      "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Conoce a tu guía.",
       "description": "Elige cómo quieres que GuIA te guíe por el Museu del Renaixement.",
       "hint": "Selecciona una personalidad e idioma para continuar.",
@@ -129,13 +125,9 @@
       }
     },
     "ages": {
-        "child": {
-            "title": "Niño",
-            "subtitle": "(3-14 años)"
-            },
-        "teen": {
-            "title": "Adolescente",
-            "subtitle": "(15-19 años)"
+        "young": {
+            "title": "Joven",
+            "subtitle": "(10-18 años)"
             },
         "adult": {
             "title": "Adulto",
@@ -148,7 +140,7 @@
     },
     "ageHint": "*Las edades son solo una guía indicativa para personalizar el contenido. Es opcional responder",
     "app": {
-      "title": "GuIA Guía de Museo",
+      "title": "GuIA del Museu del Renaixement",
       "room": "Sala",
       "artwork": "Obra",
       "whereAmI": "¿Dónde estoy?",
@@ -201,7 +193,7 @@
   },
   "ca": {
     "onboarding": {
-      "eyebrow": "GuIA Guia de Museu",
+      "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Coneix el teu guia.",
       "description": "Tria com vols que GuIA et guiï pel Museu del Renaixement.",
       "hint": "Selecciona una personalitat i llengua per continuar.",
@@ -229,13 +221,9 @@
       }
     },
     "ages": {
-        "child": {
-            "title": "Nen",
-            "subtitle": "(3-14 anys)"
-            },
-        "teen": {
-            "title": "Adolescent",
-            "subtitle": "(15-19 anys)"
+        "young": {
+            "title": "Jove",
+            "subtitle": "(10-18 anys)"
             },
         "adult": {
             "title": "Adult",
@@ -248,7 +236,7 @@
     },
     "ageHint": "*Les edats són només una guia indicativa per personalitzar el contingut. És opcional respondre",
     "app": {
-      "title": "GuIA Guia de Museu",
+      "title": "GuIA del Museu del Renaixement",
       "room": "Sala",
       "artwork": "Obra",
       "whereAmI": "On sóc?",
