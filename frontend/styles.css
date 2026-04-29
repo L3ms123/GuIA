@@ -367,6 +367,16 @@ body.surface {
   background: var(--surface-high);
 }
 
+.icon-btn.is-listening {
+  background: var(--error);
+  color: var(--on-primary);
+}
+
+.icon-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
 /* ── SPEED GROUP ──────────────────────────────────────────── */
 .speed-group {
   display: flex;
@@ -454,14 +464,22 @@ body.surface {
 }
 
 /* typing indicator */
-.typing {
-  display: inline-flex;
+#typing-indicator {
+  display: none !important;
+}
+
+#typing-indicator.is-visible {
+  display: inline-flex !important;
   gap: 0.22rem;
   height: 1rem;
   margin: 0.3rem 0;
 }
 
-.typing span {
+#typing-indicator[hidden] {
+  display: none !important;
+}
+
+#typing-indicator span {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -469,10 +487,11 @@ body.surface {
   animation: typing 1.2s infinite ease-in-out;
 }
 
-.typing span:nth-child(2) {
+#typing-indicator span:nth-child(2) {
   animation-delay: 0.15s;
 }
-.typing span:nth-child(3) {
+
+#typing-indicator span:nth-child(3) {
   animation-delay: 0.3s;
 }
 
@@ -483,6 +502,7 @@ body.surface {
     opacity: 0.3;
     transform: translateY(0);
   }
+
   40% {
     opacity: 1;
     transform: translateY(-2px);
@@ -588,6 +608,7 @@ body.surface {
 }
 
 .input-shell {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -600,6 +621,57 @@ body.surface {
   border: none;
   background: transparent;
   font-size: 0.95rem;
+}
+
+.input-shell.is-transcribing .chat-input {
+  color: transparent;
+  caret-color: transparent;
+}
+
+.input-shell.is-transcribing .chat-input::placeholder {
+  color: transparent;
+}
+
+.chat-input:disabled {
+  cursor: wait;
+}
+
+.voice-input-status {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--on-surface);
+  font-size: 0.95rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.voice-input-status[hidden] {
+  display: none !important;
+}
+
+.voice-input-dots {
+  height: 0.8rem;
+  margin: 0;
+}
+
+.voice-input-dots span {
+  background: var(--on-surface-variant);
+}
+
+.voice-status {
+  color: var(--error);
+  font-size: 0.82rem;
+  font-weight: 600;
+  min-width: 6rem;
+}
+
+.voice-status[hidden] {
+  display: none;
 }
 
 /* focus outlines */
@@ -669,4 +741,3 @@ body[data-mode="senior"] .msg-bubble {
     max-height: calc(100vh - 240px);
   }
 }
-

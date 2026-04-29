@@ -63,6 +63,24 @@ Accessibility features include:
 
 These features ensure that the museum experience is inclusive and usable for the widest possible audience.
 
+## Run the App
+
+From Windows, run:
+
+```bat
+run_guia.bat
+```
+
+Or from any terminal with the project environment activated:
+
+```bash
+python run_guia.py
+```
+
+Before starting, create `LLM/.env` with `COHERE_LLM_KEY=your_key_here`.
+
+This starts the frontend at `http://127.0.0.1:8000`, the audio API at `http://127.0.0.1:5000`, and the LLM API at `http://127.0.0.1:5002`. Press `Ctrl+C` in that same terminal to stop everything.
+
 
 
 

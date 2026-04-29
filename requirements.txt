@@ -5,6 +5,7 @@ flask-cors>=4.0.0
 # LLM and AI packages
 cohere>=4.0.0
 openai-whisper>=20230314
+imageio-ffmpeg>=0.6.0
 chromadb>=0.3.21
 sentence-transformers>=2.2.0
 

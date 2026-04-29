@@ -329,7 +329,7 @@
           </div>
         </div>
 
-        <div id="typing-indicator" class="typing" aria-hidden="true">
+        <div id="typing-indicator" class="typing" aria-hidden="true" hidden>
           <span></span><span></span><span></span>
         </div>
 
@@ -420,6 +420,17 @@
           type="text"
           placeholder="Ask GuIA about the room, the artwork, or the museum..."
         />
+        <div
+          id="voice-input-status"
+          class="voice-input-status"
+          aria-live="polite"
+          hidden
+        >
+          <strong id="voice-input-status-text">Transcribing</strong>
+          <span class="typing voice-input-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </div>
         <button
           id="mic-btn"
           type="button"
@@ -429,6 +440,7 @@
         >
           <span class="material-symbols-outlined">mic</span>
         </button>
+        <span id="mic-status" class="voice-status" aria-live="polite" hidden></span>
         <button id="send-btn" type="button" class="btn-primary">
           Send
         </button>

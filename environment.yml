@@ -41,4 +41,5 @@ dependencies:
 pip:
   - cohere
   - openai-whisper
+  - imageio-ffmpeg
   - edge-tts

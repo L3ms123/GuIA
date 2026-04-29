@@ -69,14 +69,23 @@
         "Repeat",
         "Go slower"
       ],
-      "welcome": "Welcome to the Museu del Renaixement. Select where you'd like to start your visit or ask me anything about the museum!"
+      "welcome": "Welcome to the Museu del Renaixement. Select where you'd like to start your visit or ask me anything about the museum!",
+      "connectionError": "Sorry, I’m having trouble connecting right now."
     },
     "audio": {
-      "mute": "Toggle mute",
-      "voice": "Start voice input",
       "slow": "Slow",
-      "normal": "Normal", 
-      "fast": "Fast"
+      "normal": "Normal",
+      "fast": "Fast",
+      "voice": "Speak",
+      "stop": "Stop recording",
+      "requesting": "Turning on the microphone…",
+      "recording": "I’m listening. Speak now.",
+      "listening": "I’m listening. Speak now.",
+      "transcribing": "Turning your voice into text…",
+      "empty": "I didn’t detect any speech. Please try again.",
+      "unavailable": "The microphone is not available in this browser.",
+      "denied": "I don’t have permission to use the microphone.",
+      "failed": "I couldn’t process the audio. Please try again."
     },
     "context": {
       "selectRoom": "Select a room",
@@ -160,14 +169,23 @@
         "Repite",
         "Más lento"
       ],
-      "welcome": "Bienvenido al Museu del Renaixement. Selecciona dónde te gustaría comenzar tu visita o pregúntame cualquier cosa sobre el museo."
+      "welcome": "Bienvenido al Museu del Renaixement. Selecciona dónde te gustaría comenzar tu visita o pregúntame cualquier cosa sobre el museo.",
+      "connectionError": "Ahora mismo tengo problemas para conectarme."
     },
     "audio": {
-      "mute": "Activar/desactivar silencio",
-      "voice": "Iniciar entrada de voz",
       "slow": "Lento",
       "normal": "Normal",
-      "fast": "Rápido"
+      "fast": "Rápido",
+      "voice": "Hablar",
+      "stop": "Detener grabación",
+      "requesting": "Activando el micrófono…",
+      "recording": "Te estoy escuchando. Habla ahora.",
+      "listening": "Te estoy escuchando. Habla ahora.",
+      "transcribing": "Convirtiendo tu voz en texto…",
+      "empty": "No he detectado ninguna voz. Inténtalo de nuevo.",
+      "unavailable": "El micrófono no está disponible en este navegador.",
+      "denied": "No tengo permiso para acceder al micrófono.",
+      "failed": "No he podido procesar el audio. Inténtalo de nuevo."
     },
     "context": {
       "selectRoom": "Selecciona una sala",
@@ -251,15 +269,24 @@
         "Repeteix",
         "Més lent"
       ],
-      "welcome": "Benvingut al Museu del Renaixement. Selecciona on t'agradaria començar la teva visita o pregunta'm qualsevol cosa sobre el museu."
+      "welcome": "Benvingut al Museu del Renaixement. Selecciona on t'agradaria començar la teva visita o pregunta'm qualsevol cosa sobre el museu.",
+      "connectionError": "Ara mateix tinc problemes per connectar-me."
     },
-    "audio": {
-      "mute": "Activa/desactiva silenci",
-      "voice": "Inicia entrada de veu",
-      "slow": "Lent",
-      "normal": "Normal",
-      "fast": "Ràpid"
-    },
+"audio": {
+    "slow": "Lent",
+    "normal": "Normal",
+    "fast": "Ràpid",
+    "voice": "Parla",
+    "stop": "Atura la gravació",
+    "requesting": "Activant el micròfon…",
+    "recording": "T’estic escoltant. Parla ara.",
+    "listening": "T’estic escoltant. Parla ara.",
+    "transcribing": "Convertint la veu en text…",
+    "empty": "No he detectat cap veu. Torna-ho a provar.",
+    "unavailable": "El micròfon no està disponible en aquest navegador.",
+    "denied": "No tinc permís per accedir al micròfon.",
+    "failed": "No he pogut processar l’àudio. Torna-ho a provar."
+  },
     "context": {
       "selectRoom": "Selecciona una sala",
       "selectArtwork": "Selecciona una obra",

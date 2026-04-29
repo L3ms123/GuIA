@@ -1,3 +1,10 @@
 KG/.env
 LLM/.env
 .vscode
+.venv/
+__pycache__/
+*.py[cod]
+
+.codex-run/
+
+backend/
