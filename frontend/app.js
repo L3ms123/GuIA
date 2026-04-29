@@ -5,6 +5,7 @@ let selectedLang    = null;
 let currentRoom     = null;
 let currentArtwork  = null;
 let translations    = {};
+let locationData    = { rooms: [] };
 const sessionId = crypto.randomUUID();
 
 window.USE_KOKORO = true;
@@ -107,25 +108,10 @@ function applyAppTranslations() {
   el('artwork').textContent = t('app.artwork');
 
   // Opciones del select de sala
-  const roomSelect = el('room-select');
-  if (roomSelect) {
-    roomSelect.options[0].text = t('context.selectRoom');
-    roomSelect.options[1].text = t('context.room1');
-    roomSelect.options[2].text = t('context.room2');
-    roomSelect.options[3].text = t('context.room3');
-  }
-
-  // Opciones del select de obra
-  const artworkSelect = el('artwork-select');
-  if (artworkSelect) {
-    artworkSelect.options[0].text = t('context.selectArtwork');
-    artworkSelect.options[1].text = t('context.portrait');
-    artworkSelect.options[2].text = t('context.annunciation');
-    artworkSelect.options[3].text = t('context.lastSupper');
-  }
+  renderLocationSelects();
 
   // Context suggestion
-  document.querySelector('.context-suggestion').firstChild.textContent = t('app.contextSuggestion') + ' ';
+  renderContextSuggestion();
   el('confirm-suggestion-btn').textContent = t('app.confirmSuggestion');
 
   // Footer
@@ -159,6 +145,82 @@ function addBubble(role, text) {
   return bubble;
 }
 
+async function loadLocations() {
+  try {
+    const res = await fetch("http://127.0.0.1:5002/locations");
+    if (!res.ok) throw new Error(await res.text());
+    locationData = await res.json();
+  } catch (e) {
+    console.warn("Could not load museum locations from backend:", e);
+    locationData = { rooms: [] };
+  }
+}
+
+function renderLocationSelects() {
+  const roomSelect = el('room-select');
+  if (!roomSelect) return;
+
+  const selectedRoom = roomSelect.value;
+  roomSelect.innerHTML = '';
+  roomSelect.appendChild(new Option(t('context.selectRoom', 'Select a room'), ''));
+
+  (locationData.rooms || []).forEach((room) => {
+    roomSelect.appendChild(new Option(room.label || room.id, room.id));
+  });
+
+  if ((locationData.rooms || []).some((room) => room.id === selectedRoom)) {
+    roomSelect.value = selectedRoom;
+  }
+
+  renderArtworkSelect();
+  renderContextSuggestion();
+}
+
+function renderArtworkSelect() {
+  const roomSelect = el('room-select');
+  const artworkSelect = el('artwork-select');
+  if (!roomSelect || !artworkSelect) return;
+
+  const selectedArtwork = artworkSelect.value;
+  const selectedRoom = (locationData.rooms || []).find((room) => room.id === roomSelect.value);
+
+  artworkSelect.innerHTML = '';
+  artworkSelect.appendChild(new Option(t('context.selectArtwork', 'Select an artwork'), ''));
+  artworkSelect.disabled = !selectedRoom;
+
+  if (!selectedRoom) return;
+
+  (selectedRoom.artworks || []).forEach((artwork) => {
+    artworkSelect.appendChild(new Option(artwork.title, artwork.id || artwork.title));
+  });
+
+  if ((selectedRoom.artworks || []).some((artwork) => (artwork.id || artwork.title) === selectedArtwork)) {
+    artworkSelect.value = selectedArtwork;
+  }
+}
+
+function renderContextSuggestion() {
+  const suggestion = document.querySelector('.context-suggestion');
+  if (!suggestion) return;
+
+  const firstRoom = (locationData.rooms || [])[0];
+  const firstArtwork = firstRoom?.artworks?.[0];
+  const textNode = Array.from(suggestion.childNodes).find((node) => node.nodeType === Node.TEXT_NODE);
+
+  if (!firstRoom || !textNode) return;
+
+  const roomLabel = firstRoom.label || firstRoom.id;
+  const artworkLabel = firstArtwork?.title;
+  const prefix = {
+    en: 'Are you in',
+    es: 'Estas en',
+    ca: 'Estas a'
+  }[selectedLang] || 'Are you in';
+  textNode.textContent = artworkLabel
+    ? `${prefix} ${roomLabel}, ${artworkLabel}? `
+    : `${prefix} ${roomLabel}? `;
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 
 async function loadTranslations() {
@@ -169,6 +231,7 @@ async function loadTranslations() {
     console.error('translations.json not found — serving without i18n', e);
     translations = {};
   }
+  await loadLocations();
 
   // Lee el idioma por defecto del aria-checked="true" en el HTML
   const preChecked = document.querySelector('#language-group [aria-checked="true"]');
@@ -574,14 +637,26 @@ muteBtn.addEventListener('click', () => {
   */
 
   // Where am I panel
-  el('where-am-i-btn').addEventListener('click', () => {
+  el('where-am-i-btn').addEventListener('click', async () => {
     const box = el('context-box');
-    box.hasAttribute('hidden') ? box.removeAttribute('hidden') : box.setAttribute('hidden', '');
+    if (box.hasAttribute('hidden')) {
+      await loadLocations();
+      renderLocationSelects();
+      box.removeAttribute('hidden');
+    } else {
+      box.setAttribute('hidden', '');
+    }
   });
 
   // Set context
   const roomSelect    = el('room-select');
   const artworkSelect = el('artwork-select');
+  renderLocationSelects();
+
+  roomSelect.addEventListener('change', () => {
+    roomSelect.removeAttribute('aria-invalid');
+    renderArtworkSelect();
+  });
 
   el('set-context-btn').addEventListener('click', () => {
     if (!roomSelect.value) {
@@ -599,7 +674,11 @@ muteBtn.addEventListener('click', () => {
 });
 
   el('confirm-suggestion-btn').addEventListener('click', () => {
-    applyContext(t('context.room2'), t('context.portrait'));
+    const firstRoom = (locationData.rooms || [])[0];
+    const firstArtwork = firstRoom?.artworks?.[0];
+    if (firstRoom) {
+      applyContext(firstRoom.label || firstRoom.id, firstArtwork?.title || '');
+    }
   });
 
   // Chat
@@ -876,6 +955,20 @@ muteBtn.addEventListener('click', () => {
           const extracted = extractCompleteSentences(sentenceBuffer);
           extracted.sentences.forEach((sentence) => queueSpeech(sentence));
           sentenceBuffer = extracted.remainder;
+        } else if (event.type === 'replace') {
+          const text = event.text || '';
+          if (!text) return;
+
+          if (!receivedText) {
+            receivedText = true;
+            setThinkingIndicator(false);
+            assistantBubble = addBubble('assistant', '');
+          }
+
+          assistantBubble.textContent = text;
+          fullAssistantText = text;
+          sentenceBuffer = '';
+          chatThread.scrollTop = chatThread.scrollHeight;
         } else if (event.type === 'error') {
           throw new Error(event.error || 'Streaming chat failed');
         }

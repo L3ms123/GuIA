@@ -127,11 +127,12 @@ def missing_packages(packages: dict[str, str]) -> list[str]:
     return [package for module, package in packages.items() if find_spec(module) is None]
 
 
-def read_cohere_key_from_env_file() -> str | None:
+def read_llm_env_file() -> dict[str, str]:
     env_file = ROOT / "LLM" / ".env"
     if not env_file.exists():
-        return None
+        return {}
 
+    values = {}
     for line in env_file.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
         if stripped.startswith("#") or "=" not in stripped:
@@ -139,10 +140,15 @@ def read_cohere_key_from_env_file() -> str | None:
 
         key, value = stripped.split("=", 1)
         value = value.strip().strip('"').strip("'")
-        if key.strip() == "COHERE_LLM_KEY" and value:
-            return value
+        key = key.strip()
+        if key and value:
+            values[key] = value
 
-    return None
+    return values
+
+
+def read_cohere_key_from_env_file() -> str | None:
+    return read_llm_env_file().get("COHERE_LLM_KEY")
 
 
 def cohere_key_is_configured() -> bool:
@@ -197,9 +203,8 @@ def main() -> int:
 
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
-    cohere_key = read_cohere_key_from_env_file()
-    if not env.get("COHERE_LLM_KEY") and cohere_key:
-        env["COHERE_LLM_KEY"] = cohere_key
+    for key, value in read_llm_env_file().items():
+        env.setdefault(key, value)
 
     print("Starting GuIA services...")
     for service in services:

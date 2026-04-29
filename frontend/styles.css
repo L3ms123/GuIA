@@ -450,6 +450,7 @@ body.surface {
   max-width: 80%;
   padding: 0.7rem 0.9rem;
   font-size: 0.95rem;
+  white-space: pre-wrap;
 }
 
 /* bubbles with good contrast */
