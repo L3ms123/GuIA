@@ -362,19 +362,21 @@ def cypher_fuzzy_text_expression(expression: str) -> str:
         "ü": "u",
         "ç": "c",
         "·": "",
-        "'": "",
-        "’": "",
         "`": "",
     }.items():
         result = f"replace({result}, '{source}', '{target}')"
     return result
 
 
+def cypher_case_insensitive_text_expression(expression: str) -> str:
+    return f"toLower({expression})"
+
+
 def cypher_string_literal(value: str) -> str:
     return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
-def rewrite_exact_property_matches_to_fuzzy(cypher: str) -> str:
+def rewrite_exact_property_matches(cypher: str, normalize_accents: bool = False) -> str:
     """Convert common exact property map matches into fuzzy WHERE predicates."""
     predicates = []
 
@@ -391,9 +393,13 @@ def rewrite_exact_property_matches_to_fuzzy(cypher: str) -> str:
                 room_digits = re.search(r"\d+", value)
                 if room_digits:
                     normalized_value = room_digits.group(0)
+            expression = (
+                cypher_fuzzy_text_expression(f"{variable}.{key}")
+                if normalize_accents
+                else cypher_case_insensitive_text_expression(f"{variable}.{key}")
+            )
             predicates.append(
-                f"{cypher_fuzzy_text_expression(f'{variable}.{key}')} CONTAINS "
-                f"{cypher_string_literal(normalized_value)}"
+                f"{expression} CONTAINS {cypher_string_literal(normalized_value)}"
             )
             return ""
 
@@ -421,6 +427,14 @@ def rewrite_exact_property_matches_to_fuzzy(cypher: str) -> str:
     if re.search(r"\bWHERE\b", rewritten, flags=re.IGNORECASE):
         return re.sub(r"\bWHERE\b", f"WHERE {where_clause} AND", rewritten, count=1, flags=re.IGNORECASE)
     return re.sub(r"\bRETURN\b", f"WHERE {where_clause} RETURN", rewritten, count=1, flags=re.IGNORECASE)
+
+
+def rewrite_exact_property_matches_to_contains(cypher: str) -> str:
+    return rewrite_exact_property_matches(cypher, normalize_accents=False)
+
+
+def rewrite_exact_property_matches_to_fuzzy(cypher: str) -> str:
+    return rewrite_exact_property_matches(cypher, normalize_accents=True)
 
 
 def user_asked_for_all(message: str) -> bool:
@@ -608,9 +622,17 @@ def retrieve_neo4j_context_query_api(
         cypher = generate_query_api_cypher(query)
         raw_rows = execute_query_api(cypher)
         if not raw_rows:
+            contains_cypher = rewrite_exact_property_matches_to_contains(cypher)
+            if contains_cypher != cypher:
+                safe_console_print("\n--- NEO4J QUERY API CONTAINS RETRY CYPHER ---", flush=True)
+                safe_console_print(contains_cypher, flush=True)
+                raw_rows = execute_query_api(contains_cypher)
+                if raw_rows:
+                    cypher = contains_cypher
+        if not raw_rows:
             fuzzy_cypher = rewrite_exact_property_matches_to_fuzzy(cypher)
             if fuzzy_cypher != cypher:
-                safe_console_print("\n--- NEO4J QUERY API FUZZY RETRY CYPHER ---", flush=True)
+                safe_console_print("\n--- NEO4J QUERY API ACCENT RETRY CYPHER ---", flush=True)
                 safe_console_print(fuzzy_cypher, flush=True)
                 raw_rows = execute_query_api(fuzzy_cypher)
                 if raw_rows:
