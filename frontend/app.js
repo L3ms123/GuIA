@@ -8,6 +8,18 @@ let translations    = {};
 let locationData    = { rooms: [] };
 const sessionId = crypto.randomUUID();
 
+const AGE_RANGE_BY_KEY = {
+  young: 'Young adult 10-18 years old',
+  adult: 'Adult 20-60 years old',
+  senior: 'Senior 60+ years old'
+};
+
+const SPEECH_PLAYBACK_RATE = {
+  slow: 0.55,
+  normal: 1,
+  fast: 1.65
+};
+
 window.USE_KOKORO = true;
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -26,6 +38,30 @@ function t(key, fallback = '') {
     fallback ??
     key
   );
+}
+
+function showOnboarding() {
+  window.guiaResetSpeechQueue?.();
+  const onboarding = el('onboarding');
+  onboarding.style.display = 'flex';
+  onboarding.removeAttribute('aria-hidden');
+}
+
+function hideOnboarding() {
+  const onboarding = el('onboarding');
+  onboarding.style.display = 'none';
+  onboarding.setAttribute('aria-hidden', 'true');
+}
+
+function initAppTitleButton() {
+  const appTitle = el('app-title');
+  if (!appTitle) return;
+
+  appTitle.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    showOnboarding();
+  });
 }
 
 function applyOnboardingTranslations() {
@@ -54,13 +90,27 @@ function applyOnboardingTranslations() {
   ['young', 'adult', 'senior'].forEach((key) => {
       const btn = document.querySelector(`[data-age="${key}"]`);
       if (!btn) return;
+      let title = btn.querySelector('.age-title');
       const sub = btn.querySelector('.card-subtitle');
-      for (const node of btn.childNodes) {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-          node.textContent = t(`ages.${key}.title`) + ' ';
-          break;
+
+      if (!title) {
+        title = document.createElement('span');
+        title.className = 'age-title';
+        const icon = btn.querySelector('.chip-icon');
+        if (icon) {
+          icon.insertAdjacentElement('afterend', title);
+        } else {
+          btn.prepend(title);
         }
       }
+
+      for (const node of Array.from(btn.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+          node.textContent = '';
+        }
+      }
+
+      title.textContent = t(`ages.${key}.title`);
       if (sub) sub.textContent = t(`ages.${key}.subtitle`);
     });
   
@@ -242,6 +292,7 @@ async function loadTranslations() {
   initPersonaButtons();
   initAgeButtons();
   initStartButton();
+  initAppTitleButton();
   initApp();
 }
 
@@ -295,7 +346,7 @@ function initAgeButtons() {
 
 function initStartButton() {
   el('onboarding-start').addEventListener('click', () => {
-    el('onboarding').style.display = 'none';
+    hideOnboarding();
     document.body.dataset.mode = selectedAge === 'senior' ? 'senior' : 'regular';
     applyAppTranslations();
   });
@@ -317,13 +368,24 @@ const muteBtn      = el('mute-btn');
 const volumeSlider = el('volume-slider');
 let isMuted        = false;
 let currentVolume = 0.5;
+let previousVolume = 0.5;
 let unmuteWaiters  = [];
+let currentAudioBaseSpeed = 'normal';
 
 function updateMuteIcon() {
-  const muted = isMuted || (volumeSlider && Number(volumeSlider.value) === 0);
+  const muted = isMuted || currentVolume === 0;
   muteBtn.textContent = muted ? '🔇' : '🔈';
   muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
   muteBtn.setAttribute('aria-label', muted ? 'Unmute audio' : 'Mute audio');
+}
+
+function applyAudioSettings(audio = currentAudio) {
+  if (!audio) return;
+  audio.volume = isMuted ? 0 : currentVolume;
+  audio.muted = isMuted || currentVolume === 0;
+  const baseRate = SPEECH_PLAYBACK_RATE[currentAudioBaseSpeed] || 1;
+  const targetRate = SPEECH_PLAYBACK_RATE[currentSpeechSpeed] || 1;
+  audio.playbackRate = targetRate / baseRate;
 }
 
 // Mute
@@ -341,19 +403,21 @@ function releaseUnmuteWaiters() {
   waiters.forEach((resolve) => resolve());
 }
 
-function pauseAudioOutput() {
-  if (currentAudio && !currentAudio.paused) {
-    currentAudio.pause();
-  }
+  function pauseAudioOutput() {
+    if (currentAudio && !currentAudio.paused) {
+      applyAudioSettings(currentAudio);
+      currentAudio.pause();
+    }
 
   if (speechSynthesis.speaking && !speechSynthesis.paused) {
     speechSynthesis.pause();
   }
 }
 
-function resumeAudioOutput() {
-  if (currentAudio && currentAudio.paused) {
-    currentAudio.play().catch((err) => {
+  function resumeAudioOutput() {
+    if (currentAudio && currentAudio.paused) {
+      applyAudioSettings(currentAudio);
+      currentAudio.play().catch((err) => {
       console.error("Audio resume failed:", err);
     });
   }
@@ -368,18 +432,17 @@ if (volumeSlider) {
   volumeSlider.addEventListener('input', () => {
     const value = Number(volumeSlider.value);
     currentVolume = value / 100;
+    if (currentVolume > 0) previousVolume = currentVolume;
 
     if (value === 0) {
-      if (!isMuted) {
-        isMuted = true;
-        pauseAudioOutput();
-      }
+      isMuted = true;
+      pauseAudioOutput();
     } else {
       if (isMuted) {
         isMuted = false;
         resumeAudioOutput();
       }
-      if (currentAudio) currentAudio.volume = currentVolume;
+      applyAudioSettings();
     }
     updateMuteIcon();
   });
@@ -401,8 +464,11 @@ muteBtn.addEventListener('click', () => {
     pauseAudioOutput();
   } else {
     if (volumeSlider && Number(volumeSlider.value) === 0) {
-      volumeSlider.value = 50;
+      volumeSlider.value = Math.round((previousVolume || 0.5) * 100);
     }
+    currentVolume = Number(volumeSlider?.value || 50) / 100;
+    previousVolume = currentVolume || previousVolume;
+    applyAudioSettings();
     resumeAudioOutput();
   }
   updateMuteIcon();
@@ -439,6 +505,7 @@ el("onboarding-start").addEventListener("click", () => {
   let voiceMimeType = '';
   let voiceRecording = false;
   let voiceProcessing = false;
+  let sendAfterVoiceTranscription = false;
 
   function setVoiceStatus(message, isError = false) {
     if (!micStatus) return;
@@ -474,7 +541,7 @@ el("onboarding-start").addEventListener("click", () => {
       }
     }
 
-    if (sendBtnForVoice) sendBtnForVoice.disabled = transcribing;
+    if (sendBtnForVoice) sendBtnForVoice.disabled = false;
 
     if (!voiceInputStatus) return;
     if (transcribing) {
@@ -509,7 +576,7 @@ el("onboarding-start").addEventListener("click", () => {
     const blob = new Blob(voiceChunks, { type: voiceMimeType || 'audio/webm' });
     if (!blob.size) {
       setVoiceStatus(t('audio.empty'), true);
-      return;
+      return '';
     }
 
     const formData = new FormData();
@@ -530,11 +597,12 @@ el("onboarding-start").addEventListener("click", () => {
     const text = (data.text || '').trim();
     if (!text) {
       setVoiceStatus(t('audio.empty'), true);
-      return;
+      return '';
     }
 
     el('chat-input').value = text;
     setVoiceStatus('');
+    return text;
   }
 
   async function startVoiceRecording() {
@@ -543,6 +611,7 @@ el("onboarding-start").addEventListener("click", () => {
       return;
     }
 
+    resetSpeechQueue();
     micBtn.disabled = true;
     setVoiceStatus(t('audio.requesting'));
 
@@ -572,11 +641,18 @@ el("onboarding-start").addEventListener("click", () => {
         setVoiceStatus('');
 
         try {
-          await transcribeVoiceRecording();
+          const text = await transcribeVoiceRecording();
+          if (sendAfterVoiceTranscription && text) {
+            sendAfterVoiceTranscription = false;
+            setTimeout(() => {
+              handleSend();
+            }, 0);
+          }
         } catch (err) {
           console.error('Transcription error:', err);
           setVoiceStatus(t('audio.failed'), true);
         } finally {
+          sendAfterVoiceTranscription = false;
           voiceRecorder = null;
           voiceChunks = [];
           voiceMimeType = '';
@@ -605,8 +681,9 @@ el("onboarding-start").addEventListener("click", () => {
     }
   }
 
-  function stopVoiceRecording() {
+  function stopVoiceRecording(sendAfterTranscription = false) {
     if (!voiceRecorder || voiceRecorder.state !== 'recording') return;
+    sendAfterVoiceTranscription = sendAfterTranscription;
     micBtn.disabled = true;
     setVoiceInputTranscribing(true);
     setVoiceStatus('');
@@ -754,6 +831,7 @@ el("onboarding-start").addEventListener("click", () => {
       const style = config[persona] || config.adult;
 
       utterance.pitch = style.pitch;
+      utterance.volume = isMuted ? 0 : currentVolume;
       const speedRate = {
         slow: 0.8,
         normal: 1,
@@ -787,12 +865,13 @@ el("onboarding-start").addEventListener("click", () => {
     return res.blob();
   }
 
-  function playAudioBlob(blob) {
+  function playAudioBlob(blob, generatedSpeed = currentSpeechSpeed) {
     return new Promise(async (resolve) => {
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
-      audio.volume = currentVolume;
       currentAudio = audio;
+      currentAudioBaseSpeed = generatedSpeed;
+      applyAudioSettings(audio);
 
       const cleanup = () => {
         if (currentAudio === audio) {
@@ -841,6 +920,11 @@ el("onboarding-start").addEventListener("click", () => {
     stopCurrentAudio();
     speechSynthesis.cancel();
   }
+  window.guiaResetSpeechQueue = resetSpeechQueue;
+
+  el('app-title')?.addEventListener('click', () => {
+    showOnboarding();
+  });
 
   function queueSpeech(text, lang = selectedLang, persona = selectedPersona || "adult") {
     const sentence = text.trim();
@@ -849,6 +933,7 @@ el("onboarding-start").addEventListener("click", () => {
     const queueVersion = speechQueueVersion;
 
     if (window.USE_KOKORO) {
+      const requestedSpeed = currentSpeechSpeed;
       const audioPromise = fetchKokoroAudio(sentence, lang)
         .then((blob) => ({ blob }))
         .catch((err) => ({ err }));
@@ -868,7 +953,7 @@ el("onboarding-start").addEventListener("click", () => {
             if (queueVersion !== speechQueueVersion) return;
             if (result.err) throw result.err;
 
-            await playAudioBlob(result.blob);
+            await playAudioBlob(result.blob, requestedSpeed);
           } catch (err) {
             console.error("Kokoro fail:", err);
           }
@@ -1044,6 +1129,16 @@ el("onboarding-start").addEventListener("click", () => {
   async function handleSend() {
     if (isGenerating) return;
 
+    if (voiceRecording) {
+      stopVoiceRecording(true);
+      return;
+    }
+
+    if (voiceProcessing) {
+      sendAfterVoiceTranscription = true;
+      return;
+    }
+
     const value = chatInput.value.trim();
     if (!value) return;
 
@@ -1061,7 +1156,7 @@ el("onboarding-start").addEventListener("click", () => {
         session_id: sessionId,
         message: value,
         language: selectedLang,
-        age_range: selectedAge || "Adult 20-60 years old",
+        age_range: AGE_RANGE_BY_KEY[selectedAge] || AGE_RANGE_BY_KEY.adult,
         personality: selectedPersona,
         room: currentRoom,
         artwork: currentArtwork
@@ -1079,6 +1174,7 @@ el("onboarding-start").addEventListener("click", () => {
 
   function setSpeechSpeed(speed) {
     currentSpeechSpeed = speed;
+    applyAudioSettings();
 
     speedBtns.forEach((btn) => {
       const on = btn.dataset.speed === speed;

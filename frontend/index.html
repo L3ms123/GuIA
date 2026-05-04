@@ -188,7 +188,7 @@
               aria-checked="false"
             >
               <img class="chip-icon" src="assets/teenager-svgrepo-com.svg" alt="" aria-hidden="true">
-                Young
+              <span class="age-title">Young</span>
               <p class="card-subtitle">
                 (10-18 years)
               </p>
@@ -201,7 +201,7 @@
               aria-checked="false"
             >
               <img class="chip-icon" src="assets/adult-svgrepo-com.svg" alt="" aria-hidden="true">
-              Adult
+              <span class="age-title">Adult</span>
               <p class="card-subtitle">
                 (20-60 years)
               </p>
@@ -214,7 +214,7 @@
               aria-checked="false"
             >
               <img class="chip-icon" src="assets/senior-svgrepo-com.svg" alt="" aria-hidden="true">
-              Senior
+              <span class="age-title">Senior</span>
               <p class="card-subtitle">
                 (60+ years)
               </p>
@@ -246,7 +246,14 @@
     <!-- Header (GuIA + language + audio) -->
     <header class="top-bar" aria-label="Application header">
       <div class="top-left">
-        <div class="app-title" id="app-title">GuIA Museum Guide</div>
+        <button
+          class="app-title"
+          id="app-title"
+          type="button"
+          aria-label="Back to guide setup"
+        >
+          GuIA Museum Guide
+        </button>
       </div>
 
       <div class="top-right">

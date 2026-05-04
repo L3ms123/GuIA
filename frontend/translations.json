@@ -30,8 +30,8 @@
     },
     "ages": {
         "young": {
-            "title": "Young",
-            "subtitle": "(10-18 years)"
+            "title": "Young adult",
+            "subtitle": "(10-18 years old)"
             },
         "adult": {
             "title": "Adult",
@@ -39,7 +39,7 @@
             },
         "senior": {
             "title": "Senior",
-            "subtitle": "(60+ years)"
+            "subtitle": "(60+ years old)"
             }
     },
     "ageHint": "*The ages are just an indicative guideline to help tailor the content. It is optional to answer",
@@ -126,7 +126,7 @@
     },
     "ages": {
         "young": {
-            "title": "Joven",
+            "title": "Joven adulto",
             "subtitle": "(10-18 años)"
             },
         "adult": {
@@ -134,7 +134,7 @@
             "subtitle": "(20-60 años)"
             },
         "senior": {
-            "title": "Senior",
+            "title": "Persona mayor",
             "subtitle": "(60+ años)"
             }
     },
@@ -222,7 +222,7 @@
     },
     "ages": {
         "young": {
-            "title": "Jove",
+            "title": "Jove adult",
             "subtitle": "(10-18 anys)"
             },
         "adult": {
@@ -230,7 +230,7 @@
             "subtitle": "(20-60 anys)"
             },
         "senior": {
-            "title": "Senior",
+            "title": "Gent gran",
             "subtitle": "(60+ anys)"
             }
     },

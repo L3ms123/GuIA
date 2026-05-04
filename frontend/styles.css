@@ -217,6 +217,10 @@ body.surface {
   display: inline-block;
 }
 
+.age-title {
+  display: inline-block;
+}
+
 .radio-chip[aria-checked="true"] .chip-icon {
   color: var(--primary);
 }
@@ -312,9 +316,25 @@ body.surface {
 }
 
 .app-title {
+  border: 0;
+  background: transparent;
+  padding: 0;
   font-family: var(--font-serif);
   font-size: 1.1rem;
   letter-spacing: 0.2em;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.app-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+
+.app-title:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
 }
 
 .top-right {

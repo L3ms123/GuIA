@@ -22,6 +22,12 @@ VOICE_MAP = {
     "ca": "ca-ES-JoanaNeural",
 }
 
+SPEED_RATE_MAP = {
+    "slow": "-35%",
+    "normal": "+0%",
+    "fast": "+45%",
+}
+
 AUDIO_SUFFIXES = {
     "audio/webm": ".webm",
     "audio/ogg": ".ogg",
@@ -82,8 +88,12 @@ def get_whisper_model():
         return load_whisper_model(model_name)
 
 
-async def generate_audio(text, voice, output):
-    communicate = edge_tts.Communicate(text=text, voice=voice)
+async def generate_audio(text, voice, output, speed="normal"):
+    communicate = edge_tts.Communicate(
+        text=text,
+        voice=voice,
+        rate=SPEED_RATE_MAP.get(speed, SPEED_RATE_MAP["normal"]),
+    )
     await communicate.save(output)
 
 
@@ -124,6 +134,7 @@ def tts():
     data = request.get_json(silent=True) or {}
     text = (data.get("text") or "").strip()
     lang = data.get("lang", "en")
+    speed = data.get("speed", "normal")
 
     if not text:
         return jsonify({"error": "Missing text"}), 400
@@ -133,7 +144,7 @@ def tts():
     os.close(fd)
 
     try:
-        asyncio.run(generate_audio(text=text, voice=voice, output=filename))
+        asyncio.run(generate_audio(text=text, voice=voice, output=filename, speed=speed))
     except Exception as exc:
         try:
             os.remove(filename)
