@@ -1,0 +1,11 @@
+propertyKey;relationshipType;label
+id;HAS_SALA;Sala
+palau;LOCATED_IN;ArtPiece
+title;CREATED_BY;Artist
+artist;CONTEMPORARY_OF;Theme
+dating;FEATURES_THEME;Technique
+technique;USES_TECHNIQUE;Planta
+description;;
+name;;
+period;;
+biography;;

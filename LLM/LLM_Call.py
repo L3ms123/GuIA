@@ -5,6 +5,7 @@ This file contains everything necessary to call the LLM with the input received 
 import os
 import json
 import base64
+import csv
 import re
 import sys
 import zipfile
@@ -27,8 +28,10 @@ MODEL_USED = "command-a-03-2025"
 COHERE_CLIENT = cohere.Client(os.environ["COHERE_LLM_KEY"])
 NEO4J_REQUIRED_ENV = ("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
 RAW_DATA_FILE = Path(__file__).resolve().parents[1] / "raw_data" / "2026_obres_Museu_del_Renaixement.xlsx"
+NEO4J_QUERY_TABLE_FILE = Path(__file__).resolve().parents[1] / "KG" / "neo4j_query_table_data.csv"
 XLSX_NS = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 LOCATION_CACHE = {"mtime": None, "data": None}
+NEO4J_QUERY_TABLE_CACHE = {"mtime": None, "data": None}
 WRITE_CYPHER_KEYWORDS = re.compile(
     r"\b(CREATE|MERGE|DELETE|DETACH|SET|REMOVE|DROP|LOAD\s+CSV|CALL\s*\{\s*.*IN\s+TRANSACTIONS)\b",
     re.IGNORECASE | re.DOTALL,
@@ -153,6 +156,81 @@ def read_xlsx_rows(path: Path) -> list[list[str]]:
     return rows
 
 
+def load_neo4j_query_table_data() -> dict[str, Any]:
+    """Load the local Neo4j vocabulary table used to guide Cypher generation."""
+    if not NEO4J_QUERY_TABLE_FILE.exists():
+        return {
+            "labels": [],
+            "relationship_types": [],
+            "property_keys": [],
+        }
+
+    mtime = NEO4J_QUERY_TABLE_FILE.stat().st_mtime
+    if NEO4J_QUERY_TABLE_CACHE["mtime"] == mtime and NEO4J_QUERY_TABLE_CACHE["data"] is not None:
+        return NEO4J_QUERY_TABLE_CACHE["data"]
+
+    with NEO4J_QUERY_TABLE_FILE.open("r", encoding="utf-8-sig", newline="") as handle:
+        sample = handle.read(2048)
+        handle.seek(0)
+        try:
+            dialect = csv.Sniffer().sniff(sample, delimiters=";,")
+        except csv.Error:
+            dialect = None
+
+        if dialect is None:
+            rows = list(csv.DictReader(handle, delimiter=";"))
+        else:
+            rows = list(csv.DictReader(handle, dialect=dialect))
+
+    property_keys = sorted(
+        {
+            (row.get("propertyKey") or "").strip()
+            for row in rows
+            if (row.get("propertyKey") or "").strip()
+        }
+    )
+    relationship_types = sorted(
+        {
+            (row.get("relationshipType") or "").strip()
+            for row in rows
+            if (row.get("relationshipType") or "").strip()
+        }
+    )
+    labels = sorted(
+        {
+            (row.get("label") or "").strip()
+            for row in rows
+            if (row.get("label") or "").strip()
+        }
+    )
+
+    data = {
+        "labels": labels,
+        "relationship_types": relationship_types,
+        "property_keys": property_keys,
+    }
+    NEO4J_QUERY_TABLE_CACHE["mtime"] = mtime
+    NEO4J_QUERY_TABLE_CACHE["data"] = data
+    return data
+
+
+def parse_museum_location(value: Optional[str]) -> Optional[dict[str, str]]:
+    """Parse museum room labels like P1-S2 into Neo4j Sala properties."""
+    if not value:
+        return None
+
+    match = re.search(r"\bP(?:alau)?\s*(?P<palau>\d+)\s*[-, ]+\s*S(?:ala)?\s*(?P<sala>\d+)\b", value, flags=re.IGNORECASE)
+    if not match:
+        match = re.search(r"\bPalau\s*(?P<palau>\d+).*?\bSala\s*(?P<sala>\d+)\b", value, flags=re.IGNORECASE)
+    if not match:
+        return None
+
+    return {
+        "palau": match.group("palau"),
+        "sala": match.group("sala"),
+    }
+
+
 def room_sort_key(room: str) -> tuple[int, int, str]:
     numbers = [int(match) for match in re.findall(r"\d+", room)]
     floor = numbers[0] if numbers else 999
@@ -236,6 +314,68 @@ AGE_DESCRIPTIONS = {
     "Senior 60+ years old": "You use a relatable and clear style, providing rich historical context suitable to senior visitors.",
 }
 
+def user_requested_detail(message: str) -> bool:
+    lowered = (message or "").lower()
+    return any(
+        phrase in lowered
+        for phrase in (
+            "more information",
+            "more detail",
+            "details",
+            "in depth",
+            "bastant",
+            "més informació",
+            "mes informació",
+            "més detall",
+            "mes detall",
+            "explica'm més",
+            "explicam mes",
+            "dona'm més",
+            "donem bastant",
+            "más información",
+            "mas información",
+            "más detalle",
+            "mas detalle",
+            "amplia",
+        )
+    )
+
+
+def compact_previous_graph_context(graph_context: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    """Keep enough prior graph context for follow-up retrieval without growing the prompt unbounded."""
+    if not graph_context:
+        return None
+
+    rows = graph_context.get("rows") or []
+    if not rows:
+        return None
+
+    return {
+        "cypher": graph_context.get("cypher"),
+        "rows": rows[:3],
+    }
+
+
+def record_session_turn(
+    session_id: str,
+    message: str,
+    response: str,
+    graph_context: Optional[dict[str, Any]],
+    room: Optional[str],
+    artwork: Optional[str],
+) -> None:
+    session_context = SESSION_CONTEXTS.setdefault(session_id, {})
+    if room is not None:
+        session_context["room"] = room
+    if artwork is not None:
+        session_context["artwork"] = artwork
+    session_context["last_user_message"] = message
+    session_context["last_assistant_response"] = response
+    compact_graph_context = compact_previous_graph_context(graph_context)
+    if compact_graph_context:
+        session_context["last_graph_context"] = compact_graph_context
+
+
 def build_system_prompt(
     language: str = "en",
     age_range: str = "Adult 20-60 years old",
@@ -247,6 +387,8 @@ def build_system_prompt(
     """Build a dynamic system prompt based on user preferences and context."""
 
     language_rule = get_language_rule(language)
+
+    detail_requested = user_requested_detail(graph_context.get("message", "") if graph_context else "")
 
     prompt = (
         "You are GuIA, the AI audio guide of the Museu del Renaixement in Molins de Rei."
@@ -273,6 +415,13 @@ def build_system_prompt(
         f"Guide them with the personality/style of {personality}."
         # Consider adding artworks seen so far
     )
+
+    if detail_requested:
+        prompt += (
+            "\n\nDETAIL REQUEST: The user explicitly asked for substantial information. "
+            "Use the retrieved rows fully and give a richer answer than usual: 4 to 6 short paragraphs when the data supports it. "
+            "Do not stop after only a brief identification if biography or contextual fields are present."
+        )
 
     if room or artwork:
         prompt += "\n\nCURRENT MUSEUM CONTEXT:"
@@ -308,15 +457,31 @@ def neo4j_is_configured() -> bool:
 def build_query_with_context(
     message: str,
     room: Optional[str] = None,
-    artwork: Optional[str] = None
+    artwork: Optional[str] = None,
+    previous_graph_context: Optional[dict[str, Any]] = None
 ) -> str:
     query = message
     if room or artwork:
         query += "\n\nCurrent museum context:"
         if room:
             query += f"\nRoom: {room}"
+            parsed_location = parse_museum_location(room)
+            if parsed_location:
+                query += (
+                    "\nNeo4j room fields: "
+                    f"Sala.palau = '{parsed_location['palau']}', "
+                    f"Sala.id = '{parsed_location['sala']}'"
+                )
         if artwork:
             query += f"\nArtwork: {artwork}"
+
+    if previous_graph_context:
+        query += (
+            "\n\nPrevious retrieved Neo4j context from the immediately previous user turn. "
+            "Use it to resolve follow-up references like this artwork, the artist, tell me more, or give more information:"
+        )
+        query += "\n"
+        query += json.dumps(previous_graph_context, ensure_ascii=False, indent=2)
     return query
 
 
@@ -443,6 +608,60 @@ def rewrite_exact_property_matches(cypher: str, normalize_accents: bool = False)
     return re.sub(r"\bRETURN\b", f"WHERE {where_clause} RETURN", rewritten, count=1, flags=re.IGNORECASE)
 
 
+def rewrite_combined_sala_id_filters(cypher: str) -> str:
+    """Rewrite UI room ids like P1-S2 to the graph's separate Sala.palau/Sala.id fields."""
+    sala_variables = set(
+        match.group("var")
+        for match in re.finditer(
+            r"\((?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*Sala\b",
+            cypher,
+            flags=re.IGNORECASE,
+        )
+    )
+
+    if not sala_variables:
+        return cypher
+
+    def parse_location_literal(value: str) -> Optional[dict[str, str]]:
+        return parse_museum_location(value)
+
+    def replace_exact_filter(match: re.Match) -> str:
+        variable = match.group("var")
+        if variable not in sala_variables:
+            return match.group(0)
+
+        location = parse_location_literal(match.group("value"))
+        if not location:
+            return match.group(0)
+
+        return f"{variable}.palau = '{location['palau']}' AND {variable}.id = '{location['sala']}'"
+
+    rewritten = re.sub(
+        r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\.id\s*=\s*['\"](?P<value>P\s*\d+\s*-\s*S\s*\d+)['\"]",
+        replace_exact_filter,
+        cypher,
+        flags=re.IGNORECASE,
+    )
+
+    def replace_lower_filter(match: re.Match) -> str:
+        variable = match.group("var")
+        if variable not in sala_variables:
+            return match.group(0)
+
+        location = parse_location_literal(match.group("value"))
+        if not location:
+            return match.group(0)
+
+        return f"{variable}.palau = '{location['palau']}' AND {variable}.id = '{location['sala']}'"
+
+    return re.sub(
+        r"\btoLower\(\s*(?P<var>[A-Za-z_][A-Za-z0-9_]*)\.id\s*\)\s*(?:=|CONTAINS)\s*['\"](?P<value>p\s*\d+\s*-\s*s\s*\d+)['\"]",
+        replace_lower_filter,
+        rewritten,
+        flags=re.IGNORECASE,
+    )
+
+
 def rewrite_exact_property_matches_to_contains(cypher: str) -> str:
     return rewrite_exact_property_matches(cypher, normalize_accents=False)
 
@@ -485,6 +704,79 @@ def clean_graph_rows(rows: list[dict[str, Any]], message: str) -> list[dict[str,
     if user_asked_for_all(message):
         return cleaned_rows
     return cleaned_rows[:5]
+
+
+TITLE_STOP_WORDS = {
+    "and",
+    "amb",
+    "con",
+    "del",
+    "dels",
+    "des",
+    "the",
+    "una",
+    "une",
+    "les",
+    "los",
+    "las",
+    "els",
+}
+
+
+def significant_title_terms(title: str) -> list[str]:
+    """Return robust title tokens for fallback artwork lookup."""
+    normalized = normalize_text_for_cypher(title)
+    terms = []
+    for term in re.findall(r"[a-z0-9]+", normalized):
+        if len(term) < 3 or term in TITLE_STOP_WORDS:
+            continue
+        if term not in terms:
+            terms.append(term)
+    return terms[:8]
+
+
+def cypher_list_literal(values: list[str]) -> str:
+    return "[" + ", ".join(cypher_string_literal(value) for value in values) + "]"
+
+
+def build_artwork_context_fallback_cypher(
+    artwork: str,
+    room: Optional[str] = None,
+    include_room_filter: bool = True,
+) -> Optional[str]:
+    """Build a less brittle artwork context query using title tokens instead of a full title literal."""
+    terms = significant_title_terms(artwork)
+    if not terms:
+        return None
+
+    parsed_location = parse_museum_location(room)
+    minimum_matches = max(2, len(terms) - 1) if len(terms) > 2 else len(terms)
+    title_predicate = (
+        f"size([term IN {cypher_list_literal(terms)} "
+        f"WHERE toLower(a.title) CONTAINS term]) >= {minimum_matches}"
+    )
+
+    if include_room_filter and parsed_location:
+        return (
+            "MATCH (a:ArtPiece)-[:LOCATED_IN]->(s:Sala) "
+            f"WHERE {title_predicate} "
+            f"AND s.palau = {cypher_string_literal(parsed_location['palau'])} "
+            f"AND s.id = {cypher_string_literal(parsed_location['sala'])} "
+            "OPTIONAL MATCH (a)-[:CREATED_BY]->(artist:Artist) "
+            "OPTIONAL MATCH (a)-[:USES_TECHNIQUE]->(technique:Technique) "
+            "RETURN a.title, a.description, a.artist, a.dating, a.technique, "
+            "artist.name, artist.biography, technique.name, s.palau, s.id LIMIT 5"
+        )
+
+    return (
+        "MATCH (a:ArtPiece) "
+        f"WHERE {title_predicate} "
+        "OPTIONAL MATCH (a)-[:LOCATED_IN]->(s:Sala) "
+        "OPTIONAL MATCH (a)-[:CREATED_BY]->(artist:Artist) "
+        "OPTIONAL MATCH (a)-[:USES_TECHNIQUE]->(technique:Technique) "
+        "RETURN a.title, a.description, a.artist, a.dating, a.technique, "
+        "artist.name, artist.biography, technique.name, s.palau, s.id LIMIT 5"
+    )
 
 
 def extract_cypher(text: str) -> str:
@@ -597,20 +889,29 @@ def get_query_api_schema() -> str:
 def generate_query_api_cypher(query: str) -> str:
     """Generate read-only Cypher for the HTTPS Query API fallback."""
     schema = get_query_api_schema()
+    query_table_data = load_neo4j_query_table_data()
     preamble = (
         "You convert natural language questions into read-only Neo4j Cypher. "
         "Return only one Cypher query. Do not include markdown or explanation. "
-        "Only use labels, relationship types, and properties present in the schema. "
+        "Only use labels, relationship types, and properties present in the live schema or local query table. "
+        "The local Neo4j query table is authoritative vocabulary for valid graph categories; "
+        "if it differs from the live schema, prefer its exact labels, relationship types, and property keys when building MATCH patterns. "
+        "Do not invent translated or pluralized labels, relationship types, or property keys. "
         "Use MATCH/OPTIONAL MATCH/WITH/WHERE/RETURN/ORDER BY/LIMIT only. "
         "Never use CREATE, MERGE, DELETE, DETACH, SET, REMOVE, DROP, LOAD CSV, or write procedures. "
         "Always include a reasonable LIMIT unless the question asks for a count. "
         "Artwork titles in the graph are often Catalan even when the visitor asks in Spanish or English. "
         "Do not translate title literals to English. Prefer case-insensitive partial matching with CONTAINS for titles and names. "
-        "For room questions, prefer matching Sala.id to the numeric room id such as '3', not a full translated room label. "
+        "For room questions, match the graph's separate room fields: Sala.palau is the Palau number and Sala.id is the Sala number. "
+        "If the context contains a UI location like P1-S2, query it as s.palau = '1' AND s.id = '2', never as s.id = 'P1-S2'. "
         "Example: MATCH (a:ArtPiece)-[:LOCATED_IN]->(s:Sala) "
-        "WHERE toLower(a.title) CONTAINS 'anunciació' AND s.id = '3' RETURN a.title, a.description LIMIT 5"
+        "WHERE toLower(a.title) CONTAINS 'anunciació' AND s.palau = '1' AND s.id = '3' RETURN a.title, a.description LIMIT 5"
     )
-    message = f"Schema:\n{schema}\n\nQuestion:\n{query}"
+    message = (
+        f"Live schema:\n{schema}\n\n"
+        f"Local Neo4j query table vocabulary:\n{json.dumps(query_table_data, ensure_ascii=False, indent=2)}\n\n"
+        f"Question:\n{query}"
+    )
     response = COHERE_CLIENT.chat(
         model=MODEL_USED,
         preamble=preamble,
@@ -625,15 +926,17 @@ def generate_query_api_cypher(query: str) -> str:
 def retrieve_neo4j_context_query_api(
     message: str,
     room: Optional[str] = None,
-    artwork: Optional[str] = None
+    artwork: Optional[str] = None,
+    previous_graph_context: Optional[dict[str, Any]] = None
 ) -> Optional[dict[str, Any]]:
     """Fallback graph retrieval using Neo4j Query API over HTTPS."""
     if not neo4j_is_configured():
         return None
 
-    query = build_query_with_context(message, room, artwork)
+    query = build_query_with_context(message, room, artwork, previous_graph_context)
     try:
         cypher = generate_query_api_cypher(query)
+        cypher = rewrite_combined_sala_id_filters(cypher)
         raw_rows = execute_query_api(cypher)
         if not raw_rows:
             contains_cypher = rewrite_exact_property_matches_to_contains(cypher)
@@ -651,6 +954,22 @@ def retrieve_neo4j_context_query_api(
                 raw_rows = execute_query_api(fuzzy_cypher)
                 if raw_rows:
                     cypher = fuzzy_cypher
+        if not raw_rows and artwork:
+            for include_room_filter in (True, False):
+                fallback_cypher = build_artwork_context_fallback_cypher(
+                    artwork,
+                    room,
+                    include_room_filter=include_room_filter,
+                )
+                if not fallback_cypher:
+                    continue
+
+                safe_console_print("\n--- NEO4J QUERY API ARTWORK CONTEXT RETRY CYPHER ---", flush=True)
+                safe_console_print(fallback_cypher, flush=True)
+                raw_rows = execute_query_api(fallback_cypher)
+                if raw_rows:
+                    cypher = fallback_cypher
+                    break
         rows = clean_graph_rows(raw_rows, message)
     except Exception as exc:
         safe_console_print("\n--- NEO4J QUERY API FAILED ---", flush=True)
@@ -665,6 +984,7 @@ def retrieve_neo4j_context_query_api(
     safe_console_print("--- END NEO4J QUERY API CONTEXT ---\n", flush=True)
 
     return {
+        "message": message,
         "cypher": cypher,
         "rows": rows,
     }
@@ -672,11 +992,18 @@ def retrieve_neo4j_context_query_api(
 
 def retrieve_neo4j_context(
     message: str,
+    session_id: str,
     room: Optional[str] = None,
     artwork: Optional[str] = None
 ) -> Optional[dict[str, Any]]:
     """Convert the user request to Cypher and return graph rows for final LLM context."""
-    return retrieve_neo4j_context_query_api(message, room, artwork)
+    session_context = SESSION_CONTEXTS.get(session_id, {})
+    return retrieve_neo4j_context_query_api(
+        message,
+        room,
+        artwork,
+        previous_graph_context=session_context.get("last_graph_context"),
+    )
 
 
 def call_llm(
@@ -780,7 +1107,7 @@ def chat_endpoint():
         if not message:
             return jsonify({"error": "Message cannot be empty"}), 400
 
-        graph_context = retrieve_neo4j_context(message, room, artwork)
+        graph_context = retrieve_neo4j_context(message, session_id, room, artwork)
         response = call_llm(
             message=message,
             session_id=session_id,
@@ -791,6 +1118,7 @@ def chat_endpoint():
             artwork=artwork,
             graph_context=graph_context,
         )
+        record_session_turn(session_id, message, response, graph_context, room, artwork)
 
         return jsonify({"response": response}), 200
 
@@ -820,7 +1148,8 @@ def chat_stream_endpoint():
     def generate():
         try:
             yield stream_event({"type": "start"})
-            graph_context = retrieve_neo4j_context(message, room, artwork)
+            graph_context = retrieve_neo4j_context(message, session_id, room, artwork)
+            streamed_response = ""
 
             for event in stream_llm(
                 message=message,
@@ -832,8 +1161,13 @@ def chat_stream_endpoint():
                 artwork=artwork,
                 graph_context=graph_context,
             ):
+                if event.get("type") == "delta":
+                    streamed_response += event.get("text", "")
+                elif event.get("type") == "replace":
+                    streamed_response = event.get("text", "")
                 yield stream_event(event)
 
+            record_session_turn(session_id, message, streamed_response, graph_context, room, artwork)
             yield stream_event({"type": "done"})
 
         except Exception as exc:
@@ -860,10 +1194,9 @@ def context_endpoint():
         room = data.get("room")
         artwork = data.get("artwork")
 
-        SESSION_CONTEXTS[session_id] = {
-            "room": room,
-            "artwork": artwork
-        }
+        session_context = SESSION_CONTEXTS.setdefault(session_id, {})
+        session_context["room"] = room
+        session_context["artwork"] = artwork
 
         return jsonify({
             "status": "success",
