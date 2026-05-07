@@ -3,12 +3,27 @@
     "onboarding": {
       "eyebrow": "GuIA Museu del Renaixamen Guide",
       "title": "Meet your guide.",
-      "description": "Choose how you would like GuIA to guide you through the Museu del Renaixement.",
-      "hint": "Select a personality and language to continue.",
+      "description": "Choose how would you like your GuIA to guide you through the Museu del Renaixement.",
       "language": "Language",
       "personality": "Guide personality",
-      "visitor": "Visitor type",
-      "start": "Begin your visit"
+      "visitor": "Age range",
+      "start": "Start visit",
+      "stepCount": "Step {current} of {total}",
+      "back": "Back",
+      "continue": "Continue",
+      "accessibility": "Accessibility",
+      "accessibilityHelp": "Select any options that would make the experience easier.",
+      "largeText": "Large text",
+      "simpleLanguage": "Simpler language",
+      "spokenExplanations": "Spoken explanations with voice",
+      "moreTime": "More time and slower pace",
+      "privacy": "AI and privacy",
+      "privacyIntro1": "You are talking to an AI museum guide.",
+      "privacyIntro2": "The guide may make mistakes, so important information should be verified with museum staff.",
+      "privacyIntro3": "To improve the experience, the system may process your selected language, guide preferences, artwork interactions, and responses.",
+      "privacyIntro4": "No personal data is collected or stored.",
+      "privacyIntro5": "If you speak to the AI, audio may be processed to understand speech and generate spoken replies.",
+      "privacyConsent": "I understand that I am speaking with an AI and I have read how my information is used."
     },
     "personas": {
       "artist": {
@@ -30,19 +45,19 @@
     },
     "ages": {
         "young": {
-            "title": "Young adult",
-            "subtitle": "(10-18 years old)"
+            "title": "Young",
+            "subtitle": "(10-19 years old)"
             },
         "adult": {
             "title": "Adult",
-            "subtitle": "(20-60 years)"
+            "subtitle": "(20-60 years old)"
             },
         "senior": {
             "title": "Senior",
             "subtitle": "(60+ years old)"
             }
     },
-    "ageHint": "*The ages are just an indicative guideline to help tailor the content. It is optional to answer",
+    "ageHint": "The ages are just an indicative guideline to help tailor the content. It is optional to answer",
     "app": {
       "title": "GuIA Museu del Renaixement Guide",
       "room": "Room",
@@ -52,9 +67,7 @@
       "roomLabel": "Room",
       "artworkLabel": "Artwork",
       "confirmLocation": "Confirm location",
-      "contextError": "Please select a room so GuIA can guide you accurately.",
-      "contextSuggestion": "Are you in Room 2, looking at the Portrait of a Noblewoman?",
-      "confirmSuggestion": "Yes, that is correct"
+      "contextError": "Please select a room so GuIA can guide you accurately."
     },
     "chat": {
       "placeholder": "Ask GuIA about the room, the artwork, or the museum...",
@@ -99,12 +112,27 @@
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Conoce a tu guía.",
-      "description": "Elige cómo quieres que GuIA te guíe por el Museu del Renaixement.",
-      "hint": "Selecciona una personalidad e idioma para continuar.",
+      "description": "Elige cómo quieres sea la GuIA del Museu del Renaixement.",
       "language": "Idioma",
       "personality": "Personalidad del guía",
-      "visitor": "Tipo de visitante",
-      "start": "Comenzar visita"
+      "visitor": "Rango de edad",
+      "start": "Comenzar visita",
+      "stepCount": "Paso {current} de {total}",
+      "back": "Atrás",
+      "continue": "Continuar",
+      "accessibility": "Accesibilidad",
+      "accessibilityHelp": "Selecciona cualquier opción que haga la experiencia más fácil.",
+      "largeText": "Texto grande",
+      "simpleLanguage": "Lenguaje simple",
+      "spokenExplanations": "Explicaciones habladas con voz",
+      "moreTime": "Más tiempo y ritmo más lento",
+      "privacy": "IA y privacidad",
+      "privacyIntro1": "Estás hablando con un guía de museo basado en IA.",
+      "privacyIntro2": "El guía puede cometer errores, por lo que la información importante debe ser verificada con el personal del museo.",
+      "privacyIntro3": "Para mejorar la experiencia, el sistema puede procesar tu idioma seleccionado, preferencias del guía, interacciones con las obras y respuestas.",
+      "privacyIntro4": "No se recopila ni almacena información personal.",
+      "privacyIntro5": "Si hablas con la IA, el audio puede ser procesado para entender el discurso y generar respuestas habladas.",
+      "privacyConsent": "Entiendo que estoy hablando con una IA y he leído cómo se utiliza mi información."
     },
     "personas": {
       "artist": {
@@ -126,19 +154,19 @@
     },
     "ages": {
         "young": {
-            "title": "Joven adulto",
-            "subtitle": "(10-18 años)"
+            "title": "Joven",
+            "subtitle": "(10-19 años)"
             },
         "adult": {
             "title": "Adulto",
             "subtitle": "(20-60 años)"
             },
         "senior": {
-            "title": "Persona mayor",
+            "title": "Senior",
             "subtitle": "(60+ años)"
             }
     },
-    "ageHint": "*Las edades son solo una guía indicativa para personalizar el contenido. Es opcional responder",
+    "ageHint": "Las edades son solo una guía indicativa para personalizar el contenido. Es opcional responder",
     "app": {
       "title": "GuIA del Museu del Renaixement",
       "room": "Sala",
@@ -148,9 +176,7 @@
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
       "confirmLocation": "Confirmar ubicación",
-      "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
-      "contextSuggestion": "¿Estás en la Sala 2, mirando el Retrato de una Dama Noble?",
-      "confirmSuggestion": "Sí, correcto"
+      "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión."
     },
     "chat": {
       "placeholder": "Pregunta a GuIA sobre la sala, la obra o el museo...",
@@ -195,12 +221,27 @@
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Coneix el teu guia.",
-      "description": "Tria com vols que GuIA et guiï pel Museu del Renaixement.",
-      "hint": "Selecciona una personalitat i llengua per continuar.",
+      "description": "Tria com vols que sigui la teva GuIA per guiar-te pel Museu del Renaixement.",
       "language": "Llengua",
       "personality": "Personalitat del guia",
-      "visitor": "Tipus de visitant",
-      "start": "Començar visita"
+      "visitor": "Franja d'edat",
+      "start": "Començar visita",
+      "stepCount": "Pas {current} de {total}",
+      "back": "Enrere",
+      "continue": "Continuar",
+      "accessibility": "Accessibilitat",
+      "accessibilityHelp": "Selecciona qualsevol opció que faciliti l'experiència.",
+      "largeText": "Text gran",
+      "simpleLanguage": "Llenguatge més simple",
+      "spokenExplanations": "Explicacions parlades amb veu",
+      "moreTime": "Més temps i ritme més lent",
+      "privacy": "IA i privacitat",
+      "privacyIntro1": "Estàs parlant amb un guia de museu que utilitza IA.",
+      "privacyIntro2": "La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.",
+      "privacyIntro3": "Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.",
+      "privacyIntro4": "No es recullen ni emmagatzemen dades personals.",
+      "privacyIntro5": "Si parles amb l'IA, l'àudio pot ser processat per entendre la parla i generar respostes parlades.",
+      "privacyConsent": "Entenc que estic parlant amb un IA i he llegit com es utilitza la meva informació."
     },
     "personas": {
       "artist": {
@@ -222,19 +263,19 @@
     },
     "ages": {
         "young": {
-            "title": "Jove adult",
-            "subtitle": "(10-18 anys)"
+            "title": "Jove",
+            "subtitle": "(10-19 anys)"
             },
         "adult": {
             "title": "Adult",
             "subtitle": "(20-60 anys)"
             },
         "senior": {
-            "title": "Gent gran",
+            "title": "Senior",
             "subtitle": "(60+ anys)"
             }
     },
-    "ageHint": "*Les edats són només una guia indicativa per personalitzar el contingut. És opcional respondre",
+    "ageHint": "Les edats són només una guia indicativa per personalitzar el contingut. És opcional respondre",
     "app": {
       "title": "GuIA del Museu del Renaixement",
       "room": "Sala",
@@ -244,9 +285,7 @@
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
       "confirmLocation": "Confirmar ubicació",
-      "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
-      "contextSuggestion": "Estàs a la Sala 2, mirant el Retrato d'una Dona Noble?",
-      "confirmSuggestion": "Sí, correcte"
+      "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió."
     },
     "chat": {
       "placeholder": "Pregunta a GuIA sobre la sala, l'obra o el museu...",

@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>GuIA Museum Guide</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Design fonts -->
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@300;400;700&family=Inter:wght@300;400;600;700&display=swap"
     rel="stylesheet"
@@ -14,9 +13,10 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="assets/favicon.png">
+  <link rel="icon" href="assets/favicon.png" />
 </head>
 <body class="surface" data-mode="regular">
+ 
   <!-- Onboarding full-screen dialog -->
   <div
     id="onboarding"
@@ -27,220 +27,242 @@
     aria-describedby="onboarding-desc"
   >
     <section class="onboarding-panel">
-      <div class="onboarding-header">
-        <p id="onboarding-eyebrow" class="eyebrow">GuIA Museu del Renaixamen Guide</p>
-        <h1 id="onboarding-title" class="headline">
-          Meet your guide.
-        </h1>
-        <p id="onboarding-desc" class="body-lg muted">
-          Choose how you would like GuIA to guide you through the Museu del Renaixement.
-        </p>
-        <p id="onboarding-hint" class="hint-muted">
-          Select a personality and language to continue.
-        </p>
-      </div>
+      <header class="onboarding-header">
+        <p class="eyebrow">GuIA Museu del Renaixamen Guide</p>
+        <h1 id="onboarding-title" class="headline">Meet your guide.</h1>
+ 
+        <div class="step-meta" aria-live="polite">
+          <div class="step-header">
+            <p id="step-count">Step 1 of 3</p>
+          </div>
+
+          <div class="step-bar">
+            <div class="step-bar-fill" style="width: 33%"></div>
+          </div>
+
+          <p id="onboarding-desc" class="body-lg muted">
+            Choose how you would like GuIA to guide you through the Museu del Renaixement.
+          </p>
+
+          
+        </div>
+      </header>
  
       <div class="onboarding-body">
-        <section class="onb-section" aria-label="Language selection">
-          <h2 id="label-language" class="section-label">Language</h2>
-          <div
-            id="language-group"
-            class="onb-grid-lang"
-            role="radiogroup"
-            aria-label="Select language"
-          >
-            <button
-              type="button"
-              class="card radio-card lang-card"
-              data-lang="en"
-              role="radio"
-              aria-checked="false"
+ 
+        <!-- STEP 1: Preferences -->
+        <section class="onboarding-step" data-step="1">
+ 
+          <!-- Language -->
+          <div class="onb-section">
+            <h2 id="label-language" class="section-label">Language</h2>
+            <div
+              id="language-group"
+              class="onb-grid-lang"
+              role="radiogroup"
+              aria-labelledby="label-language"
             >
-            <span class="flag">
-                <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect width="36" height="24" fill="#B22234"/>
-                  <rect y="1.85" width="36" height="1.85" fill="white"/>
-                  <rect y="5.54" width="36" height="1.85" fill="white"/>
-                  <rect y="9.23" width="36" height="1.85" fill="white"/>
-                  <rect y="12.92" width="36" height="1.85" fill="white"/>
-                  <rect y="16.62" width="36" height="1.85" fill="white"/>
-                  <rect y="20.31" width="36" height="1.85" fill="white"/>
-                  <rect width="14.4" height="12.92" fill="#3C3B6E"/>
-                </svg>
-              </span>
-              <h3 class="card-title">English</h3>
-            </button>
-            <button
-              type="button"
-              class="card radio-card lang-card"
-              data-lang="es"
-              role="radio"
-              aria-checked="false"
+              <button
+                type="button"
+                class="card radio-card lang-card"
+                data-lang="en"
+                role="radio"
+                aria-checked="false"
+              >
+                <span class="flag" aria-hidden="true">
+                  <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                    <rect width="36" height="24" fill="#B22234"/>
+                    <rect y="1.85" width="36" height="1.85" fill="white"/>
+                    <rect y="5.54" width="36" height="1.85" fill="white"/>
+                    <rect y="9.23" width="36" height="1.85" fill="white"/>
+                    <rect y="12.92" width="36" height="1.85" fill="white"/>
+                    <rect y="16.62" width="36" height="1.85" fill="white"/>
+                    <rect y="20.31" width="36" height="1.85" fill="white"/>
+                    <rect width="14.4" height="12.92" fill="#3C3B6E"/>
+                  </svg>
+                </span>
+                <h3 class="card-title">English</h3>
+              </button>
+ 
+              <button
+                type="button"
+                class="card radio-card lang-card"
+                data-lang="es"
+                role="radio"
+                aria-checked="false"
+              >
+                <span class="flag" aria-hidden="true">
+                  <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                    <rect width="36" height="24" fill="#c60b1e"/>
+                    <rect y="6" width="36" height="12" fill="#ffc400"/>
+                  </svg>
+                </span>
+                <h3 class="card-title">Español</h3>
+              </button>
+ 
+              <button
+                type="button"
+                class="card radio-card lang-card"
+                data-lang="ca"
+                role="radio"
+                aria-checked="true"
+              >
+                <span class="flag" aria-hidden="true">
+                  <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                    <rect width="36" height="24" fill="#FCDD09"/>
+                    <rect y="0"     width="36" height="3.43" fill="#DA121A"/>
+                    <rect y="6.86"  width="36" height="3.43" fill="#DA121A"/>
+                    <rect y="13.71" width="36" height="3.43" fill="#DA121A"/>
+                    <rect y="20.57" width="36" height="3.43" fill="#DA121A"/>
+                  </svg>
+                </span>
+                <h3 class="card-title">Català</h3>
+              </button>
+            </div>
+          </div>
+ 
+          <!-- Guide Personality -->
+          <div class="onb-section">
+            <h2 id="label-personality" class="section-label">Guide personality</h2>
+            <div
+              id="persona-group"
+              class="onb-grid"
+              role="radiogroup"
+              aria-labelledby="label-personality"
             >
-              <span class="flag">
-                <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect width="36" height="24" fill="#c60b1e"/>
-                  <rect y="6" width="36" height="12" fill="#ffc400"/>
-                </svg>
-              </span>
-              <h3 class="card-title">Español</h3>
-            </button>
-            <button
-              type="button"
-              class="card radio-card lang-card"
-              data-lang="ca"
-              role="radio"
-              aria-checked="true"
+              <button type="button" class="card radio-card" data-persona="artist" role="radio" aria-checked="false">
+                <img class="card-icon" src="assets/artist-palette-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <h3 class="card-title">Artist</h3>
+                <p class="card-subtitle">Focus on technique, medium, and the act of creation.</p>
+              </button>
+ 
+              <button type="button" class="card radio-card" data-persona="storyteller" role="radio" aria-checked="false">
+                <img class="card-icon" src="assets/storyteller-fairy-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <h3 class="card-title">Storyteller</h3>
+                <p class="card-subtitle">Uncover the myths, histories, and hidden narratives.</p>
+              </button>
+ 
+              <button type="button" class="card radio-card" data-persona="explorer" role="radio" aria-checked="false">
+                <img class="card-icon" src="assets/explorer-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <h3 class="card-title">Explorer</h3>
+                <p class="card-subtitle">A path through the most significant highlights.</p>
+              </button>
+ 
+              <button type="button" class="card radio-card" data-persona="scholar" role="radio" aria-checked="false">
+                <img class="card-icon" src="assets/scholar-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <h3 class="card-title">Scholar</h3>
+                <p class="card-subtitle">In-depth historical and contextual analysis of each work.</p>
+              </button>
+            </div>
+          </div>
+ 
+          <!-- Visitor Type -->
+          <div class="onb-section">
+            <h2 id="label-visitor" class="section-label">Visitor type</h2>
+            <div
+              id="age-group"
+              class="onb-grid age-grid"
+              role="radiogroup"
+              aria-labelledby="label-visitor"
             >
-              <span class="flag">
-                <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect width="36" height="24" fill="#FCDD09"/>
-                  <rect y="0" width="36" height="3.43" fill="#DA121A"/>
-                  <rect y="6.86" width="36" height="3.43" fill="#DA121A"/>
-                  <rect y="13.71" width="36" height="3.43" fill="#DA121A"/>
-                  <rect y="20.57" width="36" height="3.43" fill="#DA121A"/>
-                </svg>
-              </span>
-              <h3 class="card-title">Català</h3>
-            </button>
+              <button type="button" class="chip radio-chip" data-age="young" role="radio" aria-checked="false">
+                <img class="chip-icon" src="assets/teenager-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <span class="age-title">Young</span>
+                <p class="card-subtitle">(10–19 years)</p>
+              </button>
+ 
+              <button type="button" class="chip radio-chip" data-age="adult" role="radio" aria-checked="false">
+                <img class="chip-icon" src="assets/adult-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <span class="age-title">Adult</span>
+                <p class="card-subtitle">(20–60 years)</p>
+              </button>
+ 
+              <button type="button" class="chip radio-chip" data-age="senior" role="radio" aria-checked="false">
+                <img class="chip-icon" src="assets/senior-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <span class="age-title">Senior</span>
+                <p class="card-subtitle">(60+ years)</p>
+              </button>
+            </div>
+            <p id="age-hint" class="hint-muted">
+              Age ranges are an indicative guideline to help tailor content. This field is optional.
+            </p>
           </div>
         </section>
  
  
-        <!-- Persona -->
-        <section class="onb-section" aria-label="Guide personality selection">
-          <h2 id="label-personality" class="section-label">Guide personality</h2>
-          <div
-            id="persona-group"
-            class="onb-grid"
-            role="radiogroup"
-            aria-label="Guide personality"
-          >
-            <button
-              type="button"
-              class="card radio-card"
-              data-persona="artist"
-              role="radio"
-              aria-checked="false"
-            >
-            <img class="card-icon" src="assets/artist-palette-svgrepo-com.svg" alt="" aria-hidden="true">
-              <h3 class="card-title">Artist</h3>
-              <p class="card-subtitle">
-                Focus on technique, medium, and the act of creation.
-              </p>
-            </button>
-            <button
-              type="button"
-              class="card radio-card"
-              data-persona="storyteller"
-              role="radio"
-              aria-checked="false"
-            >
-              <img class="card-icon" src="assets/storyteller-fairy-svgrepo-com.svg" alt="" aria-hidden="true">
-              <h3 class="card-title">Storyteller</h3>
-              <p class="card-subtitle">
-                Uncover the myths, histories, and hidden narratives.
-              </p>
-            </button>
-            <button
-              type="button"
-              class="card radio-card"
-              data-persona="explorer"
-              role="radio"
-              aria-checked="false"
-            >
-              <img class="card-icon" src="assets/explorer-svgrepo-com.svg" alt="" aria-hidden="true">
-              <h3 class="card-title">Explorer</h3>
-              <p class="card-subtitle">
-                A path through the most significant highlights.
-              </p>
-            </button>
-            <button
-              type="button"
-              class="card radio-card"
-              data-persona="scholar"
-              role="radio"
-              aria-checked="false"
-            >
-              <img class="card-icon" src="assets/scholar-svgrepo-com.svg" alt="" aria-hidden="true">
-              <h3 class="card-title">Scholar</h3>
-              <p class="card-subtitle">
-                In-depth historical and contextual analysis of each work.
-              </p>
-            </button>
+        <!-- STEP 2: Accessibility -->
+        <section class="onboarding-step" data-step="2" hidden>
+          <div class="onb-section">
+            <h2 id="label-accessibility" class="section-label">Accessibility</h2>
+            <div class="toggle-list" role="group" aria-labelledby="label-accessibility">
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-large-text" />
+                <span>Large text</span>
+              </label>
+ 
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-simple-language" />
+                <span>Simpler language</span>
+              </label>
+ 
+
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-captions" />
+                <div class="toggle-content">
+                  <span>Audio explanations with voice</span>
+                  <p class="card-subtitle">This can be changed at any time.</p>
+                </div>
+              </label>
+ 
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-more-time" />
+                <div class="toggle-content">
+                  <span>More time and slower pace</span>
+                  <p class="card-subtitle">This can be changed at any time.</p>
+                </div>
+              </label>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-more-time" />
+                <span>Visual description of artworks</span>
+              </label>
+            </div>
           </div>
         </section>
  
-        <!-- Age -->
-        <section class="onb-section" aria-label="Visitor age selection">
-          <h2 id="label-visitor" class="section-label">Visitor type</h2>
-          <div
-            id="age-group"
-            class="onb-grid age-grid"
-            role="radiogroup"
-            aria-label="Visitor type"
-          >
-            <button
-              type="button"
-              class="chip radio-chip"
-              data-age="young"
-              role="radio"
-              aria-checked="false"
-            >
-              <img class="chip-icon" src="assets/teenager-svgrepo-com.svg" alt="" aria-hidden="true">
-              <span class="age-title">Young</span>
-              <p class="card-subtitle">
-                (10-18 years)
-              </p>
-            </button>
-            <button
-              type="button"
-              class="chip radio-chip"
-              data-age="adult"
-              role="radio"
-              aria-checked="false"
-            >
-              <img class="chip-icon" src="assets/adult-svgrepo-com.svg" alt="" aria-hidden="true">
-              <span class="age-title">Adult</span>
-              <p class="card-subtitle">
-                (20-60 years)
-              </p>
-            </button>
-            <button
-              type="button"
-              class="chip radio-chip"
-              data-age="senior"
-              role="radio"
-              aria-checked="false"
-            >
-              <img class="chip-icon" src="assets/senior-svgrepo-com.svg" alt="" aria-hidden="true">
-              <span class="age-title">Senior</span>
-              <p class="card-subtitle">
-                (60+ years)
-              </p>
-            </button>
-            
-          </div>
-          <div id="age-hint" class="hint-muted">
-            *The ages are just an indicative guideline to help tailor the content. It is optional to answer
+        <!-- STEP 3: Privacy -->
+        <section class="onboarding-step" data-step="3" hidden>
+          <div class="onb-section">
+            <h2 class="section-label">AI and privacy</h2>
+ 
+            <div class="info-block" role="note">
+              <p>You are talking to an AI museum guide.</p>
+              <p>The guide may make mistakes, so important information should be verified with museum staff.</p>
+              <p>To improve the experience, the system may process your selected language, guide preferences, artwork interactions, and responses.</p>
+              <p>No personal data is collected or stored.</p>
+              <p>If you speak to the AI, audio may be processed to understand speech and generate spoken replies.</p>
+            </div>
+ 
+            <label class="toggle-row consent-row">
+              <input type="checkbox" id="privacy-consent" required />
+              <span>I understand that I am speaking with an AI and I have read how my information is used.</span>
+            </label>
           </div>
         </section>
  
-        <!-- CTA -->
-        <div class="onb-footer">
-          <button
-            id="onboarding-start"
-            type="button"
-            class="btn-primary wide"
-            disabled
-          >
-            Begin your visit
-          </button>
+      </div><!-- /.onboarding-body -->
+ 
+      <!-- Footer actions -->
+      <footer class="onb-footer">
+        <div class="onb-actions">
+          <button class="btn-secondary" type="button" id="onboarding-back">Back</button>
+          <button class="btn-primary" type="button" id="onboarding-next">Continue</button>
         </div>
-      </div>
+      </footer>
+ 
     </section>
-  </div>
-  
+  </div><!-- /#onboarding -->
+ 
   <!-- Main application -->
   <div class="app-shell">
     <!-- Header (GuIA + language + audio) -->
@@ -388,13 +410,6 @@
           </button>
 
           <p id="context-error" class="field-error" aria-live="assertive"></p>
-
-          <div id="context-suggestion" class="context-suggestion">
-            Are you in Room 2, looking at the Portrait of a Noblewoman?
-            <button id="confirm-suggestion-btn" type="button" class="link-btn">
-              Yes, that is correct
-            </button>
-          </div>
         </div>
       </aside>
     </main>

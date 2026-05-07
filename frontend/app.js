@@ -1,21 +1,36 @@
 // ─── State ────────────────────────────────────────────────────────────────────
-let selectedPersona = null;
-let selectedAge     = null;
-let selectedLang    = null;
-let currentRoom     = null;
-let currentArtwork  = null;
-let translations    = {};
-let locationData    = { rooms: [] };
+const state = {
+  selectedPersona: null,
+  selectedAge: null,
+  selectedLang: null,
+  currentRoom: null,
+  currentArtwork: null,
+
+  translations: {},
+  locationData: { rooms: [] },
+
+  onboardingStep: 1,
+  totalSteps: 3,
+
+  accessibilityPrefs: {
+    largeText: false,
+    simpleLanguage: false,
+    audio: false,
+    moreTime: false,
+    visualDescriptions: false
+  }
+};
+
 const sessionId = crypto.randomUUID();
 
 const AGE_RANGE_BY_KEY = {
-  young: 'Young adult 10-18 years old',
+  young: 'Young person 10-19 years old',
   adult: 'Adult 20-60 years old',
   senior: 'Senior 60+ years old'
 };
 
 const SPEECH_PLAYBACK_RATE = {
-  slow: 0.55,
+  slow: 0.65,
   normal: 1,
   fast: 1.65
 };
@@ -29,8 +44,8 @@ function getNestedTranslation(source, key) {
 }
 
 function t(key, fallback = '') {
-  const currentLang = translations[selectedLang] || {};
-  const caLang = translations['ca'] || {};
+  const currentLang = state.translations[state.selectedLang];
+  const caLang = state.translations['ca'];
 
   return (
     getNestedTranslation(currentLang, key) ??
@@ -65,68 +80,254 @@ function initAppTitleButton() {
 }
 
 function applyOnboardingTranslations() {
-  if (!translations[selectedLang]) return;
+  if (!state.translations[state.selectedLang]) return;
 
   // panel
-  el('onboarding-eyebrow').textContent = t('onboarding.eyebrow');
-  el('onboarding-title').textContent = t('onboarding.title');
-  el('onboarding-desc').textContent  = t('onboarding.description');
-  el('onboarding-hint').textContent  = t('onboarding.hint');
+  const titleEl = el('onboarding-title');
+  if (titleEl) titleEl.textContent = t('onboarding.title');
+  const descEl = el('onboarding-desc');
+  if (descEl) descEl.textContent  = t('onboarding.description');
 
   // Section labels — addressed by ID on each <h2>
-  el('label-language').textContent    = t('onboarding.language');
-  el('label-personality').textContent = t('onboarding.personality');
-  el('label-visitor').textContent     = t('onboarding.visitor');
+  const labelLang = el('label-language');
+  if (labelLang) labelLang.textContent = t('onboarding.language');
+  const labelPersona = el('label-personality');
+  if (labelPersona) labelPersona.textContent = t('onboarding.personality');
+  const labelVisitor = el('label-visitor');
+  if (labelVisitor) labelVisitor.textContent = t('onboarding.visitor');
 
   // Personas
   ['artist', 'storyteller', 'explorer', 'scholar'].forEach((key) => {
     const btn = document.querySelector(`[data-persona="${key}"]`);
     if (!btn) return;
-    btn.querySelector('.card-title').textContent    = t(`personas.${key}.title`);
-    btn.querySelector('.card-subtitle').textContent = t(`personas.${key}.subtitle`);
+    const titleNode = btn.querySelector('.card-title');
+    const subNode = btn.querySelector('.card-subtitle');
+    if (titleNode) titleNode.textContent = t(`personas.${key}.title`);
+    if (subNode) subNode.textContent = t(`personas.${key}.subtitle`);
   });
 
   // Age chips
   ['young', 'adult', 'senior'].forEach((key) => {
-      const btn = document.querySelector(`[data-age="${key}"]`);
-      if (!btn) return;
-      let title = btn.querySelector('.age-title');
-      const sub = btn.querySelector('.card-subtitle');
+    const btn = document.querySelector(`[data-age="${key}"]`);
+    if (!btn) return;
+    let title = btn.querySelector('.age-title');
+    const sub = btn.querySelector('.card-subtitle');
 
-      if (!title) {
-        title = document.createElement('span');
-        title.className = 'age-title';
-        const icon = btn.querySelector('.chip-icon');
-        if (icon) {
-          icon.insertAdjacentElement('afterend', title);
-        } else {
-          btn.prepend(title);
-        }
+    if (!title) {
+      title = document.createElement('span');
+      title.className = 'age-title';
+      const icon = btn.querySelector('.chip-icon');
+      if (icon) {
+        icon.insertAdjacentElement('afterend', title);
+      } else {
+        btn.prepend(title);
       }
+    }
 
-      for (const node of Array.from(btn.childNodes)) {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-          node.textContent = '';
-        }
+    for (const node of Array.from(btn.childNodes)) {
+      if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+        node.textContent = '';
       }
+    }
 
-      title.textContent = t(`ages.${key}.title`);
-      if (sub) sub.textContent = t(`ages.${key}.subtitle`);
-    });
+    title.textContent = t(`ages.${key}.title`);
+    if (sub) sub.textContent = t(`ages.${key}.subtitle`);
+  });
+
+  const ageHint = el('age-hint');
+  if (ageHint) ageHint.textContent = t('ageHint');
+
+  // STEP 2: Accessibility
+  const labelAccessibility = el('label-accessibility');
+  if (labelAccessibility) labelAccessibility.textContent = t('onboarding.accessibility');
+
+  const stepHelp = el('accessibility-help');
+  if (stepHelp) stepHelp.textContent = t('onboarding.accessibilityHelp');
   
-  // Age hint
-  el('age-hint').textContent = t('ageHint');
- 
+  const optLargeTextLabel = document.querySelector('label[for="opt-large-text"] span') ||
+    document.querySelector('#opt-large-text')?.closest('label')?.querySelector('span');
+  if (optLargeTextLabel) optLargeTextLabel.textContent = t('onboarding.largeText');
 
-  // Start button — preserve disabled state, only change text
-  const startBtn = el('onboarding-start');
-  startBtn.textContent = t('onboarding.start');
-  startBtn.disabled    = !(selectedLang && selectedPersona);
+  const optSimpleLanguageLabel = document.querySelector('label[for="opt-simple-language"] span') ||
+    document.querySelector('#opt-simple-language')?.closest('label')?.querySelector('span');
+  if (optSimpleLanguageLabel) optSimpleLanguageLabel.textContent = t('onboarding.simpleLanguage');
+
+  const optCaptionsLabel = document.querySelector('label[for="opt-captions"] span') ||
+    document.querySelector('#opt-captions')?.closest('label')?.querySelector('span');
+  if (optCaptionsLabel) optCaptionsLabel.textContent = t('onboarding.spokenExplanations');
+
+  const optMoreTimeLabel = document.querySelector('label[for="opt-more-time"] span') ||
+    document.querySelector('#opt-more-time')?.closest('label')?.querySelector('span');
+  if (optMoreTimeLabel) optMoreTimeLabel.textContent = t('onboarding.moreTime');
+
+  // STEP 3: Privacy
+  const privacyLabel = document.querySelector('[data-i18n="onboarding.privacy"]');
+  if (privacyLabel) {
+    privacyLabel.textContent = t('onboarding.privacy');
+  } else {
+    const privacyHeading = document.querySelector('.onboarding-step[data-step="3"] .section-label');
+    if (privacyHeading) privacyHeading.textContent = t('onboarding.privacy');
+  }
+
+  const privacyParagraphs = document.querySelectorAll('.onboarding-step[data-step="3"] .info-block p');
+  if (privacyParagraphs[0]) privacyParagraphs[0].textContent = t('onboarding.privacyIntro1');
+  if (privacyParagraphs[1]) privacyParagraphs[1].textContent = t('onboarding.privacyIntro2');
+  if (privacyParagraphs[2]) privacyParagraphs[2].textContent = t('onboarding.privacyIntro3');
+  if (privacyParagraphs[3]) privacyParagraphs[3].textContent = t('onboarding.privacyIntro4');
+  if (privacyParagraphs[4]) privacyParagraphs[4].textContent = t('onboarding.privacyIntro5');
+
+  const consentLabel = document.querySelector('#privacy-consent')?.closest('label')?.querySelector('span');
+  if (consentLabel) consentLabel.textContent = t('onboarding.privacyConsent');
+  
+  // Next button text — update step label if visible
+  updateOnboardingButtons();
+}
+
+function onboardingEls() {
+  return {
+    steps: [...document.querySelectorAll('.onboarding-step')],
+    backBtn: document.getElementById('onboarding-back'),
+    nextBtn: document.getElementById('onboarding-next'),
+    stepCount: document.getElementById('step-count'),
+    stepFill: document.querySelector('.step-bar-fill'), 
+    consent: document.getElementById('privacy-consent')
+  };
+}
+
+function showOnboardingStep(step) {
+  state.onboardingStep = step;
+  const { steps, backBtn, nextBtn, stepCount, stepFill } = onboardingEls();
+
+  steps.forEach(section => {
+    section.hidden = Number(section.dataset.step) !== step;
+  });
+
+  // progreso barra
+  if (stepFill) {
+    const percent = (step / state.totalSteps) * 100;
+    stepFill.style.width = `${percent}%`;
+  }
+  backBtn.hidden = step === 1;
+  nextBtn.textContent = step === state.totalSteps ? 'Start' : 'Continue';
+  
+  const desc = document.getElementById('onboarding-desc');
+  if (desc) {
+    if (step === 1) {
+      desc.textContent = t('onboarding.description');
+      desc.hidden = false;
+    } else if (step === 2) {
+      desc.textContent = t('onboarding.accessibilityHelp');
+      desc.hidden = false;
+    } else {
+      desc.hidden = true;
+    }
+  }
+
+  updateOnboardingButtons();
+}
+
+function updateOnboardingButtons() {
+  const backBtn = el('onboarding-back');
+  const nextBtn = el('onboarding-next');
+  const stepCount = el('step-count');
+  const consent = el('privacy-consent');
+
+  if (stepCount) {
+    const template = t('onboarding.stepCount', 'Step {current} of {total}');
+    stepCount.textContent = template
+      .replace('{current}', state.onboardingStep)
+      .replace('{total}', state.totalSteps);
+  }
+
+  if (backBtn) {
+    backBtn.textContent = t('onboarding.back', 'Back');
+    backBtn.hidden = state.onboardingStep === 1;
+  }
+
+  if (nextBtn) {
+    nextBtn.textContent = state.onboardingStep === state.totalSteps
+      ? t('onboarding.start', 'Start')
+      : t('onboarding.continue', 'Continue');
+  }
+
+  let valid = false;
+
+  if (state.onboardingStep === 1) {
+    valid = !!state.selectedPersona && !!state.selectedLang;
+  } else if (state.onboardingStep === 2) {
+    valid = true;
+  } else if (state.onboardingStep === 3) {
+    valid = !!consent?.checked;
+  }
+
+  if (nextBtn) nextBtn.disabled = !valid;
+}
+
+function applyAccessibilityPrefs() {
+  document.body.toggleAttribute('data-large-text', state.accessibilityPrefs.largeText);
+  document.body.toggleAttribute('data-simple-language', state.accessibilityPrefs.simpleLanguage);
+  document.body.toggleAttribute('data-captions', state.accessibilityPrefs.captions);
+  document.body.toggleAttribute('data-more-time', state.accessibilityPrefs.moreTime);
+
+  if (state.accessibilityPrefs.largeText) {
+    document.body.setAttribute('data-mode', 'senior');
+  }
+}
+
+function bindOnboardingFlow() {
+  const { backBtn, nextBtn, consent } = onboardingEls();
+
+  document.querySelectorAll('.interaction-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedInteraction = btn.dataset.interaction;
+
+      document.querySelectorAll('.interaction-card').forEach(card => {
+        card.setAttribute('aria-checked', String(card === btn));
+      });
+
+      updateOnboardingButtons();
+    });
+  });
+
+  document.getElementById('opt-large-text')?.addEventListener('change', e => {
+    state.accessibilityPrefs.largeText = e.target.checked;
+  });
+
+  document.getElementById('opt-simple-language')?.addEventListener('change', e => {
+    state.accessibilityPrefs.simpleLanguage = e.target.checked;
+  });
+
+  document.getElementById('opt-captions')?.addEventListener('change', e => {
+    state.accessibilityPrefs.captions = e.target.checked;
+  });
+
+  document.getElementById('opt-more-time')?.addEventListener('change', e => {
+    state.accessibilityPrefs.moreTime = e.target.checked;
+  });
+
+  consent?.addEventListener('change', updateOnboardingButtons);
+
+  backBtn?.addEventListener('click', () => {
+    if (state.onboardingStep > 1) showOnboardingStep(state.onboardingStep - 1);
+  });
+
+  nextBtn?.addEventListener('click', () => {
+    if (state.onboardingStep < state.totalSteps) {
+      showOnboardingStep(state.onboardingStep + 1);
+      return;
+    }
+
+    applyAccessibilityPrefs();
+    hideOnboarding(); 
+    applyAppTranslations();
+  });
+
+  showOnboardingStep(1);
 }
 
 // Main page
 function applyAppTranslations() {
-  if (!translations[selectedLang]) return;
+  if (!state.translations[state.selectedLang]) return;
 
   // Botones de velocidad
   const speedBtns = Array.from(document.querySelectorAll('.speed-btn'));
@@ -147,27 +348,36 @@ function applyAppTranslations() {
   });
 
   // Botón "Where am I?"
-  el('where-am-i-btn').textContent = t('app.whereAmI');
+  const whereAmIBtn = el('where-am-i-btn');
+  if (whereAmIBtn) whereAmIBtn.textContent = t('app.whereAmI');
 
-  /// Título principal
+  // Título principal
   const appTitle = el('app-title');
   if (appTitle) appTitle.textContent = t('app.title');
 
-  el('choose-location').textContent = t('app.chooseLocation');
-  el('room').textContent = t('app.room');
-  el('artwork').textContent = t('app.artwork');
+  // Context panel labels (optional elements)
+  const chooseLocation = el('choose-location');
+  if (chooseLocation) chooseLocation.textContent = t('app.chooseLocation');
+  const roomLabel = el('room');
+  if (roomLabel) roomLabel.textContent = t('app.room');
+  const artworkLabel = el('artwork');
+  if (artworkLabel) artworkLabel.textContent = t('app.artwork');
 
   // Opciones del select de sala
   renderLocationSelects();
 
-  // Context suggestion
+  // Context suggestion (optional)
   renderContextSuggestion();
-  el('confirm-suggestion-btn').textContent = t('app.confirmSuggestion');
+  const confirmSuggBtn = el('confirm-suggestion-btn');
+  if (confirmSuggBtn) confirmSuggBtn.textContent = t('app.confirmSuggestion');
 
   // Footer
-  document.querySelector('.helper-text').textContent = t('chat.helper');
-  el('chat-input').placeholder = t('chat.placeholder');
-  el('send-btn').textContent   = t('chat.send');
+  const helperText = document.querySelector('.helper-text');
+  if (helperText) helperText.textContent = t('chat.helper');
+  const chatInputEl = el('chat-input');
+  if (chatInputEl) chatInputEl.placeholder = t('chat.placeholder');
+  const sendBtnEl = el('send-btn');
+  if (sendBtnEl) sendBtnEl.textContent = t('chat.send');
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -199,10 +409,10 @@ async function loadLocations() {
   try {
     const res = await fetch("http://127.0.0.1:5002/locations");
     if (!res.ok) throw new Error(await res.text());
-    locationData = await res.json();
+    state.locationData = await res.json();
   } catch (e) {
     console.warn("Could not load museum locations from backend:", e);
-    locationData = { rooms: [] };
+    state.locationData = { rooms: [] };
   }
 }
 
@@ -214,11 +424,11 @@ function renderLocationSelects() {
   roomSelect.innerHTML = '';
   roomSelect.appendChild(new Option(t('context.selectRoom', 'Select a room'), ''));
 
-  (locationData.rooms || []).forEach((room) => {
+  (state.locationData.rooms || []).forEach((room) => {
     roomSelect.appendChild(new Option(room.label || room.id, room.id));
   });
 
-  if ((locationData.rooms || []).some((room) => room.id === selectedRoom)) {
+  if ((state.locationData.rooms || []).some((room) => room.id === selectedRoom)) {
     roomSelect.value = selectedRoom;
   }
 
@@ -232,7 +442,7 @@ function renderArtworkSelect() {
   if (!roomSelect || !artworkSelect) return;
 
   const selectedArtwork = artworkSelect.value;
-  const selectedRoom = (locationData.rooms || []).find((room) => room.id === roomSelect.value);
+  const selectedRoom = (state.locationData.rooms || []).find((room) => room.id === roomSelect.value);
 
   artworkSelect.innerHTML = '';
   artworkSelect.appendChild(new Option(t('context.selectArtwork', 'Select an artwork'), ''));
@@ -253,7 +463,7 @@ function renderContextSuggestion() {
   const suggestion = document.querySelector('.context-suggestion');
   if (!suggestion) return;
 
-  const firstRoom = (locationData.rooms || [])[0];
+  const firstRoom = (state.locationData.rooms || [])[0];
   const firstArtwork = firstRoom?.artworks?.[0];
   const textNode = Array.from(suggestion.childNodes).find((node) => node.nodeType === Node.TEXT_NODE);
 
@@ -263,9 +473,9 @@ function renderContextSuggestion() {
   const artworkLabel = firstArtwork?.title;
   const prefix = {
     en: 'Are you in',
-    es: 'Estas en',
-    ca: 'Estas a'
-  }[selectedLang] || 'Are you in';
+    es: 'Estás en',
+    ca: 'Estàs a'
+  }[state.selectedLang];
   textNode.textContent = artworkLabel
     ? `${prefix} ${roomLabel}, ${artworkLabel}? `
     : `${prefix} ${roomLabel}? `;
@@ -276,22 +486,24 @@ function renderContextSuggestion() {
 async function loadTranslations() {
   try {
     const res    = await fetch('translations.json');
-    translations = await res.json();
+    state.translations = await res.json();
   } catch (e) {
     console.error('translations.json not found — serving without i18n', e);
-    translations = {};
+    state.translations = {};
   }
   await loadLocations();
 
   // Lee el idioma por defecto del aria-checked="true" en el HTML
   const preChecked = document.querySelector('#language-group [aria-checked="true"]');
-  if (preChecked) selectedLang = preChecked.dataset.lang;
+  if (preChecked) state.selectedLang = preChecked.dataset.lang;
 
   applyOnboardingTranslations();
   initLanguageSelector();
   initPersonaButtons();
   initAgeButtons();
-  initStartButton();
+
+  bindOnboardingFlow();
+
   initAppTitleButton();
   initApp();
 }
@@ -305,14 +517,15 @@ function initLanguageSelector() {
 
   // Set aria-checked to match default selectedLang
   btns.forEach((b) =>
-    b.setAttribute('aria-checked', b.dataset.lang === selectedLang ? 'true' : 'false')
+    b.setAttribute('aria-checked', b.dataset.lang === state.selectedLang ? 'true' : 'false')
   );
 
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      selectedLang = btn.dataset.lang;
+      state.selectedLang = btn.dataset.lang;
       selectRadio(btns, btn);
       applyOnboardingTranslations();
+      updateOnboardingButtons();
     });
   });
 }
@@ -321,10 +534,9 @@ function initPersonaButtons() {
   const btns = Array.from(document.querySelectorAll('[data-persona]'));
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      selectedPersona = btn.dataset.persona;
+      state.selectedPersona = btn.dataset.persona;
       selectRadio(btns, btn);
-      // Re-run to update start button disabled state
-      el('onboarding-start').disabled = false;
+      updateOnboardingButtons();
     });
   });
 }
@@ -333,22 +545,16 @@ function initAgeButtons() {
   const btns = Array.from(document.querySelectorAll('[data-age]'));
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (selectedAge === btn.dataset.age) {
-        selectedAge = null;
+      if (state.selectedAge === btn.dataset.age) {
+        state.selectedAge = null;
         btn.setAttribute('aria-checked', 'false');
       } else {
-        selectedAge = btn.dataset.age;
+        state.selectedAge = btn.dataset.age;
         selectRadio(btns, btn);
       }
+    updateOnboardingButtons();
+    
     });
-  });
-}
-
-function initStartButton() {
-  el('onboarding-start').addEventListener('click', () => {
-    hideOnboarding();
-    document.body.dataset.mode = selectedAge === 'senior' ? 'senior' : 'regular';
-    applyAppTranslations();
   });
 }
 
@@ -362,131 +568,147 @@ function initApp() {
       setSpeechSpeed(btn.dataset.speed || 'normal');
     });
   });
+  
+  const onboarding = el('onboarding');
 
-  // ─── Volume slider + Mute ─────────────────────────────────────────────────────
-const muteBtn      = el('mute-btn');
-const volumeSlider = el('volume-slider');
-let isMuted        = false;
-let currentVolume = 0.5;
-let previousVolume = 0.5;
-let unmuteWaiters  = [];
-let currentAudioBaseSpeed = 'normal';
+  if (onboarding) {
+    const observer = new MutationObserver(() => {
+      const isHidden = onboarding.style.display === 'none';
 
-function updateMuteIcon() {
-  const muted = isMuted || currentVolume === 0;
-  muteBtn.textContent = muted ? '🔇' : '🔈';
-  muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
-  muteBtn.setAttribute('aria-label', muted ? 'Unmute audio' : 'Mute audio');
-}
+      if (isHidden) {
+        speakInitialWelcome();
+        observer.disconnect(); // solo una vez
+      }
+    });
 
-function applyAudioSettings(audio = currentAudio) {
-  if (!audio) return;
-  audio.volume = isMuted ? 0 : currentVolume;
-  audio.muted = isMuted || currentVolume === 0;
-  const baseRate = SPEECH_PLAYBACK_RATE[currentAudioBaseSpeed] || 1;
-  const targetRate = SPEECH_PLAYBACK_RATE[currentSpeechSpeed] || 1;
-  audio.playbackRate = targetRate / baseRate;
-}
-
-// Mute
-function waitUntilUnmuted() {
-  if (!isMuted) return Promise.resolve();
-
-  return new Promise((resolve) => {
-    unmuteWaiters.push(resolve);
-  });
-}
-
-function releaseUnmuteWaiters() {
-  const waiters = unmuteWaiters;
-  unmuteWaiters = [];
-  waiters.forEach((resolve) => resolve());
-}
-
-  function pauseAudioOutput() {
-    if (currentAudio && !currentAudio.paused) {
-      applyAudioSettings(currentAudio);
-      currentAudio.pause();
-    }
-
-  if (speechSynthesis.speaking && !speechSynthesis.paused) {
-    speechSynthesis.pause();
-  }
-}
-
-  function resumeAudioOutput() {
-    if (currentAudio && currentAudio.paused) {
-      applyAudioSettings(currentAudio);
-      currentAudio.play().catch((err) => {
-      console.error("Audio resume failed:", err);
+    observer.observe(onboarding, {
+      attributes: true,
+      attributeFilter: ['style']
     });
   }
-  if (speechSynthesis.paused) {
-    speechSynthesis.resume();
+
+  // ─── Volume slider + Mute ─────────────────────────────────────────────────────
+  const muteBtn      = el('mute-btn');
+  const volumeSlider = el('volume-slider');
+  let isMuted        = false;
+  let currentVolume = 0.5;
+  let previousVolume = 0.5;
+  let unmuteWaiters  = [];
+  let currentAudioBaseSpeed = 'normal';
+
+  function updateMuteIcon() {
+    const muted = isMuted || currentVolume === 0;
+    muteBtn.textContent = muted ? '🔇' : '🔈';
+    muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    muteBtn.setAttribute('aria-label', muted ? 'Unmute audio' : 'Mute audio');
   }
-  releaseUnmuteWaiters();  // ← esto sí va aquí dentro
-}
 
-// Volume slider: fuera de resumeAudioOutput ↓
-if (volumeSlider) {
-  volumeSlider.addEventListener('input', () => {
-    const value = Number(volumeSlider.value);
-    currentVolume = value / 100;
-    if (currentVolume > 0) previousVolume = currentVolume;
+  function applyAudioSettings(audio = currentAudio) {
+    if (!audio) return;
+    audio.volume = isMuted ? 0 : currentVolume;
+    audio.muted = isMuted || currentVolume === 0;
+    const baseRate = SPEECH_PLAYBACK_RATE[currentAudioBaseSpeed] || 1;
+    const targetRate = SPEECH_PLAYBACK_RATE[currentSpeechSpeed] || 1;
+    audio.playbackRate = targetRate / baseRate;
+  }
 
-    if (value === 0) {
-      isMuted = true;
-      pauseAudioOutput();
-    } else {
+  // Mute
+  function waitUntilUnmuted() {
+    if (!isMuted) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      unmuteWaiters.push(resolve);
+    });
+  }
+
+  function releaseUnmuteWaiters() {
+    const waiters = unmuteWaiters;
+    unmuteWaiters = [];
+    waiters.forEach((resolve) => resolve());
+  }
+
+    function pauseAudioOutput() {
+      if (currentAudio && !currentAudio.paused) {
+        applyAudioSettings(currentAudio);
+        currentAudio.pause();
+      }
+
+    if (speechSynthesis.speaking && !speechSynthesis.paused) {
+      speechSynthesis.pause();
+    }
+  }
+
+    function resumeAudioOutput() {
+      if (currentAudio && currentAudio.paused) {
+        applyAudioSettings(currentAudio);
+        currentAudio.play().catch((err) => {
+        console.error("Audio resume failed:", err);
+      });
+    }
+    if (speechSynthesis.paused) {
+      speechSynthesis.resume();
+    }
+    releaseUnmuteWaiters(); 
+  }
+
+  // Volume slider: fuera de resumeAudioOutput ↓
+  if (volumeSlider) {
+    volumeSlider.addEventListener('input', () => {
+      const value = Number(volumeSlider.value);
+      currentVolume = value / 100;
+      if (currentVolume > 0) previousVolume = currentVolume;
+
+      if (value === 0) {
+        isMuted = true;
+        pauseAudioOutput();
+      } else {
+        if (isMuted) {
+          isMuted = false;
+          resumeAudioOutput();
+        }
+        applyAudioSettings();
+      }
+      updateMuteIcon();
+    });
+    updateMuteIcon();
+  }
+  if (muteBtn) {
+    muteBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+
+      muteBtn.setAttribute('aria-pressed', isMuted ? 'true' : 'false');
+      muteBtn.textContent = isMuted ? '🔇' : '🔈';
+      muteBtn.setAttribute(
+        'aria-label',
+        isMuted ? 'Unmute audio' : 'Mute audio'
+      );
+
       if (isMuted) {
-        isMuted = false;
+        if (volumeSlider) volumeSlider.value = 0;
+        pauseAudioOutput();
+      } else {
+        if (volumeSlider && Number(volumeSlider.value) === 0) {
+          volumeSlider.value = Math.round((previousVolume || 0.5) * 100);
+        }
+        currentVolume = Number(volumeSlider?.value || 50) / 100;
+        previousVolume = currentVolume || previousVolume;
+        applyAudioSettings();
         resumeAudioOutput();
       }
-      applyAudioSettings();
-    }
-    updateMuteIcon();
-  });
-  updateMuteIcon();
-}
-
-muteBtn.addEventListener('click', () => {
-  isMuted = !isMuted;
-
-  muteBtn.setAttribute('aria-pressed', isMuted ? 'true' : 'false');
-  muteBtn.textContent = isMuted ? '🔇' : '🔈';
-  muteBtn.setAttribute(
-    'aria-label',
-    isMuted ? 'Unmute audio' : 'Mute audio'
-  );
-
-  if (isMuted) {
-    if (volumeSlider) volumeSlider.value = 0;
-    pauseAudioOutput();
-  } else {
-    if (volumeSlider && Number(volumeSlider.value) === 0) {
-      volumeSlider.value = Math.round((previousVolume || 0.5) * 100);
-    }
-    currentVolume = Number(volumeSlider?.value || 50) / 100;
-    previousVolume = currentVolume || previousVolume;
-    applyAudioSettings();
-    resumeAudioOutput();
+      updateMuteIcon();
+    });
   }
-  updateMuteIcon();
-});
 
-function speakInitialWelcome() {
-  const firstBubble = document.querySelector(".assistant-bubble");
-  const text = firstBubble?.textContent?.trim();
-  if (!text) return;
-  resetSpeechQueue();
-  queueSpeech(text, selectedLang, selectedPersona || "adult");
-}
+  function speakInitialWelcome() {
+    const firstBubble = document.querySelector(".assistant-bubble");
+    const text = firstBubble?.textContent?.trim();
+    if (!text) return;
 
-el("onboarding-start").addEventListener("click", () => {
-  setTimeout(() => {
-    speakInitialWelcome();
-  }, 0);
-});
+    resetSpeechQueue();
+    queueSpeech(text, state.selectedLang, state.selectedPersona);
+  }
+
+  // speakInitialWelcome is called from bindOnboardingFlow when the final step completes
 
   // Mic
   const micBtn = el('mic-btn');
@@ -581,7 +803,7 @@ el("onboarding-start").addEventListener("click", () => {
 
     const formData = new FormData();
     formData.append('file', blob, 'recording.webm');
-    formData.append('lang', selectedLang || 'auto');
+    formData.append('lang', state.selectedLang);
 
     const res = await fetch('http://127.0.0.1:5000/transcribe', {
       method: 'POST',
@@ -702,67 +924,6 @@ el("onboarding-start").addEventListener("click", () => {
     }
   }, true);
 
-  /* Legacy mic implementation disabled; superseded by the recorder above.
-  let mediaRecorder;
-  let audioChunks = [];
-
-  async function startRecording() {
-    try {
-      console.log("🎤 intentando acceder al micro...");
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log("✅ micro concedido", stream);
-      mediaRecorder = new MediaRecorder(stream);
-      
-
-      audioChunks = [];
-
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-
-        // send to backend
-        const formData = new FormData();
-        formData.append('file', blob);
-        formData.append('lang', selectedLang);
-
-        const res = await fetch('http://127.0.0.1:5000/transcribe', {
-          method: 'POST',
-          body: formData
-        });
-
-        const data = await res.json();
-        el('chat-input').value = data.text;
-      };
-
-      mediaRecorder.start();
-      
-
-    } catch (err) {
-      console.error("❌ error acceso micro:", err);
-    }
-  }
-
-  function stopRecording() {
-    mediaRecorder.stop();
-  }
-
-  let isRecording = false;
-
-  micBtn.addEventListener('legacy-click-disabled', async () => {
-    if (!isRecording) {
-      await startRecording();
-      micBtn.setAttribute('aria-pressed', 'true');
-      isRecording = true;
-    } else {
-      stopRecording();
-      micBtn.setAttribute('aria-pressed', 'false');
-      isRecording = false;
-    }
-  }); 
-
-  */
-
   // Where am I panel
   el('where-am-i-btn').addEventListener('click', async () => {
     const box = el('context-box');
@@ -793,23 +954,15 @@ el("onboarding-start").addEventListener("click", () => {
       return;
     }
     const roomText    = roomSelect.options[roomSelect.selectedIndex].text;
-    const artworkText = artworkSelect.value          // ← comprueba el value
+    const artworkText = artworkSelect.value
       ? artworkSelect.options[artworkSelect.selectedIndex].text
       : '';
 
     applyContext(roomText, artworkText);
 });
 
-  el('confirm-suggestion-btn').addEventListener('click', () => {
-    const firstRoom = (locationData.rooms || [])[0];
-    const firstArtwork = firstRoom?.artworks?.[0];
-    if (firstRoom) {
-      applyContext(firstRoom.label || firstRoom.id, firstArtwork?.title || '');
-    }
-  });
-
   // Chat
-  function speakBrowser(text, lang = selectedLang, persona = "adult", cancelExisting = true) {
+  function speakBrowser(text, lang = state.selectedLang, persona = "adult", cancelExisting = true) {
     return new Promise((resolve) => {
       const utterance = new SpeechSynthesisUtterance(text);
 
@@ -847,7 +1000,7 @@ el("onboarding-start").addEventListener("click", () => {
     });
   }
 
-  async function fetchKokoroAudio(text, lang = selectedLang) {
+  async function fetchKokoroAudio(text, lang = state.selectedLang) {
     const res = await fetch("http://127.0.0.1:5000/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -905,6 +1058,14 @@ el("onboarding-start").addEventListener("click", () => {
   let speechQueueVersion = 0;
   let currentAudio = null;
 
+  const chatThread = el('chat-thread');
+  const chatInput  = el('chat-input');
+  const sendBtn = el('send-btn');
+  const typingIndicator = el('typing-indicator');
+  let isGenerating = false;
+  let lastAssistantText = '';
+  let currentSpeechSpeed = 'normal';
+
   function stopCurrentAudio() {
     if (!currentAudio) return;
 
@@ -926,7 +1087,7 @@ el("onboarding-start").addEventListener("click", () => {
     showOnboarding();
   });
 
-  function queueSpeech(text, lang = selectedLang, persona = selectedPersona || "adult") {
+  function queueSpeech(text, lang = state.selectedLang, persona = state.selectedPersona) {
     const sentence = text.trim();
     if (!sentence) return;
 
@@ -974,15 +1135,6 @@ el("onboarding-start").addEventListener("click", () => {
         return speakBrowser(sentence, lang, persona, false);
       });
   }
-
-
-  const chatThread = el('chat-thread');
-  const chatInput  = el('chat-input');
-  const sendBtn = el('send-btn');
-  const typingIndicator = el('typing-indicator');
-  let isGenerating = false;
-  let lastAssistantText = '';
-  let currentSpeechSpeed = 'normal';
 
   function setThinkingIndicator(isThinking) {
     if (!typingIndicator) return;
@@ -1155,11 +1307,11 @@ el("onboarding-start").addEventListener("click", () => {
       await streamAssistantReply({
         session_id: sessionId,
         message: value,
-        language: selectedLang,
-        age_range: AGE_RANGE_BY_KEY[selectedAge] || AGE_RANGE_BY_KEY.adult,
-        personality: selectedPersona,
-        room: currentRoom,
-        artwork: currentArtwork
+        language: state.selectedLang,
+        age_range: AGE_RANGE_BY_KEY[state.selectedAge] || AGE_RANGE_BY_KEY.adult,
+        personality: state.selectedPersona,
+        room: state.currentRoom,
+        artwork: state.currentArtwork
       });
     } catch (e) {
       console.error("Chat error:", e);
@@ -1227,8 +1379,8 @@ function applyContext(roomText, artworkText) {
   // Solo actualiza el header si los elementos existen
   
   // Store context
-  currentRoom = roomText;
-  currentArtwork = artworkText;
+  state.currentRoom = roomText;
+  state.currentArtwork = artworkText;
 
   // Update header
   const roomEl    = el('current-room');
@@ -1254,3 +1406,66 @@ function applyContext(roomText, artworkText) {
     })
   }).catch(e => console.warn("Could not send context to backend:", e));
 }
+
+
+
+  /* Legacy mic implementation disabled; superseded by the recorder above.
+  let mediaRecorder;
+  let audioChunks = [];
+
+  async function startRecording() {
+    try {
+      console.log("🎤 intentando acceder al micro...");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("✅ micro concedido", stream);
+      mediaRecorder = new MediaRecorder(stream);
+      
+
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+
+        // send to backend
+        const formData = new FormData();
+        formData.append('file', blob);
+        formData.append('lang', selectedLang);
+
+        const res = await fetch('http://127.0.0.1:5000/transcribe', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        el('chat-input').value = data.text;
+      };
+
+      mediaRecorder.start();
+      
+
+    } catch (err) {
+      console.error("❌ error acceso micro:", err);
+    }
+  }
+
+  function stopRecording() {
+    mediaRecorder.stop();
+  }
+
+  let isRecording = false;
+
+  micBtn.addEventListener('legacy-click-disabled', async () => {
+    if (!isRecording) {
+      await startRecording();
+      micBtn.setAttribute('aria-pressed', 'true');
+      isRecording = true;
+    } else {
+      stopRecording();
+      micBtn.setAttribute('aria-pressed', 'false');
+      isRecording = false;
+    }
+  }); 
+
+  */
