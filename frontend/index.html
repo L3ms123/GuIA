@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>GuIA Museum Guide</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@300;400;700&family=Inter:wght@300;400;600;700&display=swap"
     rel="stylesheet"
@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="assets/favicon.png" />
 </head>
-<body class="surface" data-mode="regular">
+<body class="surface" data-mode="regular" data-onboarding-open>
  
   <!-- Onboarding full-screen dialog -->
   <div
@@ -202,7 +202,10 @@
  
               <label class="toggle-row">
                 <input type="checkbox" id="opt-simple-language" />
-                <span>Simpler language</span>
+                <div class="toggle-content">
+                  <span>Simpler language</span>
+                  <p class="card-subtitle">Short sentences, common words, and dictionary help.</p>
+                </div>
               </label>
  
 
@@ -223,7 +226,7 @@
               </label>
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-more-time" />
+                <input type="checkbox" id="opt-visual-descriptions" />
                 <span>Visual description of artworks</span>
               </label>
             </div>
@@ -268,20 +271,34 @@
     <!-- Header (GuIA + language + audio) -->
     <header class="top-bar" aria-label="Application header">
       <div class="top-left">
+        <div class="brand-title">GuIA del Museu del Renaixement</div>
         <button
           class="app-title"
           id="app-title"
           type="button"
-          aria-label="Back to guide setup"
+          aria-label="Open guide settings"
         >
-          GuIA Museum Guide
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          Settings
         </button>
       </div>
 
       <div class="top-right">
 
         <!-- Audio -->
-        <div class="audio-group" aria-label="Audio controls">
+        <button
+          id="audio-settings-btn"
+          type="button"
+          class="audio-settings-btn"
+          aria-label="Open audio settings"
+          aria-expanded="false"
+          aria-controls="audio-controls-panel"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+          <span>Audio</span>
+        </button>
+
+        <div id="audio-controls-panel" class="audio-group" aria-label="Audio controls">
           <button
             id="mute-btn"
             type="button"
@@ -292,7 +309,27 @@
             🔈
           </button>
 
+          <button
+            id="audio-playback-btn"
+            type="button"
+            class="icon-btn"
+            aria-label="Pause audio"
+            aria-pressed="false"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">pause</span>
+          </button>
+
+          <button
+            id="audio-replay-btn"
+            type="button"
+            class="icon-btn"
+            aria-label="Replay last answer"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">replay</span>
+          </button>
+
           <div class="volume-wrap" aria-label="Volume control">
+            <span class="audio-label">Volume</span>
             <input
               id="volume-slider"
               class="volume-slider"
@@ -416,9 +453,6 @@
 
     <!-- Bottom input -->
     <footer class="bottom-bar" aria-label="Message input">
-      <p class="helper-text muted">
-        You can type or tap the microphone to speak.
-      </p>
       <div class="input-shell">
         <label class="sr-only" for="chat-input">Type your message</label>
         <input

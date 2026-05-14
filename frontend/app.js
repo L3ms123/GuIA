@@ -60,12 +60,14 @@ function showOnboarding() {
   const onboarding = el('onboarding');
   onboarding.style.display = 'flex';
   onboarding.removeAttribute('aria-hidden');
+  document.body.toggleAttribute('data-onboarding-open', true);
 }
 
 function hideOnboarding() {
   const onboarding = el('onboarding');
   onboarding.style.display = 'none';
   onboarding.setAttribute('aria-hidden', 'true');
+  document.body.removeAttribute('data-onboarding-open');
 }
 
 function initAppTitleButton() {
@@ -151,6 +153,8 @@ function applyOnboardingTranslations() {
   const optSimpleLanguageLabel = document.querySelector('label[for="opt-simple-language"] span') ||
     document.querySelector('#opt-simple-language')?.closest('label')?.querySelector('span');
   if (optSimpleLanguageLabel) optSimpleLanguageLabel.textContent = t('onboarding.simpleLanguage');
+  const optSimpleLanguageHelp = document.querySelector('#opt-simple-language')?.closest('label')?.querySelector('.card-subtitle');
+  if (optSimpleLanguageHelp) optSimpleLanguageHelp.textContent = t('onboarding.simpleLanguageHelp');
 
   const optCaptionsLabel = document.querySelector('label[for="opt-captions"] span') ||
     document.querySelector('#opt-captions')?.closest('label')?.querySelector('span');
@@ -159,6 +163,9 @@ function applyOnboardingTranslations() {
   const optMoreTimeLabel = document.querySelector('label[for="opt-more-time"] span') ||
     document.querySelector('#opt-more-time')?.closest('label')?.querySelector('span');
   if (optMoreTimeLabel) optMoreTimeLabel.textContent = t('onboarding.moreTime');
+
+  const optVisualDescriptionsLabel = document.querySelector('#opt-visual-descriptions')?.closest('label')?.querySelector('span');
+  if (optVisualDescriptionsLabel) optVisualDescriptionsLabel.textContent = t('onboarding.visualDescriptions');
 
   // STEP 3: Privacy
   const privacyLabel = document.querySelector('[data-i18n="onboarding.privacy"]');
@@ -197,9 +204,16 @@ function onboardingEls() {
 function showOnboardingStep(step) {
   state.onboardingStep = step;
   const { steps, backBtn, nextBtn, stepCount, stepFill } = onboardingEls();
+  const onboardingPanel = document.querySelector('.onboarding-panel');
+  const onboardingBody = document.querySelector('.onboarding-body');
 
   steps.forEach(section => {
     section.hidden = Number(section.dataset.step) !== step;
+  });
+
+  requestAnimationFrame(() => {
+    if (onboardingPanel) onboardingPanel.scrollTop = 0;
+    if (onboardingBody) onboardingBody.scrollTop = 0;
   });
 
   // progreso barra
@@ -268,9 +282,23 @@ function applyAccessibilityPrefs() {
   document.body.toggleAttribute('data-simple-language', state.accessibilityPrefs.simpleLanguage);
   document.body.toggleAttribute('data-captions', state.accessibilityPrefs.captions);
   document.body.toggleAttribute('data-more-time', state.accessibilityPrefs.moreTime);
+  document.body.toggleAttribute('data-visual-descriptions', state.accessibilityPrefs.visualDescriptions);
 
   if (state.accessibilityPrefs.largeText) {
     document.body.setAttribute('data-mode', 'senior');
+  } else if (document.body.dataset.mode === 'senior' && state.selectedAge !== 'senior') {
+    document.body.setAttribute('data-mode', 'regular');
+  }
+
+  if (state.accessibilityPrefs.moreTime) {
+    setPreferredSpeechSpeed('slow');
+  }
+}
+
+function setPreferredSpeechSpeed(speed) {
+  const btn = document.querySelector(`.speed-btn[data-speed="${speed}"]`);
+  if (btn && btn.getAttribute('aria-checked') !== 'true') {
+    btn.click();
   }
 }
 
@@ -305,6 +333,10 @@ function bindOnboardingFlow() {
     state.accessibilityPrefs.moreTime = e.target.checked;
   });
 
+  document.getElementById('opt-visual-descriptions')?.addEventListener('change', e => {
+    state.accessibilityPrefs.visualDescriptions = e.target.checked;
+  });
+
   consent?.addEventListener('change', updateOnboardingButtons);
 
   backBtn?.addEventListener('click', () => {
@@ -336,6 +368,30 @@ function applyAppTranslations() {
     btn.textContent = t(`audio.${speedKeys[i]}`);
   });
 
+  const audioLabel = document.querySelector('.audio-label');
+  if (audioLabel) audioLabel.textContent = t('audio.volume', 'Volume');
+
+  const spokenAudioBtn = el('spoken-audio-btn');
+  if (spokenAudioBtn) {
+    const enabled = spokenAudioBtn.getAttribute('aria-pressed') === 'true';
+    spokenAudioBtn.textContent = enabled
+      ? t('audio.spokenOn', 'Audio on')
+      : t('audio.spokenOff', 'Audio off');
+    spokenAudioBtn.setAttribute(
+      'aria-label',
+      enabled ? t('audio.turnSpokenOff', 'Turn spoken audio off') : t('audio.turnSpokenOn', 'Turn spoken audio on')
+    );
+  }
+
+  const playbackBtn = el('audio-playback-btn');
+  if (playbackBtn) {
+    const paused = playbackBtn.getAttribute('aria-pressed') === 'true';
+    playbackBtn.setAttribute('aria-label', paused ? t('audio.resume', 'Resume audio') : t('audio.pause', 'Pause audio'));
+  }
+
+  const replayBtn = el('audio-replay-btn');
+  if (replayBtn) replayBtn.setAttribute('aria-label', t('audio.replay', 'Replay last answer'));
+
   // Mensaje de bienvenida en el chat
   const firstBubble = document.querySelector('.assistant-bubble');
   if (firstBubble) firstBubble.textContent = t('chat.welcome');
@@ -352,8 +408,16 @@ function applyAppTranslations() {
   if (whereAmIBtn) whereAmIBtn.textContent = t('app.whereAmI');
 
   // Título principal
+  const brandTitle = document.querySelector('.brand-title');
+  if (brandTitle) brandTitle.textContent = t('app.title');
+
   const appTitle = el('app-title');
-  if (appTitle) appTitle.textContent = t('app.title');
+  if (appTitle) {
+    appTitle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span></span>';
+    const label = appTitle.querySelector('span:last-child');
+    if (label) label.textContent = t('app.settings', 'Settings');
+    appTitle.setAttribute('aria-label', t('app.openSettings', 'Open guide settings'));
+  }
 
   // Context panel labels (optional elements)
   const chooseLocation = el('choose-location');
@@ -375,9 +439,22 @@ function applyAppTranslations() {
   const helperText = document.querySelector('.helper-text');
   if (helperText) helperText.textContent = t('chat.helper');
   const chatInputEl = el('chat-input');
-  if (chatInputEl) chatInputEl.placeholder = t('chat.placeholder');
+  if (chatInputEl) chatInputEl.placeholder = getChatPlaceholder();
   const sendBtnEl = el('send-btn');
   if (sendBtnEl) sendBtnEl.textContent = t('chat.send');
+}
+
+function getChatPlaceholder() {
+  if (!window.matchMedia('(max-width: 640px)').matches) {
+    return t('chat.placeholder');
+  }
+
+  const compact = {
+    en: 'Ask GuIA...',
+    es: 'Pregunta a GuIA...',
+    ca: 'Pregunta a GuIA...'
+  };
+  return compact[state.selectedLang] || compact.en;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -403,6 +480,84 @@ function addBubble(role, text) {
   chatThread.appendChild(row);
   chatThread.scrollTop = chatThread.scrollHeight;
   return bubble;
+}
+
+function easyWordAnnotationsEnabled() {
+  return state.accessibilityPrefs.simpleLanguage;
+}
+
+async function annotateEasyWords(bubble) {
+  if (!bubble || !easyWordAnnotationsEnabled()) return;
+
+  const text = bubble.textContent.trim();
+  if (!text) return;
+
+  try {
+    const res = await fetch('http://127.0.0.1:5002/easy-words', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, language: state.selectedLang })
+    });
+
+    if (!res.ok) return;
+    const data = await res.json();
+    if (typeof data.rewritten_text === 'string' && data.rewritten_text.trim()) {
+      bubble.textContent = data.rewritten_text.trim();
+      return;
+    }
+
+    const annotations = Array.isArray(data.annotations) ? data.annotations : [];
+    if (!annotations.length) return;
+
+    renderAnnotatedText(bubble, text, annotations);
+  } catch (err) {
+    console.warn('Could not annotate easy words:', err);
+  }
+}
+
+function renderAnnotatedText(container, text, annotations) {
+  const byWord = new Map();
+  annotations.forEach((item) => {
+    const word = (item.word || '').trim().toLowerCase();
+    if (!word || byWord.has(word)) return;
+    byWord.set(word, item);
+  });
+
+  if (!byWord.size) return;
+
+  const pattern = new RegExp(`\\b(${[...byWord.keys()].map(escapeRegExp).join('|')})\\b`, 'giu');
+  const fragment = document.createDocumentFragment();
+  let lastIndex = 0;
+  let match;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+
+    const item = byWord.get(match[0].toLowerCase());
+    const span = document.createElement('span');
+    span.className = 'easy-word';
+    span.textContent = item.replacement || match[0];
+    const label = item.replacement
+      ? `${match[0]}: ${item.definition}`
+      : item.definition;
+    span.title = label;
+    span.setAttribute('aria-label', label);
+    fragment.appendChild(span);
+    lastIndex = pattern.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+
+  container.textContent = '';
+  container.appendChild(fragment);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 async function loadLocations() {
@@ -506,6 +661,8 @@ async function loadTranslations() {
 
   initAppTitleButton();
   initApp();
+  applyAppTranslations();
+  window.addEventListener('resize', applyAppTranslations);
 }
 
 document.addEventListener('DOMContentLoaded', loadTranslations);
@@ -525,6 +682,7 @@ function initLanguageSelector() {
       state.selectedLang = btn.dataset.lang;
       selectRadio(btns, btn);
       applyOnboardingTranslations();
+      applyAppTranslations();
       updateOnboardingButtons();
     });
   });
@@ -590,40 +748,108 @@ function initApp() {
   // ─── Volume slider + Mute ─────────────────────────────────────────────────────
   const muteBtn      = el('mute-btn');
   const volumeSlider = el('volume-slider');
+  const playbackBtn = el('audio-playback-btn');
+  const replayBtn = el('audio-replay-btn');
+  const spokenAudioBtn = el('spoken-audio-btn');
+  const audioSettingsBtn = el('audio-settings-btn');
   let isMuted        = false;
+  let isAudioPaused = false;
+  let spokenAudioEnabled = true;
   let currentVolume = 0.5;
   let previousVolume = 0.5;
-  let unmuteWaiters  = [];
+  let audioWaiters  = [];
   let currentAudioBaseSpeed = 'normal';
 
+  function setAudioSettingsOpen(open) {
+    document.body.toggleAttribute('data-audio-settings-open', open);
+    if (!audioSettingsBtn) return;
+
+    audioSettingsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    audioSettingsBtn.setAttribute(
+      'aria-label',
+      open ? t('audio.closeSettings', 'Close audio settings') : t('audio.openSettings', 'Open audio settings')
+    );
+  }
+
+  if (audioSettingsBtn) {
+    audioSettingsBtn.addEventListener('click', () => {
+      setAudioSettingsOpen(!document.body.hasAttribute('data-audio-settings-open'));
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setAudioSettingsOpen(false);
+    });
+
+    setAudioSettingsOpen(false);
+  }
+
   function updateMuteIcon() {
+    if (!muteBtn) return;
     const muted = isMuted || currentVolume === 0;
     muteBtn.textContent = muted ? '🔇' : '🔈';
+    if (!muteBtn) return;
+    muteBtn.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">${muted ? 'volume_off' : 'volume_up'}</span>`;
     muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
-    muteBtn.setAttribute('aria-label', muted ? 'Unmute audio' : 'Mute audio');
+    muteBtn.setAttribute('aria-label', muted ? t('audio.unmute', 'Unmute audio') : t('audio.mute', 'Mute audio'));
+  }
+
+  function updatePlaybackButton() {
+    if (!playbackBtn) return;
+
+    const icon = playbackBtn.querySelector('.material-symbols-outlined');
+    if (icon) icon.textContent = isAudioPaused ? 'play_arrow' : 'pause';
+    playbackBtn.setAttribute('aria-pressed', isAudioPaused ? 'true' : 'false');
+    playbackBtn.setAttribute(
+      'aria-label',
+      isAudioPaused ? t('audio.resume', 'Resume audio') : t('audio.pause', 'Pause audio')
+    );
+  }
+
+  function updateSpokenAudioButton() {
+    if (!spokenAudioBtn) return;
+
+    spokenAudioBtn.textContent = spokenAudioEnabled
+      ? t('audio.spokenOn', 'Audio on')
+      : t('audio.spokenOff', 'Audio off');
+    spokenAudioBtn.setAttribute('aria-pressed', spokenAudioEnabled ? 'true' : 'false');
+    spokenAudioBtn.setAttribute(
+      'aria-label',
+      spokenAudioEnabled
+        ? t('audio.turnSpokenOff', 'Turn spoken audio off')
+        : t('audio.turnSpokenOn', 'Turn spoken audio on')
+    );
   }
 
   function applyAudioSettings(audio = currentAudio) {
     if (!audio) return;
-    audio.volume = isMuted ? 0 : currentVolume;
-    audio.muted = isMuted || currentVolume === 0;
+    audio.volume = isMuted || !spokenAudioEnabled ? 0 : currentVolume;
+    audio.muted = isMuted || !spokenAudioEnabled || currentVolume === 0;
     const baseRate = SPEECH_PLAYBACK_RATE[currentAudioBaseSpeed] || 1;
     const targetRate = SPEECH_PLAYBACK_RATE[currentSpeechSpeed] || 1;
     audio.playbackRate = targetRate / baseRate;
   }
 
-  // Mute
-  function waitUntilUnmuted() {
-    if (!isMuted) return Promise.resolve();
+  function canPlayAudio() {
+    return spokenAudioEnabled && !isAudioPaused;
+  }
+
+  function waitUntilAudioAllowed() {
+    if (canPlayAudio()) return Promise.resolve();
 
     return new Promise((resolve) => {
-      unmuteWaiters.push(resolve);
+      audioWaiters.push(resolve);
     });
   }
 
-  function releaseUnmuteWaiters() {
-    const waiters = unmuteWaiters;
-    unmuteWaiters = [];
+  function releaseAudioWaiters() {
+    if (!canPlayAudio()) return;
+
+    resolveAudioWaiters();
+  }
+
+  function resolveAudioWaiters() {
+    const waiters = audioWaiters;
+    audioWaiters = [];
     waiters.forEach((resolve) => resolve());
   }
 
@@ -639,6 +865,8 @@ function initApp() {
   }
 
     function resumeAudioOutput() {
+      if (!canPlayAudio()) return;
+
       if (currentAudio && currentAudio.paused) {
         applyAudioSettings(currentAudio);
         currentAudio.play().catch((err) => {
@@ -648,7 +876,7 @@ function initApp() {
     if (speechSynthesis.paused) {
       speechSynthesis.resume();
     }
-    releaseUnmuteWaiters(); 
+    releaseAudioWaiters(); 
   }
 
   // Volume slider: fuera de resumeAudioOutput ↓
@@ -660,14 +888,14 @@ function initApp() {
 
       if (value === 0) {
         isMuted = true;
-        pauseAudioOutput();
+        applyAudioSettings();
       } else {
         if (isMuted) {
           isMuted = false;
-          resumeAudioOutput();
         }
         applyAudioSettings();
       }
+      releaseAudioWaiters();
       updateMuteIcon();
     });
     updateMuteIcon();
@@ -685,7 +913,7 @@ function initApp() {
 
       if (isMuted) {
         if (volumeSlider) volumeSlider.value = 0;
-        pauseAudioOutput();
+        applyAudioSettings();
       } else {
         if (volumeSlider && Number(volumeSlider.value) === 0) {
           volumeSlider.value = Math.round((previousVolume || 0.5) * 100);
@@ -693,10 +921,54 @@ function initApp() {
         currentVolume = Number(volumeSlider?.value || 50) / 100;
         previousVolume = currentVolume || previousVolume;
         applyAudioSettings();
-        resumeAudioOutput();
       }
+      releaseAudioWaiters();
       updateMuteIcon();
     });
+  }
+
+  if (playbackBtn) {
+    playbackBtn.addEventListener('click', () => {
+      isAudioPaused = !isAudioPaused;
+
+      if (isAudioPaused) {
+        pauseAudioOutput();
+      } else {
+        resumeAudioOutput();
+      }
+
+      updatePlaybackButton();
+    });
+    updatePlaybackButton();
+  }
+
+  if (replayBtn) {
+    replayBtn.addEventListener('click', () => {
+      const text = lastAssistantText.trim();
+      if (!text) return;
+
+      spokenAudioEnabled = true;
+      isAudioPaused = false;
+      resetSpeechQueue();
+      updateSpokenAudioButton();
+      updatePlaybackButton();
+      queueSpeech(text);
+    });
+  }
+
+  if (spokenAudioBtn) {
+    spokenAudioBtn.addEventListener('click', () => {
+      spokenAudioEnabled = !spokenAudioEnabled;
+
+      if (!spokenAudioEnabled) {
+        resetSpeechQueue();
+      } else {
+        resumeAudioOutput();
+      }
+
+      updateSpokenAudioButton();
+    });
+    updateSpokenAudioButton();
   }
 
   function speakInitialWelcome() {
@@ -704,6 +976,7 @@ function initApp() {
     const text = firstBubble?.textContent?.trim();
     if (!text) return;
 
+    lastAssistantText = text;
     resetSpeechQueue();
     queueSpeech(text, state.selectedLang, state.selectedPersona);
   }
@@ -984,7 +1257,7 @@ function initApp() {
       const style = config[persona] || config.adult;
 
       utterance.pitch = style.pitch;
-      utterance.volume = isMuted ? 0 : currentVolume;
+      utterance.volume = isMuted || !spokenAudioEnabled ? 0 : currentVolume;
       const speedRate = {
         slow: 0.8,
         normal: 1,
@@ -1039,7 +1312,7 @@ function initApp() {
       audio.onerror = cleanup;
 
       try {
-        await waitUntilUnmuted();
+        await waitUntilAudioAllowed();
 
         if (currentAudio !== audio) {
           cleanup();
@@ -1069,9 +1342,13 @@ function initApp() {
   function stopCurrentAudio() {
     if (!currentAudio) return;
 
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
+    const audio = currentAudio;
     currentAudio = null;
+    audio.pause();
+    audio.currentTime = 0;
+    if (typeof audio.onended === 'function') {
+      audio.onended();
+    }
   }
 
   function resetSpeechQueue() {
@@ -1080,6 +1357,7 @@ function initApp() {
 
     stopCurrentAudio();
     speechSynthesis.cancel();
+    resolveAudioWaiters();
   }
   window.guiaResetSpeechQueue = resetSpeechQueue;
 
@@ -1088,6 +1366,8 @@ function initApp() {
   });
 
   function queueSpeech(text, lang = state.selectedLang, persona = state.selectedPersona) {
+    if (!spokenAudioEnabled) return;
+
     const sentence = text.trim();
     if (!sentence) return;
 
@@ -1104,7 +1384,7 @@ function initApp() {
         .then(async () => {
           if (queueVersion !== speechQueueVersion) return;
 
-          await waitUntilUnmuted();
+          await waitUntilAudioAllowed();
 
           if (queueVersion !== speechQueueVersion) return;
 
@@ -1128,7 +1408,7 @@ function initApp() {
       .then(async () => {
         if (queueVersion !== speechQueueVersion) return;
 
-        await waitUntilUnmuted();
+        await waitUntilAudioAllowed();
 
         if (queueVersion !== speechQueueVersion) return;
 
@@ -1240,9 +1520,11 @@ function initApp() {
           sentenceBuffer += text;
           fullAssistantText += text;
 
-          const extracted = extractCompleteSentences(sentenceBuffer);
-          extracted.sentences.forEach((sentence) => queueSpeech(sentence));
-          sentenceBuffer = extracted.remainder;
+          if (!payload.simple_language) {
+            const extracted = extractCompleteSentences(sentenceBuffer);
+            extracted.sentences.forEach((sentence) => queueSpeech(sentence));
+            sentenceBuffer = extracted.remainder;
+          }
         } else if (event.type === 'replace') {
           const text = event.text || '';
           if (!text) return;
@@ -1257,12 +1539,17 @@ function initApp() {
           fullAssistantText = text;
           sentenceBuffer = '';
           chatThread.scrollTop = chatThread.scrollHeight;
+
+          if (payload.simple_language) {
+            resetSpeechQueue();
+            queueSpeech(text);
+          }
         } else if (event.type === 'error') {
           throw new Error(event.error || 'Streaming chat failed');
         }
       });
 
-      if (sentenceBuffer.trim()) {
+      if (!payload.simple_language && sentenceBuffer.trim()) {
         queueSpeech(sentenceBuffer);
       }
 
@@ -1270,8 +1557,15 @@ function initApp() {
         lastAssistantText = fullAssistantText.trim();
       }
 
+      if (assistantBubble && !payload.simple_language) {
+        await annotateEasyWords(assistantBubble);
+      }
+
       if (!receivedText) {
-        addBubble('assistant', t('chat.emptyResponse', "I couldn't generate a response."));
+        const emptyBubble = addBubble('assistant', t('chat.emptyResponse', "I couldn't generate a response."));
+        if (!payload.simple_language) {
+          await annotateEasyWords(emptyBubble);
+        }
       }
     } finally {
       setThinkingIndicator(false);
@@ -1310,6 +1604,9 @@ function initApp() {
         language: state.selectedLang,
         age_range: AGE_RANGE_BY_KEY[state.selectedAge] || AGE_RANGE_BY_KEY.adult,
         personality: state.selectedPersona,
+        simple_language: state.accessibilityPrefs.simpleLanguage,
+        visual_descriptions: state.accessibilityPrefs.visualDescriptions,
+        more_time: state.accessibilityPrefs.moreTime,
         room: state.currentRoom,
         artwork: state.currentArtwork
       });

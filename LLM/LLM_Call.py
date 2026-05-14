@@ -44,11 +44,721 @@ LANGUAGE_RULES = {
     "spanish": "Answer strictly in Spanish.",
     "english": "Answer strictly in English.",
 }
+EASY_WORD_SOURCE_LABELS = {
+    "es": "Diccionario Facil",
+    "en": "Simple Wiktionary",
+    "ca": "easy-read rewrite",
+}
+
+EASY_WORD_STOPWORDS = {
+    "ademas", "ahora", "algunos", "alguna", "algunas", "aunque", "cuando", "donde",
+    "durante", "entonces", "estaba", "estaban", "estamos", "porque", "puede",
+    "pueden", "tambien", "tiene", "tienen", "sobre", "entre", "desde", "hasta",
+    "aquesta", "museo", "obra", "sala", "renacimiento", "persona", "personas", "importante",
+}
+EASY_WORD_MAX_CANDIDATES = 12
+EASY_WORD_USER_AGENT = "GuIA museum accessibility helper/1.0"
+DEFAULT_IDEM_API_URL = "https://rafelsv-guia-idem-api.hf.space/answer"
+DEFAULT_IDEM_API_TIMEOUT_SECONDS = 180
+IDEM_MODEL_ALIASES = {
+    "LLAMA1B": "meta-llama/Llama-3.2-1B-Instruct",
+    "GEMMA2B": "google/gemma-2-2b-it",
+    "SALAMANDRA2B": "BSC-LT/salamandra-2b-instruct",
+    "LLAMA3B": "meta-llama/Llama-3.2-3B-Instruct",
+    "GEMMA4B": "google/gemma-3-4b-it",
+    "OLMO7B": "allenai/OLMo-2-1124-7B-Instruct",
+    "SALAMANDRA7B": "BSC-LT/salamandra-7b-instruct",
+    "LLAMA8B": "meta-llama/Llama-3.1-8B-Instruct",
+    "GEMMA9B": "google/gemma-2-9b-it",
+    "GEMMA12B": "google/gemma-3-12b-it",
+    "GEMMA27B": "google/gemma-3-27b-it",
+}
+IDEM_PROMPTS = {
+    "en": (
+        "Please rewrite the following complex text in order to make it easier to understand by non-native "
+        "speakers of English. You can do so by replacing complex words with simpler synonyms, deleting "
+        "unimportant information, and/or splitting long complex sentences into several simpler ones. "
+        "The final simplified text needs to be grammatical, fluent, and retain the main ideas of the "
+        "original without altering its meaning. Return only one reformulation. Do not add facts."
+    ),
+    "es": (
+        "Por favor, reescriba el siguiente texto complejo para que sea mas facil de entender para quienes "
+        "no hablan espanol como lengua materna. Puede hacerlo reemplazando palabras complejas con sinonimos "
+        "mas simples, eliminando informacion irrelevante o dividiendo oraciones largas en varias mas simples. "
+        "El texto simplificado final debe ser gramaticalmente correcto, fluido y conservar las ideas "
+        "principales del original sin alterar su significado. Devuelve solo una reformulacion. No anadas datos."
+    ),
+    "ca": (
+        "Si us plau, reescriviu el text complex seguent per tal que sigui mes facil d'entendre per a parlants "
+        "no nadius del catala. Podeu fer-ho substituint paraules complexes per sinonims mes simples, eliminant "
+        "informacio no important o dividint frases llargues en diverses de mes simples. El text simplificat final "
+        "ha de ser gramatical, fluid i conservar les idees principals de l'original sense alterar-ne el significat. "
+        "Torna nomes una reformulacio. No afegeixis dades."
+    ),
+}
+
+IDEM_LANGUAGE_NAMES = {
+    "en": "English",
+    "es": "Spanish",
+    "ca": "Catalan",
+}
 
 
 def get_language_rule(language: str) -> str:
     key = (language or "en").strip().lower()
     return LANGUAGE_RULES.get(key, "Answer strictly in English.")
+
+
+def normalize_easy_word(value: str) -> str:
+    translation = str.maketrans("áéíóúüñÁÉÍÓÚÜÑ", "aeiouunAEIOUUN")
+    return value.translate(translation).lower()
+
+
+def easy_word_slug(word: str) -> str:
+    normalized = normalize_easy_word(word)
+    normalized = re.sub(r"[^a-z0-9\s-]", "", normalized)
+    normalized = re.sub(r"\s+", "-", normalized.strip())
+    return normalized
+
+
+def normalize_easy_language(language: str) -> str:
+    key = (language or "es").strip().lower()
+    if key in {"spanish", "español"}:
+        return "es"
+    if key in {"english", "eng"}:
+        return "en"
+    if key in {"catalan", "català", "catala"}:
+        return "ca"
+    return key if key in {"es", "en", "ca"} else "es"
+
+
+def language_code(language: str) -> str:
+    key = (language or "en").strip().lower()
+    if key in {"spanish", "espanol", "español", "es"}:
+        return "es"
+    if key in {"catalan", "catala", "català", "ca"}:
+        return "ca"
+    if key in {"english", "eng", "en"}:
+        return "en"
+    return normalize_easy_language(key)
+
+
+def get_idem_api_url() -> str:
+    return (os.getenv("IDEM_API_URL") or DEFAULT_IDEM_API_URL).strip()
+
+
+def get_idem_api_timeout() -> float:
+    raw_timeout = (os.getenv("IDEM_API_TIMEOUT") or "").strip()
+    if not raw_timeout:
+        return DEFAULT_IDEM_API_TIMEOUT_SECONDS
+    try:
+        return max(1.0, float(raw_timeout))
+    except ValueError:
+        return DEFAULT_IDEM_API_TIMEOUT_SECONDS
+
+
+def parse_idem_rewrite(original_text: str, output_text: str) -> str:
+    """Extract the first usable iDEM reformulation from model output."""
+    original = original_text.strip()
+    responses = []
+    for line in output_text.splitlines():
+        cleaned = sanitize_chat_text(line).strip()
+        cleaned = re.sub(r"^(OUTPUT|INPUT)\s*:?\s*", "", cleaned, flags=re.IGNORECASE)
+        cleaned = cleaned.lstrip("1234567890-").lstrip(".").strip()
+        if not cleaned or cleaned == original:
+            continue
+        if cleaned.lower().startswith(("here are", "rewrite ", "rephrasing ")):
+            continue
+        responses.append(cleaned)
+
+    if not responses:
+        cleaned = sanitize_chat_text(output_text).strip()
+        return cleaned if cleaned and cleaned != original else ""
+
+    return responses[0]
+
+
+def parse_idem_answer(output_text: str) -> str:
+    """Clean direct iDEM guide-generation output."""
+    lines = []
+    for line in output_text.splitlines():
+        cleaned = sanitize_chat_text(line).strip()
+        cleaned = re.sub(r"^(OUTPUT|ANSWER|INPUT)\s*:?\s*", "", cleaned, flags=re.IGNORECASE)
+        if not cleaned:
+            continue
+        if cleaned.lower().startswith(("here is", "here are", "sure,", "of course")):
+            continue
+        lines.append(cleaned)
+
+    return format_chat_text("\n".join(lines) if lines else sanitize_chat_text(output_text))
+
+
+@lru_cache(maxsize=1)
+def get_idem_local_model():
+    """Load an iDEM-compatible Hugging Face model only when explicitly configured."""
+    selected_model = (os.getenv("IDEM_HF_MODEL") or "").strip()
+    if not selected_model:
+        return None
+
+    try:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoProcessor, AutoTokenizer
+    except Exception as exc:
+        app.logger.warning(
+            "iDEM local model dependencies are unavailable. Install requirements.txt or configure IDEM_API_URL. Error: %s",
+            exc,
+        )
+        return None
+
+    pretrained_model = IDEM_MODEL_ALIASES.get(selected_model.upper(), selected_model)
+    token = os.getenv("IDEM_HF_TOKEN") or os.getenv("HF_TOKEN")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == "cpu" and getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+        device = torch.device("mps")
+
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_model, token=token)
+        try:
+            processor = AutoProcessor.from_pretrained(pretrained_model, token=token)
+        except Exception:
+            processor = None
+        model = AutoModelForCausalLM.from_pretrained(pretrained_model, token=token).to(device).eval()
+    except Exception as exc:
+        app.logger.warning(
+            "Could not load iDEM local model %s. The first run may need to download it from Hugging Face; "
+            "set IDEM_HF_TOKEN if the model requires access, or configure IDEM_API_URL. Error: %s",
+            pretrained_model,
+            exc,
+        )
+        return None
+
+    return {
+        "tokenizer": tokenizer,
+        "processor": processor,
+        "model": model,
+        "device": device,
+        "torch": torch,
+        "name": pretrained_model,
+    }
+
+
+def run_idem_local_rewrite(text: str, language: str) -> str:
+    local_model = get_idem_local_model()
+    if not local_model:
+        return ""
+
+    prompt = f"{IDEM_PROMPTS.get(language, IDEM_PROMPTS['en'])}\nINPUT:\n{text}"
+    tokenizer = local_model["tokenizer"]
+    processor = local_model["processor"]
+    model = local_model["model"]
+    device = local_model["device"]
+    torch = local_model["torch"]
+
+    try:
+        if processor is None:
+            raise AttributeError("No processor is available for this model.")
+        messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
+        inputs = processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+        )
+        inputs = inputs.to(device)
+        input_len = inputs["input_ids"].shape[-1]
+        with torch.inference_mode():
+            generation = model.generate(**inputs, max_new_tokens=700, do_sample=False, top_p=None, temperature=None)
+        output_text = processor.decode(generation[0][input_len:], skip_special_tokens=True)
+    except Exception:
+        try:
+            inputs = tokenizer(prompt, return_tensors="pt", return_token_type_ids=False).to(device)
+            input_len = inputs["input_ids"].shape[-1]
+            with torch.inference_mode():
+                generation = model.generate(**inputs, max_new_tokens=700, do_sample=False, top_p=None, temperature=None)
+            output_text = tokenizer.decode(generation[0][input_len:], skip_special_tokens=True)
+        except Exception as exc:
+            app.logger.warning("iDEM local rewrite failed: %s", exc)
+            return ""
+
+    return parse_idem_rewrite(text, output_text)
+
+
+def run_idem_local_prompt(prompt: str) -> str:
+    local_model = get_idem_local_model()
+    if not local_model:
+        selected_model = (os.getenv("IDEM_HF_MODEL") or "").strip()
+        raise RuntimeError(
+            f"iDEM local model {selected_model or '<unset>'} could not be loaded. "
+            "Install transformers/accelerate/huggingface-hub, allow the Hugging Face model download, "
+            "or configure IDEM_API_URL."
+        )
+
+    tokenizer = local_model["tokenizer"]
+    processor = local_model["processor"]
+    model = local_model["model"]
+    device = local_model["device"]
+    torch = local_model["torch"]
+
+    try:
+        if processor is None:
+            raise AttributeError("No processor is available for this model.")
+        messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
+        inputs = processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+        )
+        inputs = inputs.to(device)
+        input_len = inputs["input_ids"].shape[-1]
+        with torch.inference_mode():
+            generation = model.generate(**inputs, max_new_tokens=900, do_sample=False, top_p=None, temperature=None)
+        output_text = processor.decode(generation[0][input_len:], skip_special_tokens=True)
+    except Exception:
+        inputs = tokenizer(prompt, return_tensors="pt", return_token_type_ids=False, truncation=True).to(device)
+        input_len = inputs["input_ids"].shape[-1]
+        with torch.inference_mode():
+            generation = model.generate(**inputs, max_new_tokens=900, do_sample=False, top_p=None, temperature=None)
+        output_text = tokenizer.decode(generation[0][input_len:], skip_special_tokens=True)
+
+    answer = parse_idem_answer(output_text)
+    if not answer:
+        raise RuntimeError("iDEM returned an empty answer.")
+    return answer
+
+
+def run_idem_api_prompt(prompt: str, language: str) -> str:
+    api_url = get_idem_api_url()
+    if not api_url:
+        raise RuntimeError("IDEM_API_URL is not configured.")
+
+    payload = json.dumps({
+        "prompt": prompt,
+        "text": prompt,
+        "language": language,
+    }).encode("utf-8")
+    request_obj = Request(
+        api_url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": EASY_WORD_USER_AGENT,
+        },
+        method="POST",
+    )
+
+    with urlopen(request_obj, timeout=get_idem_api_timeout()) as response:
+        raw = response.read().decode("utf-8", errors="ignore")
+
+    return parse_idem_api_response(raw)
+
+
+def parse_idem_api_response(raw: str) -> str:
+    def extract_text(value: Any) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value
+        if isinstance(value, list):
+            return "\n".join(extract_text(item) for item in value if extract_text(item))
+        if isinstance(value, dict):
+            for key in (
+                "response",
+                "answer",
+                "generated_text",
+                "text",
+                "output",
+                "result",
+                "prediction",
+                "content",
+                "message",
+            ):
+                text = extract_text(value.get(key))
+                if text:
+                    return text
+            return ""
+        return str(value)
+
+    try:
+        data = json.loads(raw)
+        output_text = extract_text(data)
+    except json.JSONDecodeError:
+        output_text = raw
+
+    answer = parse_idem_answer(str(output_text))
+    if not answer:
+        preview = re.sub(r"\s+", " ", raw).strip()[:500]
+        raise RuntimeError(f"iDEM API returned an empty answer. Raw response preview: {preview}")
+    return answer
+
+
+def build_idem_guide_payload(
+    message: str,
+    language: str,
+    age_range: str,
+    personality: str,
+    room: Optional[str],
+    artwork: Optional[str],
+    graph_context: Optional[dict[str, Any]],
+    visual_descriptions: bool,
+    more_time: bool,
+) -> dict[str, Any]:
+    rows = graph_context.get("rows") if graph_context else []
+    cypher = graph_context.get("cypher") if graph_context else ""
+    lang = language_code(language)
+    language_name = IDEM_LANGUAGE_NAMES.get(lang, "English")
+    return {
+        "task": "answer_with_context",
+        "mode": "lectura_facil",
+        "language": lang,
+        "question": message,
+        "context": rows,
+        "rows": rows,
+        "graph_context": {
+            "cypher": cypher,
+            "rows": rows,
+        },
+        "museum": "Museu del Renaixement in Molins de Rei",
+        "room": room,
+        "artwork": artwork,
+        "visitor_profile": age_range,
+        "personality": personality,
+        "options": {
+            "visual_descriptions": visual_descriptions,
+            "more_time": more_time,
+        },
+        "instructions": (
+            f"Answer only in {language_name}. Do not mix languages. "
+            f"If the visitor uses another language, still answer in {language_name} unless they explicitly ask to change language. "
+            "Answer the visitor question directly using only the provided context. "
+            "Use Lectura Facil / Easy Read language, but keep enough useful detail for a museum guide. "
+            "Prefer clear short paragraphs with 2 or 3 sentences each. Explain necessary difficult terms with simple words. "
+            "Do not rewrite a previous answer. Do not invent facts. Return only the final answer."
+        ),
+    }
+
+
+def run_idem_api_guide(payload: dict[str, Any]) -> str:
+    api_url = get_idem_api_url()
+    if not api_url:
+        raise RuntimeError("IDEM_API_URL is not configured.")
+
+    request_obj = Request(
+        api_url,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": EASY_WORD_USER_AGENT,
+        },
+        method="POST",
+    )
+
+    with urlopen(request_obj, timeout=get_idem_api_timeout()) as response:
+        raw = response.read().decode("utf-8", errors="ignore")
+    return parse_idem_api_response(raw)
+
+
+def call_idem_guide(
+    message: str,
+    language: str,
+    age_range: str,
+    personality: str,
+    room: Optional[str],
+    artwork: Optional[str],
+    graph_context: Optional[dict[str, Any]],
+    visual_descriptions: bool,
+    more_time: bool,
+) -> str:
+    """Generate the Easy Read answer directly with an iDEM API."""
+    api_url = get_idem_api_url()
+    if not api_url:
+        raise RuntimeError(
+            "IDEM_API_URL is not configured. Lectura facil is configured to use iDEM through an API only."
+        )
+
+    payload = build_idem_guide_payload(
+        message=message,
+        language=language,
+        age_range=age_range,
+        personality=personality,
+        room=room,
+        artwork=artwork,
+        graph_context=graph_context,
+        visual_descriptions=visual_descriptions,
+        more_time=more_time,
+    )
+    return run_idem_api_guide(payload)
+
+
+def simplify_with_idem(text: str, language: str) -> str:
+    """Rewrite a complete answer for Lectura Facil using iDEM's simplification task."""
+    text = format_chat_text(text)
+    if not text:
+        return ""
+
+    lang = language_code(language)
+    if get_idem_api_url():
+        language_name = IDEM_LANGUAGE_NAMES.get(lang, "English")
+        prompt = (
+            f"{IDEM_PROMPTS.get(lang, IDEM_PROMPTS['en'])}\n\n"
+            f"Return only {language_name}. Do not mix languages. "
+            "Keep museum facts unchanged. Do not use Markdown.\n\n"
+            f"INPUT:\n{text}"
+        )
+        rewritten = run_idem_api_prompt(prompt, lang)
+    else:
+        rewritten = run_idem_local_rewrite(text, lang)
+
+    rewritten = format_chat_text(rewritten)
+    if not rewritten or rewritten == text:
+        return ""
+    return rewritten
+
+
+def easy_word_candidates(text: str, language: str = "es") -> list[str]:
+    lang = normalize_easy_language(language)
+    words = re.findall(r"\b[a-záéíóúüñçàèòïü'-]{5,}\b", text.lower(), flags=re.IGNORECASE)
+    seen = set()
+    candidates = []
+
+    for word in words:
+        normalized = normalize_easy_word(word)
+        if normalized in seen or normalized in EASY_WORD_STOPWORDS:
+            continue
+        has_accent = word != normalized
+        complex_suffix = word.endswith((
+            "mente", "acion", "aciones", "imiento", "imientos",
+            "tion", "sion", "ment", "ance", "ence", "ity",
+            "ció", "cions", "ment",
+        ))
+        if has_accent or complex_suffix or len(word) >= 10 or is_probably_complex_term(word, lang):
+            seen.add(normalized)
+            candidates.append(word)
+        if len(candidates) >= EASY_WORD_MAX_CANDIDATES:
+            break
+
+    return candidates
+
+
+def is_probably_complex_term(word: str, language: str) -> bool:
+    normalized = normalize_easy_word(word)
+    if len(normalized) >= 9:
+        return True
+    if language in {"es", "ca"} and len(normalized) >= 6:
+        return bool(re.search(r"(jiv|xiv|giv|qu|gn|mn|pt|ct|str|sc|ç)", normalized))
+    if language == "en" and len(normalized) >= 6:
+        return bool(re.search(r"(giv|jiv|ph|ps|pt|gn|mn|ct|sc|str|tion|sion)", normalized))
+    return False
+
+
+def extract_diccionario_facil_definition(html: str, word: str) -> str:
+    text = re.sub(r"(?is)<(script|style).*?>.*?</\1>", " ", html)
+    text = re.sub(r"(?is)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?is)</(p|div|h1|h2|h3|li)>", "\n", text)
+    text = re.sub(r"(?is)<[^>]+>", " ", text)
+    text = re.sub(r"&nbsp;?", " ", text)
+    lines = [re.sub(r"\s+", " ", line).strip() for line in text.splitlines()]
+    lines = [line for line in lines if line]
+
+    marker_index = next(
+        (index for index, line in enumerate(lines) if "Esta palabra tiene" in line),
+        -1,
+    )
+    if marker_index == -1:
+        return ""
+
+    for line in lines[marker_index + 1:]:
+        if line.lower() in {"ejemplo", "imagen", "leer mas", "leer más"}:
+            break
+        if line.lower() == word.lower():
+            continue
+        if len(line) >= 24:
+            return line[:280]
+
+    return ""
+
+
+@lru_cache(maxsize=512)
+def lookup_diccionario_facil(word: str) -> Optional[dict[str, str]]:
+    slug = easy_word_slug(word)
+    if not slug:
+        return None
+
+    for suffix in ("", "-0"):
+        url = f"https://www.diccionariofacil.org/diccionario/{slug}{suffix}"
+        request_obj = Request(url, headers={"User-Agent": EASY_WORD_USER_AGENT})
+        try:
+            with urlopen(request_obj, timeout=2.5) as response:
+                html = response.read().decode("utf-8", errors="ignore")
+        except (HTTPError, URLError, TimeoutError, OSError):
+            continue
+
+        definition = extract_diccionario_facil_definition(html, word)
+        if definition:
+            return {
+                "word": word,
+                "definition": definition,
+                "replacement": "",
+                "source": url,
+            }
+
+    return None
+
+
+@lru_cache(maxsize=512)
+def lookup_simple_wiktionary(word: str) -> Optional[dict[str, str]]:
+    slug = easy_word_slug(word)
+    if not slug:
+        return None
+
+    url = f"https://simple.wiktionary.org/wiki/{slug}"
+    request_obj = Request(url, headers={"User-Agent": EASY_WORD_USER_AGENT})
+    try:
+        with urlopen(request_obj, timeout=2.5) as response:
+            html = response.read().decode("utf-8", errors="ignore")
+    except (HTTPError, URLError, TimeoutError, OSError):
+        return None
+
+    definition = extract_simple_wiktionary_definition(html, word)
+    if not definition:
+        return None
+
+    return {
+        "word": word,
+        "definition": definition,
+        "replacement": "",
+        "source": url,
+    }
+
+
+def extract_simple_wiktionary_definition(html: str, word: str) -> str:
+    text = re.sub(r"(?is)<(script|style).*?>.*?</\1>", " ", html)
+    text = re.sub(r"(?is)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?is)</(p|div|h1|h2|h3|li)>", "\n", text)
+    text = re.sub(r"(?is)<[^>]+>", " ", text)
+    text = re.sub(r"&nbsp;?", " ", text)
+    lines = [re.sub(r"\s+", " ", line).strip() for line in text.splitlines()]
+    lines = [line for line in lines if line]
+
+    for line in lines:
+        if re.match(r"^\d+\.\s+", line):
+            cleaned = re.sub(r"^\d+\.\s+", "", line)
+            cleaned = re.sub(r"\s+", " ", cleaned).strip()
+            if len(cleaned) >= 20:
+                return cleaned[:280]
+
+    lowered = word.lower()
+    for line in lines:
+        if line.lower().startswith(f"{lowered} is ") or line.lower().startswith(f"to {lowered} is "):
+            return line[:280]
+
+    return ""
+
+
+def propose_easy_replacement(word: str, language: str, definition: str = "") -> str:
+    language_name = {
+        "es": "Spanish",
+        "en": "English",
+        "ca": "Catalan",
+    }.get(language, "Spanish")
+    prompt = (
+        f"Replace this difficult {language_name} word or term with a simpler {language_name} word or short phrase.\n"
+        f"Word: {word}\n"
+        f"Definition from {EASY_WORD_SOURCE_LABELS.get(language, 'the dictionary')}: {definition}\n\n"
+        "Rules:\n"
+        "- Return only the replacement text.\n"
+        "- Do not return the original word.\n"
+        "- Use 1 to 5 words.\n"
+        "- Preserve the meaning in this museum guide context.\n"
+        "- If no accurate simpler replacement exists, return EMPTY."
+    )
+
+    try:
+        response = COHERE_CLIENT.chat(
+            model=MODEL_USED,
+            preamble="You are an accessibility editor specializing in easy-to-read language.",
+            message=prompt,
+        )
+    except Exception:
+        return ""
+
+    replacement = sanitize_chat_text(response.text).strip().strip('"').strip("'")
+    replacement = re.sub(r"[\r\n]+", " ", replacement)
+    if not replacement or replacement.lower() in {"empty", "no", "none", "n/a"}:
+        return ""
+    if replacement.lower() == word.lower():
+        return ""
+    if len(replacement.split()) > 6 or len(replacement) > 70:
+        return ""
+    return replacement
+
+
+def validate_easy_replacement(
+    original_text: str,
+    word: str,
+    replacement: str,
+    language: str,
+    definition: str = "",
+) -> bool:
+    if not replacement:
+        return False
+    if len(replacement) >= len(word) and len(replacement.split()) >= len(word.split()):
+        return False
+
+    language_name = {
+        "es": "Spanish",
+        "en": "English",
+        "ca": "Catalan",
+    }.get(language, "Spanish")
+    prompt = (
+        f"Decide if this {language_name} easy-read replacement preserves the meaning in context.\n\n"
+        f"Original text: {original_text}\n"
+        f"Difficult word: {word}\n"
+        f"Proposed replacement: {replacement}\n"
+        f"Dictionary definition: {definition or 'not available'}\n\n"
+        "Answer only YES or NO.\n"
+        "Answer YES only when the replacement is easier than the original and fits naturally in the sentence.\n"
+        "Answer NO if the replacement changes the meaning, is too broad, is ungrammatical, or depends on a different context."
+    )
+
+    try:
+        response = COHERE_CLIENT.chat(
+            model=MODEL_USED,
+            preamble="You are a strict accessibility QA reviewer.",
+            message=prompt,
+        )
+    except Exception:
+        return False
+
+    answer = sanitize_chat_text(response.text).strip().upper()
+    return answer.startswith("YES")
+
+
+def simplify_catalan_text(text: str, difficult_words: Optional[list[str]] = None) -> str:
+    difficult_terms = ", ".join(difficult_words or [])
+    prompt = (
+        "Rewrite this Catalan museum guide text in easy-to-read Catalan.\n"
+        "Use common words, short sentences, and one idea per sentence.\n"
+        "If needed, think of the text in Simple English first, then write the final answer only in Catalan.\n"
+        "Replace difficult technical words with simple explanations.\n"
+        f"Do not use these difficult words in the final text: {difficult_terms or 'none'}.\n"
+        "Do not add facts. Do not use Markdown. Preserve line breaks when useful.\n\n"
+        f"Text:\n{text}"
+    )
+
+    try:
+        response = COHERE_CLIENT.chat(
+            model=MODEL_USED,
+            preamble="You are an accessibility editor for Catalan easy-to-read museum content.",
+            message=prompt,
+        )
+    except Exception:
+        return ""
+
+    simplified = format_chat_text(response.text)
+    return simplified if simplified and simplified != text.strip() else ""
 
 
 def sanitize_chat_text(text: str) -> str:
@@ -382,7 +1092,10 @@ def build_system_prompt(
     personality: str = "Artist",
     room: Optional[str] = None,
     artwork: Optional[str] = None,
-    graph_context: Optional[dict[str, Any]] = None
+    graph_context: Optional[dict[str, Any]] = None,
+    simple_language: bool = False,
+    visual_descriptions: bool = False,
+    more_time: bool = False,
 ) -> str:
     """Build a dynamic system prompt based on user preferences and context."""
 
@@ -415,6 +1128,38 @@ def build_system_prompt(
         f"Guide them with the personality/style of {personality}."
         # Consider adding artworks seen so far
     )
+
+    if simple_language:
+        prompt += (
+            "\n\nEASY-READ ACCESSIBILITY MODE: The user selected Texto facil / Easy Read. "
+            "Prioritize cognitive accessibility. Use common words and explain any necessary difficult word immediately. "
+            "Use short direct sentences, active voice, and one idea per sentence. "
+            "Keep paragraphs very short. Prefer 2 to 4 concise paragraphs. "
+            "Avoid idioms, abstract metaphors, jargon, subordinate-heavy sentences, and decorative language. "
+            "Choose easy words from the first draft. Do not rely on later replacement. "
+            "Before using any noun, adjective, or verb that may be specialized, ask if a common word or short explanation can say the same thing. "
+            "Prefer short explanations over rare synonyms. "
+            "Do not use specialist terms such as architectural, technical, historical, or artistic jargon unless the exact term is essential. "
+            "If a difficult term is essential, write a simple explanation instead of using only the term. "
+            "For example, do not write specialist architectural terms by themselves; explain the shape or idea with common words. "
+            "If a list helps, use a short numbered list with no more than 5 items. "
+            "Do not patronize the user and do not remove essential meaning. "
+            "For Spanish, aim for Lectura Facil around CEFR A1-A2 when the facts allow it. "
+            "AI-generated Easy Read still needs human validation for formal publication."
+        )
+
+    if visual_descriptions:
+        prompt += (
+            "\n\nVISUAL DESCRIPTION REQUEST: Include concrete visual details when the retrieved data supports them: "
+            "what can be seen, where important elements are, colors, materials, gestures, and composition. "
+            "Do not invent visual details that are not in the retrieved context."
+        )
+
+    if more_time:
+        prompt += (
+            "\n\nPACING REQUEST: Give the answer in a slower rhythm for audio. "
+            "Use clear sentence boundaries and avoid dense clauses."
+        )
 
     if detail_requested:
         prompt += (
@@ -553,6 +1298,49 @@ def cypher_case_insensitive_text_expression(expression: str) -> str:
 
 def cypher_string_literal(value: str) -> str:
     return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def repair_cypher_string_literals(cypher: str) -> str:
+    """Normalize common LLM string-literal mistakes before sending Cypher to Neo4j."""
+    repaired = []
+    in_single_quote = False
+    index = 0
+
+    while index < len(cypher):
+        char = cypher[index]
+
+        if char == "\\":
+            repaired.append(char)
+            if index + 1 < len(cypher):
+                index += 1
+                repaired.append(cypher[index])
+            index += 1
+            continue
+
+        if char == "'":
+            if in_single_quote and index + 1 < len(cypher) and cypher[index + 1] == "'":
+                repaired.append("\\'")
+                index += 2
+                continue
+
+            in_single_quote = not in_single_quote
+            repaired.append(char)
+            index += 1
+            continue
+
+        repaired.append(char)
+        index += 1
+
+    return "".join(repaired)
+
+
+def prepare_generated_cypher(cypher: str) -> str:
+    """Apply deterministic repairs that keep generated Cypher read-only and parseable."""
+    repaired = repair_cypher_string_literals(cypher)
+    repaired = rewrite_combined_sala_id_filters(repaired)
+    if not is_read_only_cypher(repaired):
+        raise ValueError(f"Generated Cypher is not read-only after repair: {repaired}")
+    return repaired
 
 
 def rewrite_exact_property_matches(cypher: str, normalize_accents: bool = False) -> str:
@@ -779,6 +1567,32 @@ def build_artwork_context_fallback_cypher(
     )
 
 
+def try_artwork_context_fallback(
+    artwork: Optional[str],
+    room: Optional[str],
+) -> tuple[Optional[str], list[dict[str, Any]]]:
+    """Try robust artwork lookup when generated Cypher is empty or invalid."""
+    if not artwork:
+        return None, []
+
+    for include_room_filter in (True, False):
+        fallback_cypher = build_artwork_context_fallback_cypher(
+            artwork,
+            room,
+            include_room_filter=include_room_filter,
+        )
+        if not fallback_cypher:
+            continue
+
+        safe_console_print("\n--- NEO4J QUERY API ARTWORK CONTEXT RETRY CYPHER ---", flush=True)
+        safe_console_print(fallback_cypher, flush=True)
+        raw_rows = execute_query_api(fallback_cypher)
+        if raw_rows:
+            return fallback_cypher, raw_rows
+
+    return None, []
+
+
 def extract_cypher(text: str) -> str:
     """Extract a Cypher statement from an LLM response."""
     match = re.search(r"```(?:cypher)?\s*(.*?)```", text, flags=re.IGNORECASE | re.DOTALL)
@@ -918,6 +1732,7 @@ def generate_query_api_cypher(query: str) -> str:
         message=message,
     )
     cypher = extract_cypher(response.text)
+    cypher = prepare_generated_cypher(cypher)
     if not is_read_only_cypher(cypher):
         raise ValueError(f"Generated Cypher is not read-only: {cypher}")
     return cypher
@@ -936,10 +1751,10 @@ def retrieve_neo4j_context_query_api(
     query = build_query_with_context(message, room, artwork, previous_graph_context)
     try:
         cypher = generate_query_api_cypher(query)
-        cypher = rewrite_combined_sala_id_filters(cypher)
+        cypher = prepare_generated_cypher(cypher)
         raw_rows = execute_query_api(cypher)
         if not raw_rows:
-            contains_cypher = rewrite_exact_property_matches_to_contains(cypher)
+            contains_cypher = prepare_generated_cypher(rewrite_exact_property_matches_to_contains(cypher))
             if contains_cypher != cypher:
                 safe_console_print("\n--- NEO4J QUERY API CONTAINS RETRY CYPHER ---", flush=True)
                 safe_console_print(contains_cypher, flush=True)
@@ -947,7 +1762,7 @@ def retrieve_neo4j_context_query_api(
                 if raw_rows:
                     cypher = contains_cypher
         if not raw_rows:
-            fuzzy_cypher = rewrite_exact_property_matches_to_fuzzy(cypher)
+            fuzzy_cypher = prepare_generated_cypher(rewrite_exact_property_matches_to_fuzzy(cypher))
             if fuzzy_cypher != cypher:
                 safe_console_print("\n--- NEO4J QUERY API ACCENT RETRY CYPHER ---", flush=True)
                 safe_console_print(fuzzy_cypher, flush=True)
@@ -955,23 +1770,31 @@ def retrieve_neo4j_context_query_api(
                 if raw_rows:
                     cypher = fuzzy_cypher
         if not raw_rows and artwork:
-            for include_room_filter in (True, False):
-                fallback_cypher = build_artwork_context_fallback_cypher(
-                    artwork,
-                    room,
-                    include_room_filter=include_room_filter,
-                )
-                if not fallback_cypher:
-                    continue
-
-                safe_console_print("\n--- NEO4J QUERY API ARTWORK CONTEXT RETRY CYPHER ---", flush=True)
-                safe_console_print(fallback_cypher, flush=True)
-                raw_rows = execute_query_api(fallback_cypher)
-                if raw_rows:
-                    cypher = fallback_cypher
-                    break
+            fallback_cypher, fallback_rows = try_artwork_context_fallback(artwork, room)
+            if fallback_rows:
+                cypher = fallback_cypher or cypher
+                raw_rows = fallback_rows
         rows = clean_graph_rows(raw_rows, message)
     except Exception as exc:
+        try:
+            fallback_cypher, fallback_rows = try_artwork_context_fallback(artwork, room)
+            if fallback_rows:
+                rows = clean_graph_rows(fallback_rows, message)
+                safe_console_print("\n--- NEO4J QUERY API RECOVERED WITH ARTWORK CONTEXT ---", flush=True)
+                safe_console_print(fallback_cypher, flush=True)
+                safe_console_print("--- NEO4J QUERY API ROWS ---", flush=True)
+                safe_console_print(json.dumps(rows, ensure_ascii=False, indent=2), flush=True)
+                safe_console_print("--- END NEO4J QUERY API CONTEXT ---\n", flush=True)
+                return {
+                    "message": message,
+                    "cypher": fallback_cypher,
+                    "rows": rows,
+                }
+        except Exception as fallback_exc:
+            safe_console_print("\n--- NEO4J QUERY API ARTWORK CONTEXT RECOVERY FAILED ---", flush=True)
+            safe_console_print(str(fallback_exc), flush=True)
+            safe_console_print("--- END NEO4J QUERY API ARTWORK CONTEXT RECOVERY FAILED ---\n", flush=True)
+
         safe_console_print("\n--- NEO4J QUERY API FAILED ---", flush=True)
         safe_console_print(str(exc), flush=True)
         safe_console_print("--- END NEO4J QUERY API FAILED ---\n", flush=True)
@@ -1014,9 +1837,60 @@ def call_llm(
     personality: str = "Artist",
     room: Optional[str] = None,
     artwork: Optional[str] = None,
-    graph_context: Optional[dict[str, Any]] = None
+    graph_context: Optional[dict[str, Any]] = None,
+    simple_language: bool = False,
+    visual_descriptions: bool = False,
+    more_time: bool = False,
 ) -> str:
-    """Call the Cohere LLM with user preferences and optional museum context."""
+    """Call the guide model with user preferences and optional museum context."""
+    graph_rows = graph_context.get("rows") if graph_context else []
+    if simple_language and graph_rows:
+        try:
+            return call_idem_guide(
+                message=message,
+                language=language,
+                age_range=age_range,
+                personality=personality,
+                room=room,
+                artwork=artwork,
+                graph_context=graph_context,
+                visual_descriptions=visual_descriptions,
+                more_time=more_time,
+            )
+        except Exception as exc:
+            app.logger.warning("iDEM direct Easy Read generation failed; falling back to Cohere: %s", exc)
+    elif simple_language:
+        app.logger.info("Skipping iDEM Easy Read generation because Neo4j returned no context rows.")
+
+    return call_cohere_guide(
+        message=message,
+        session_id=session_id,
+        language=language,
+        age_range=age_range,
+        personality=personality,
+        room=room,
+        artwork=artwork,
+        graph_context=graph_context,
+        simple_language=simple_language,
+        visual_descriptions=visual_descriptions,
+        more_time=more_time,
+    )
+
+
+def call_cohere_guide(
+    message: str,
+    session_id: str,
+    language: str = "English",
+    age_range: str = "Adult 20-60 years old",
+    personality: str = "Artist",
+    room: Optional[str] = None,
+    artwork: Optional[str] = None,
+    graph_context: Optional[dict[str, Any]] = None,
+    simple_language: bool = False,
+    visual_descriptions: bool = False,
+    more_time: bool = False,
+) -> str:
+    """Call Cohere for the normal guide path, or as fallback when iDEM fails."""
     system_prompt = build_system_prompt(
         language,
         age_range,
@@ -1024,6 +1898,9 @@ def call_llm(
         room,
         artwork,
         graph_context,
+        simple_language,
+        visual_descriptions,
+        more_time,
     )
 
     response = COHERE_CLIENT.chat(
@@ -1044,7 +1921,10 @@ def stream_llm(
     personality: str = "Artist",
     room: Optional[str] = None,
     artwork: Optional[str] = None,
-    graph_context: Optional[dict[str, Any]] = None
+    graph_context: Optional[dict[str, Any]] = None,
+    simple_language: bool = False,
+    visual_descriptions: bool = False,
+    more_time: bool = False,
 ):
     """Yield generated text chunks from Cohere as they arrive."""
     system_prompt = build_system_prompt(
@@ -1054,6 +1934,9 @@ def stream_llm(
         room,
         artwork,
         graph_context,
+        simple_language,
+        visual_descriptions,
+        more_time,
     )
 
     response = COHERE_CLIENT.chat_stream(
@@ -1074,6 +1957,7 @@ def stream_llm(
                 yield {"type": "delta", "text": sanitized}
 
     formatted_text = format_chat_text(full_text)
+
     if formatted_text and formatted_text != full_text.strip():
         yield {"type": "replace", "text": formatted_text}
 
@@ -1088,6 +1972,23 @@ app = Flask(__name__)
 CORS(app)
 
 
+@app.route("/easy-words", methods=["POST"])
+def easy_words_endpoint():
+    """Rewrite complete text in Easy Read mode through the iDEM adapter."""
+    data = request.get_json() or {}
+    text = (data.get("text") or "").strip()
+    language = data.get("language", "es")
+    if not text:
+        return jsonify({"rewritten_text": "", "annotations": []}), 200
+
+    rewritten_text = simplify_with_idem(text, language)
+    return jsonify({
+        "annotations": [],
+        "rewritten_text": rewritten_text,
+        "source": "idem" if rewritten_text else "",
+    }), 200
+
+
 @app.route("/chat", methods=["POST"])
 def chat_endpoint():
     """API endpoint for chat requests with user preferences and context."""
@@ -1099,6 +2000,9 @@ def chat_endpoint():
         language = data.get("language", "English")
         age_range = data.get("age_range", "Adult 20-60 years old")
         personality = data.get("personality", "Artist")
+        simple_language = bool(data.get("simple_language", False))
+        visual_descriptions = bool(data.get("visual_descriptions", False))
+        more_time = bool(data.get("more_time", False))
 
         session_context = SESSION_CONTEXTS.get(session_id, {})
         room = data.get("room") or session_context.get("room")
@@ -1117,6 +2021,9 @@ def chat_endpoint():
             room=room,
             artwork=artwork,
             graph_context=graph_context,
+            simple_language=simple_language,
+            visual_descriptions=visual_descriptions,
+            more_time=more_time,
         )
         record_session_turn(session_id, message, response, graph_context, room, artwork)
 
@@ -1136,6 +2043,9 @@ def chat_stream_endpoint():
     language = data.get("language", "English")
     age_range = data.get("age_range", "Adult 20-60 years old")
     personality = data.get("personality", "Artist")
+    simple_language = bool(data.get("simple_language", False))
+    visual_descriptions = bool(data.get("visual_descriptions", False))
+    more_time = bool(data.get("more_time", False))
 
     session_context = SESSION_CONTEXTS.get(session_id, {})
     room = data.get("room") or session_context.get("room")
@@ -1151,6 +2061,46 @@ def chat_stream_endpoint():
             graph_context = retrieve_neo4j_context(message, session_id, room, artwork)
             streamed_response = ""
 
+            graph_rows = graph_context.get("rows") if graph_context else []
+            if simple_language and graph_rows:
+                try:
+                    streamed_response = call_idem_guide(
+                        message=message,
+                        language=language,
+                        age_range=age_range,
+                        personality=personality,
+                        room=room,
+                        artwork=artwork,
+                        graph_context=graph_context,
+                        visual_descriptions=visual_descriptions,
+                        more_time=more_time,
+                    )
+                    yield stream_event({"type": "replace", "text": streamed_response, "source": "idem"})
+                    record_session_turn(session_id, message, streamed_response, graph_context, room, artwork)
+                    yield stream_event({"type": "done"})
+                    return
+                except Exception as exc:
+                    app.logger.warning("iDEM direct Easy Read generation failed; falling back to Cohere stream: %s", exc)
+                    streamed_response = call_cohere_guide(
+                        message=message,
+                        session_id=session_id,
+                        language=language,
+                        age_range=age_range,
+                        personality=personality,
+                        room=room,
+                        artwork=artwork,
+                        graph_context=graph_context,
+                        simple_language=True,
+                        visual_descriptions=visual_descriptions,
+                        more_time=more_time,
+                    )
+                    yield stream_event({"type": "replace", "text": streamed_response, "source": "cohere-fallback"})
+                    record_session_turn(session_id, message, streamed_response, graph_context, room, artwork)
+                    yield stream_event({"type": "done"})
+                    return
+            elif simple_language:
+                app.logger.info("Skipping iDEM Easy Read generation because Neo4j returned no context rows.")
+
             for event in stream_llm(
                 message=message,
                 session_id=session_id,
@@ -1160,6 +2110,9 @@ def chat_stream_endpoint():
                 room=room,
                 artwork=artwork,
                 graph_context=graph_context,
+                simple_language=simple_language,
+                visual_descriptions=visual_descriptions,
+                more_time=more_time,
             ):
                 if event.get("type") == "delta":
                     streamed_response += event.get("text", "")

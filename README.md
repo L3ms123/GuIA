@@ -79,6 +79,21 @@ python run_guia.py
 
 Before starting, create `LLM/.env` with `COHERE_LLM_KEY=your_key_here`.
 
+Lectura facil uses iDEM directly through an HTTP API for Easy Read answers instead of generating with Cohere and then doing word-by-word replacement. Configure the iDEM endpoint in `LLM/.env`:
+
+```env
+# This should be an iDEM endpoint that answers from context, not a rewrite endpoint.
+IDEM_API_URL=http://127.0.0.1:8001/answer
+```
+
+For the Hugging Face Space created for this project, use:
+
+```env
+IDEM_API_URL=https://rafelsv-guia-idem-api.hf.space/answer
+```
+
+GuIA sends iDEM a structured payload with `question`, `context`, `graph_context`, `room`, `artwork`, and Easy Read instructions. If iDEM is not configured or returns an error, GuIA falls back to the normal Cohere guide path with the Easy Read prompt.
+
 This starts the frontend at `http://127.0.0.1:8000`, the audio API at `http://127.0.0.1:5000`, and the LLM API at `http://127.0.0.1:5002`. Press `Ctrl+C` in that same terminal to stop everything.
 
 

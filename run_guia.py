@@ -5,9 +5,12 @@ import subprocess
 import sys
 import threading
 import time
+import json
 from dataclasses import dataclass
 from importlib.util import find_spec
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parent
@@ -61,6 +64,67 @@ def start_service(service: Service, env: dict[str, str]) -> None:
     )
 
     thread = threading.Thread(target=stream_output, args=(service,), daemon=True)
+    thread.start()
+
+
+def warm_idem_api(env: dict[str, str]) -> None:
+    api_url = (env.get("IDEM_API_URL") or "").strip()
+    if not api_url:
+        return
+
+    timeout = 180.0
+    try:
+        timeout = max(1.0, float(env.get("IDEM_API_TIMEOUT") or timeout))
+    except ValueError:
+        pass
+
+    payload = {
+        "task": "answer_with_context",
+        "mode": "lectura_facil",
+        "language": "es",
+        "question": "Prepara el servicio para responder en lectura facil.",
+        "context": [
+            {
+                "a.title": "Preparacion",
+                "a.description": "Esta es una peticion corta para cargar el modelo iDEM antes de usar la guia.",
+            }
+        ],
+        "rows": [
+            {
+                "a.title": "Preparacion",
+                "a.description": "Esta es una peticion corta para cargar el modelo iDEM antes de usar la guia.",
+            }
+        ],
+        "graph_context": {"cypher": "", "rows": []},
+        "museum": "Museu del Renaixement in Molins de Rei",
+        "room": None,
+        "artwork": None,
+        "visitor_profile": "Adult 20-60 years old",
+        "personality": "Artist",
+        "options": {"visual_descriptions": False, "more_time": False},
+        "instructions": "Respuesta breve. Sirve solo para calentar el modelo.",
+    }
+
+    request = Request(
+        api_url,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json", "User-Agent": "GuIA iDEM warmup/1.0"},
+        method="POST",
+    )
+
+    print(f"Warming iDEM API at {api_url} ...")
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            response.read()
+        print("iDEM API warm-up completed.")
+    except HTTPError as exc:
+        print(f"iDEM API warm-up returned HTTP {exc.code}. GuIA will still try iDEM during chat.")
+    except (URLError, TimeoutError, OSError) as exc:
+        print(f"iDEM API warm-up did not complete: {exc}. GuIA will still try iDEM during chat.")
+
+
+def start_idem_warmup(env: dict[str, str]) -> None:
+    thread = threading.Thread(target=warm_idem_api, args=(env.copy(),), daemon=True)
     thread.start()
 
 
@@ -209,10 +273,13 @@ def main() -> int:
     print("Starting GuIA services...")
     for service in services:
         start_service(service, env)
+    start_idem_warmup(env)
 
     print("")
     print("GuIA is starting. Open the app at:")
     print("  http://127.0.0.1:8000")
+    print("Mobile preview:")
+    print("  http://127.0.0.1:8000/mobile-preview.html")
     print("")
     print("Press Ctrl+C here to stop all services.")
     print("")

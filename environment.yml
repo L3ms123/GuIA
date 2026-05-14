@@ -40,6 +40,10 @@ dependencies:
 # Install these via pip after creating the environment
 pip:
   - cohere
+  - accelerate>=1.7.0
+  - huggingface-hub>=0.32.0
+  - torch>=2.7.0
+  - transformers>=4.52.3
   - openai-whisper
   - imageio-ffmpeg
   - edge-tts
