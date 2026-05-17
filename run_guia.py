@@ -168,7 +168,7 @@ def build_services() -> list[Service]:
                 "http.server",
                 "8000",
                 "--bind",
-                "127.0.0.1",
+                "0.0.0.0",
                 "--directory",
                 str(ROOT / "frontend"),
             ],
