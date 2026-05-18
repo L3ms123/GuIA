@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ca">
 <head>
   <meta charset="UTF-8" />
-  <title>GuIA Museum Guide</title>
+  <title>GuIA del Museu del Renaixement</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@300;400;700&family=Inter:wght@300;400;600;700&display=swap"
@@ -28,12 +28,12 @@
   >
     <section class="onboarding-panel">
       <header class="onboarding-header">
-        <p class="eyebrow">GuIA Museu del Renaixamen Guide</p>
-        <h1 id="onboarding-title" class="headline">Meet your guide.</h1>
+        <p class="eyebrow">GuIA del Museu del Renaixement</p>
+        <h1 id="onboarding-title" class="headline">Coneix el teu guia.</h1>
  
         <div class="step-meta" aria-live="polite">
           <div class="step-header">
-            <p id="step-count">Step 1 of 3</p>
+            <p id="step-count">Pas 1 de 3</p>
           </div>
 
           <div class="step-bar">
@@ -41,7 +41,7 @@
           </div>
 
           <p id="onboarding-desc" class="body-lg muted">
-            Choose how you would like GuIA to guide you through the Museu del Renaixement.
+            Tria com vols que sigui la teva GuIA per guiar-te pel Museu del Renaixement.
           </p>
 
           
@@ -53,9 +53,9 @@
         <!-- STEP 1: Preferences -->
         <section class="onboarding-step" data-step="1">
  
-          <!-- Language -->
+          <!-- Llengua -->
           <div class="onb-section">
-            <h2 id="label-language" class="section-label">Language</h2>
+            <h2 id="label-language" class="section-label">Llengua</h2>
             <div
               id="language-group"
               class="onb-grid-lang"
@@ -69,19 +69,8 @@
                 role="radio"
                 aria-checked="false"
               >
-                <span class="flag" aria-hidden="true">
-                  <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                    <rect width="36" height="24" fill="#B22234"/>
-                    <rect y="1.85" width="36" height="1.85" fill="white"/>
-                    <rect y="5.54" width="36" height="1.85" fill="white"/>
-                    <rect y="9.23" width="36" height="1.85" fill="white"/>
-                    <rect y="12.92" width="36" height="1.85" fill="white"/>
-                    <rect y="16.62" width="36" height="1.85" fill="white"/>
-                    <rect y="20.31" width="36" height="1.85" fill="white"/>
-                    <rect width="14.4" height="12.92" fill="#3C3B6E"/>
-                  </svg>
-                </span>
                 <h3 class="card-title">English</h3>
+                <p class="card-subtitle">en</p>
               </button>
  
               <button
@@ -91,13 +80,8 @@
                 role="radio"
                 aria-checked="false"
               >
-                <span class="flag" aria-hidden="true">
-                  <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                    <rect width="36" height="24" fill="#c60b1e"/>
-                    <rect y="6" width="36" height="12" fill="#ffc400"/>
-                  </svg>
-                </span>
                 <h3 class="card-title">Español</h3>
+                <p class="card-subtitle">es</p>
               </button>
  
               <button
@@ -107,23 +91,15 @@
                 role="radio"
                 aria-checked="true"
               >
-                <span class="flag" aria-hidden="true">
-                  <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                    <rect width="36" height="24" fill="#FCDD09"/>
-                    <rect y="0"     width="36" height="3.43" fill="#DA121A"/>
-                    <rect y="6.86"  width="36" height="3.43" fill="#DA121A"/>
-                    <rect y="13.71" width="36" height="3.43" fill="#DA121A"/>
-                    <rect y="20.57" width="36" height="3.43" fill="#DA121A"/>
-                  </svg>
-                </span>
                 <h3 class="card-title">Català</h3>
+                <p class="card-subtitle">ca</p>
               </button>
             </div>
           </div>
  
-          <!-- Guide Personality -->
+          <!-- Personalitat del guia -->
           <div class="onb-section">
-            <h2 id="label-personality" class="section-label">Guide personality</h2>
+            <h2 id="label-personality" class="section-label">Personalitat del guia</h2>
             <div
               id="persona-group"
               class="onb-grid"
@@ -132,33 +108,33 @@
             >
               <button type="button" class="card radio-card" data-persona="artist" role="radio" aria-checked="false">
                 <img class="card-icon" src="assets/artist-palette-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Artist</h3>
-                <p class="card-subtitle">Focus on technique, medium, and the act of creation.</p>
+                <h3 class="card-title">Artista</h3>
+                <p class="card-subtitle">Centrat en tècnica, medi i acte de creació.</p>
               </button>
  
               <button type="button" class="card radio-card" data-persona="storyteller" role="radio" aria-checked="false">
                 <img class="card-icon" src="assets/storyteller-fairy-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Storyteller</h3>
-                <p class="card-subtitle">Uncover the myths, histories, and hidden narratives.</p>
+                <h3 class="card-title">Contacontes</h3>
+                <p class="card-subtitle">Descobreix mites, històries i narratives amagades.</p>
               </button>
  
               <button type="button" class="card radio-card" data-persona="explorer" role="radio" aria-checked="false">
                 <img class="card-icon" src="assets/explorer-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Explorer</h3>
-                <p class="card-subtitle">A path through the most significant highlights.</p>
+                <h3 class="card-title">Explorador</h3>
+                <p class="card-subtitle">Un camí pels punts més destacats.</p>
               </button>
  
               <button type="button" class="card radio-card" data-persona="scholar" role="radio" aria-checked="false">
                 <img class="card-icon" src="assets/scholar-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Scholar</h3>
-                <p class="card-subtitle">In-depth historical and contextual analysis of each work.</p>
+                <h3 class="card-title">Erudit</h3>
+                <p class="card-subtitle">Anàlisi històric i contextual profund de cada obra.</p>
               </button>
             </div>
           </div>
  
-          <!-- Visitor Type -->
+          <!-- Franja d'edat -->
           <div class="onb-section">
-            <h2 id="label-visitor" class="section-label">Visitor type</h2>
+            <h2 id="label-visitor" class="section-label">Franja d'edat</h2>
             <div
               id="age-group"
               class="onb-grid age-grid"
@@ -167,44 +143,44 @@
             >
               <button type="button" class="chip radio-chip" data-age="young" role="radio" aria-checked="false">
                 <img class="chip-icon" src="assets/teenager-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <span class="age-title">Young</span>
-                <p class="card-subtitle">(10–19 years)</p>
+                <span class="age-title">Jove</span>
+                <p class="card-subtitle">(10-19 anys)</p>
               </button>
  
               <button type="button" class="chip radio-chip" data-age="adult" role="radio" aria-checked="false">
                 <img class="chip-icon" src="assets/adult-svgrepo-com.svg" alt="" aria-hidden="true" />
                 <span class="age-title">Adult</span>
-                <p class="card-subtitle">(20–60 years)</p>
+                <p class="card-subtitle">(20-60 anys)</p>
               </button>
  
               <button type="button" class="chip radio-chip" data-age="senior" role="radio" aria-checked="false">
                 <img class="chip-icon" src="assets/senior-svgrepo-com.svg" alt="" aria-hidden="true" />
                 <span class="age-title">Senior</span>
-                <p class="card-subtitle">(60+ years)</p>
+                <p class="card-subtitle">(60+ anys)</p>
               </button>
             </div>
             <p id="age-hint" class="hint-muted">
-              Age ranges are an indicative guideline to help tailor content. This field is optional.
+              Les edats són només una guia indicativa per personalitzar el contingut. És opcional respondre.
             </p>
           </div>
         </section>
  
  
-        <!-- STEP 2: Accessibility -->
+        <!-- Pas 2: accessibilitat -->
         <section class="onboarding-step" data-step="2" hidden>
           <div class="onb-section">
-            <h2 id="label-accessibility" class="section-label">Accessibility</h2>
+            <h2 id="label-accessibility" class="section-label">Accessibilitat</h2>
             <div class="toggle-list" role="group" aria-labelledby="label-accessibility">
               <label class="toggle-row">
                 <input type="checkbox" id="opt-large-text" />
-                <span>Large text</span>
+                <span>Text gran</span>
               </label>
  
               <label class="toggle-row">
                 <input type="checkbox" id="opt-simple-language" />
                 <div class="toggle-content">
-                  <span>Simpler language</span>
-                  <p class="card-subtitle">Short sentences, common words, and dictionary help.</p>
+                  <span>Llenguatge més simple</span>
+                  <p class="card-subtitle">Frases curtes, paraules habituals i ajuda del diccionari.</p>
                 </div>
               </label>
  
@@ -212,22 +188,22 @@
               <label class="toggle-row">
                 <input type="checkbox" id="opt-captions" />
                 <div class="toggle-content">
-                  <span>Audio explanations with voice</span>
-                  <p class="card-subtitle">This can be changed at any time.</p>
+                  <span>Explicacions parlades amb veu</span>
+                  <p class="card-subtitle">Això es pot canviar en qualsevol moment.</p>
                 </div>
               </label>
  
               <label class="toggle-row">
                 <input type="checkbox" id="opt-more-time" />
                 <div class="toggle-content">
-                  <span>More time and slower pace</span>
-                  <p class="card-subtitle">This can be changed at any time.</p>
+                  <span>Més temps i ritme més lent</span>
+                  <p class="card-subtitle">Això es pot canviar en qualsevol moment.</p>
                 </div>
               </label>
 
               <label class="toggle-row">
                 <input type="checkbox" id="opt-visual-descriptions" />
-                <span>Visual description of artworks</span>
+                <span>Descripció visual de les obres</span>
               </label>
             </div>
           </div>
@@ -236,30 +212,30 @@
         <!-- STEP 3: Privacy -->
         <section class="onboarding-step" data-step="3" hidden>
           <div class="onb-section">
-            <h2 class="section-label">AI and privacy</h2>
+            <h2 class="section-label">IA i privacitat</h2>
  
             <div class="info-block" role="note">
-              <p>You are talking to an AI museum guide.</p>
-              <p>The guide may make mistakes, so important information should be verified with museum staff.</p>
-              <p>To improve the experience, the system may process your selected language, guide preferences, artwork interactions, and responses.</p>
-              <p>No personal data is collected or stored.</p>
-              <p>If you speak to the AI, audio may be processed to understand speech and generate spoken replies.</p>
+              <p>Estàs parlant amb un guia de museu que utilitza IA.</p>
+              <p>La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.</p>
+              <p>Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.</p>
+              <p>No es recullen ni emmagatzemen dades personals.</p>
+              <p>Si parles amb la IA, l'àudio pot ser processat per entendre la parla i generar respostes parlades.</p>
             </div>
  
             <label class="toggle-row consent-row">
               <input type="checkbox" id="privacy-consent" required />
-              <span>I understand that I am speaking with an AI and I have read how my information is used.</span>
+              <span>Entenc que estic parlant amb una IA i he llegit com s'utilitza la meva informació.</span>
             </label>
           </div>
         </section>
  
       </div><!-- /.onboarding-body -->
  
-      <!-- Footer actions -->
+      <!-- Accions del peu -->
       <footer class="onb-footer">
         <div class="onb-actions">
-          <button class="btn-secondary" type="button" id="onboarding-back">Back</button>
-          <button class="btn-primary" type="button" id="onboarding-next">Continue</button>
+          <button class="btn-secondary" type="button" id="onboarding-back">Enrere</button>
+          <button class="btn-primary" type="button" id="onboarding-next">Continuar</button>
         </div>
       </footer>
  
@@ -268,18 +244,18 @@
  
   <!-- Main application -->
   <div class="app-shell">
-    <!-- Header (GuIA + language + audio) -->
-    <header class="top-bar" aria-label="Application header">
+    <!-- Capcalera: GuIA i audio -->
+    <header class="top-bar" aria-label="Capçalera de l'aplicació">
       <div class="top-left">
         <div class="brand-title">GuIA del Museu del Renaixement</div>
         <button
           class="app-title"
           id="app-title"
           type="button"
-          aria-label="Open guide settings"
+          aria-label="Obrir ajustos de la guia"
         >
           <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-          Settings
+          Ajustos
         </button>
       </div>
 
@@ -290,20 +266,20 @@
           id="audio-settings-btn"
           type="button"
           class="audio-settings-btn"
-          aria-label="Open audio settings"
+          aria-label="Obrir ajustos d'àudio"
           aria-expanded="false"
           aria-controls="audio-controls-panel"
         >
           <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-          <span>Audio</span>
+          <span>Àudio</span>
         </button>
 
-        <div id="audio-controls-panel" class="audio-group" aria-label="Audio controls">
+        <div id="audio-controls-panel" class="audio-group" aria-label="Controls d'àudio">
           <button
             id="mute-btn"
             type="button"
             class="icon-btn"
-            aria-label="Toggle mute"
+            aria-label="Silenciar o activar l'àudio"
             aria-pressed="false"
           >
             🔈
@@ -313,7 +289,7 @@
             id="audio-playback-btn"
             type="button"
             class="icon-btn"
-            aria-label="Pause audio"
+            aria-label="Pausar l'àudio"
             aria-pressed="false"
           >
             <span class="material-symbols-outlined" aria-hidden="true">pause</span>
@@ -323,13 +299,13 @@
             id="audio-replay-btn"
             type="button"
             class="icon-btn"
-            aria-label="Replay last answer"
+            aria-label="Repetir l'última resposta"
           >
             <span class="material-symbols-outlined" aria-hidden="true">replay</span>
           </button>
 
-          <div class="volume-wrap" aria-label="Volume control">
-            <span class="audio-label">Volume</span>
+          <div class="volume-wrap" aria-label="Control de volum">
+            <span class="audio-label">Volum</span>
             <input
               id="volume-slider"
               class="volume-slider"
@@ -338,7 +314,7 @@
               max="100"
               value="50"
               step="1"
-              aria-label="Volume"
+              aria-label="Volum"
             />
           </div>
 
@@ -347,7 +323,7 @@
           <div
             class="speed-group"
             role="radiogroup"
-            aria-label="Speech speed"
+            aria-label="Velocitat de la veu"
           >
             <button
               type="button"
@@ -356,7 +332,7 @@
               role="radio"
               aria-checked="false"
             >
-              Slow
+              Lent
             </button>
             <button
               type="button"
@@ -374,7 +350,7 @@
               role="radio"
               aria-checked="false"
             >
-              Fast
+              Ràpid
             </button>
           </div>
         </div>
@@ -386,7 +362,7 @@
       <!-- Chat -->
       <section
         class="chat-panel"
-        aria-label="Chat conversation"
+        aria-label="Conversa del xat"
         role="log"
         aria-live="polite"
         aria-relevant="additions"
@@ -394,7 +370,7 @@
         <div id="chat-thread" class="chat-thread">
           <div class="msg-row assistant">
             <div class="msg-bubble assistant-bubble">
-              Welcome to the Museu del Renaixement. How would you like to begin?
+              Benvingut al Museu del Renaixement. Selecciona on t'agradaria començar la teva visita o pregunta'm qualsevol cosa sobre el museu.
             </div>
           </div>
         </div>
@@ -408,34 +384,34 @@
       </section>
 
       <!-- Context column -->
-      <aside class="context-column" aria-label="Location context">
+      <aside class="context-column" aria-label="Context d'ubicació">
         <button
           id="where-am-i-btn"
           type="button"
           class="btn-secondary wide"
         >
-          Where am I?
+          On sóc?
         </button>
 
         <div id="context-box" class="context-box" hidden>
-          <h2 class="context-heading" id="choose-location">Choose your location</h2>
+          <h2 class="context-heading" id="choose-location">Tria la teva ubicació</h2>
 
-          <label class="field-label" id="room">Room</label>
+          <label class="field-label" id="room">Sala</label>
           <select
             id="room-select"
             class="field-select"
             aria-describedby="room-help"
           >
-            <option value="">Select a room</option>
+            <option value="">Selecciona una sala</option>
           </select>
 
-          <label class="field-label" id="artwork">Artwork</label>
+          <label class="field-label" id="artwork">Obra</label>
           <select
             id="artwork-select"
             class="field-select"
             aria-describedby="artwork-help"
           >
-            <option value="">Select an artwork</option>
+            <option value="">Selecciona una obra</option>
           </select>
 
           <button
@@ -443,7 +419,7 @@
             type="button"
             class="btn-primary wide"
           >
-            Confirm location
+            Confirmar ubicació
           </button>
 
           <p id="context-error" class="field-error" aria-live="assertive"></p>
@@ -452,14 +428,14 @@
     </main>
 
     <!-- Bottom input -->
-    <footer class="bottom-bar" aria-label="Message input">
+    <footer class="bottom-bar" aria-label="Entrada de missatge">
       <div class="input-shell">
-        <label class="sr-only" for="chat-input">Type your message</label>
+        <label class="sr-only" for="chat-input">Escriu el teu missatge</label>
         <input
           id="chat-input"
           class="chat-input"
           type="text"
-          placeholder="Ask GuIA about the room, the artwork, or the museum..."
+          placeholder="Pregunta a GuIA sobre la sala, l'obra o el museu..."
         />
         <div
           id="voice-input-status"
@@ -467,7 +443,7 @@
           aria-live="polite"
           hidden
         >
-          <strong id="voice-input-status-text">Transcribing</strong>
+          <strong id="voice-input-status-text">Transcrivint</strong>
           <span class="typing voice-input-dots" aria-hidden="true">
             <span></span><span></span><span></span>
           </span>
@@ -476,14 +452,14 @@
           id="mic-btn"
           type="button"
           class="icon-btn"
-          aria-label="Start voice input"
+          aria-label="Començar entrada de veu"
           aria-pressed="false"
         >
           <span class="material-symbols-outlined">mic</span>
         </button>
         <span id="mic-status" class="voice-status" aria-live="polite" hidden></span>
         <button id="send-btn" type="button" class="btn-primary">
-          Send
+          Enviar
         </button>
       </div>
     </footer>
