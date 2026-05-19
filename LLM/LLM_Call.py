@@ -435,7 +435,8 @@ def build_idem_guide_payload(
             "Answer the visitor question directly using only the provided context. "
             "Use Lectura Facil / Easy Read language, but keep enough useful detail for a museum guide. "
             "Prefer clear short paragraphs with 2 or 3 sentences each. Explain necessary difficult terms with simple words. "
-            "Do not rewrite a previous answer. Do not invent facts. Return only the final answer."
+            "Do not rewrite a previous answer. Do not invent facts. Return only the final answer. "
+            + (VISUAL_DESCRIPTION_GUIDELINES if visual_descriptions else "")
         ),
     }
 
@@ -1024,6 +1025,21 @@ AGE_DESCRIPTIONS = {
     "Senior 60+ years old": "You use a relatable and clear style, providing rich historical context suitable to senior visitors.",
 }
 
+VISUAL_DESCRIPTION_GUIDELINES = (
+    "The user selected visual description accessibility mode. Treat the answer as a concise museum audio description. "
+    "Use a structured sequence inspired by visual-art audio-description practice: "
+    "1. identify the work with available label facts such as title, artist, date, medium, and location; "
+    "2. give a short overall impression of the subject, composition, and mood; "
+    "3. move through the work in a clear spatial order, such as foreground to background, center to edges, or top to bottom; "
+    "4. include concrete visible or material details from the retrieved context, such as figures, gestures, objects, clothing, colors, textures, technique, and spatial relationships; "
+    "5. mention historical or social context only after the visual overview. "
+    "Use present tense, third person, short sentences, and spatial/tactile/compositional language. "
+    "Avoid phrases about sighted gaze such as 'draws the viewer's eye'. "
+    "Do not invent any visual detail, color, pose, object, or composition that is not supported by the retrieved context. "
+    "If the retrieved context has too few visual details, say what is known and state that the database does not contain enough visual information for a fuller description."
+)
+
+
 def user_requested_detail(message: str) -> bool:
     lowered = (message or "").lower()
     return any(
@@ -1150,9 +1166,10 @@ def build_system_prompt(
 
     if visual_descriptions:
         prompt += (
-            "\n\nVISUAL DESCRIPTION REQUEST: Include concrete visual details when the retrieved data supports them: "
-            "what can be seen, where important elements are, colors, materials, gestures, and composition. "
-            "Do not invent visual details that are not in the retrieved context."
+            "\n\nVISUAL DESCRIPTION ACCESSIBILITY MODE: "
+            f"{VISUAL_DESCRIPTION_GUIDELINES} "
+            "For a single artwork, prefer 3 to 5 short paragraphs: label facts, overall image, spatial description, and context. "
+            "For a room or multiple artworks, briefly describe each item's visible/material characteristics only where context supports them."
         )
 
     if more_time:
@@ -1203,9 +1220,17 @@ def build_query_with_context(
     message: str,
     room: Optional[str] = None,
     artwork: Optional[str] = None,
-    previous_graph_context: Optional[dict[str, Any]] = None
+    previous_graph_context: Optional[dict[str, Any]] = None,
+    visual_descriptions: bool = False,
 ) -> str:
     query = message
+    if visual_descriptions:
+        query += (
+            "\n\nThe visitor selected visual description accessibility mode. "
+            "Retrieve artwork label data and any available visual, material, technique, composition, subject, object, gesture, color, texture, location, historical, or social context fields. "
+            "Prefer context for the selected artwork when one is provided."
+        )
+
     if room or artwork:
         query += "\n\nCurrent museum context:"
         if room:
@@ -1742,13 +1767,14 @@ def retrieve_neo4j_context_query_api(
     message: str,
     room: Optional[str] = None,
     artwork: Optional[str] = None,
-    previous_graph_context: Optional[dict[str, Any]] = None
+    previous_graph_context: Optional[dict[str, Any]] = None,
+    visual_descriptions: bool = False,
 ) -> Optional[dict[str, Any]]:
     """Fallback graph retrieval using Neo4j Query API over HTTPS."""
     if not neo4j_is_configured():
         return None
 
-    query = build_query_with_context(message, room, artwork, previous_graph_context)
+    query = build_query_with_context(message, room, artwork, previous_graph_context, visual_descriptions)
     try:
         cypher = generate_query_api_cypher(query)
         cypher = prepare_generated_cypher(cypher)
@@ -1817,7 +1843,8 @@ def retrieve_neo4j_context(
     message: str,
     session_id: str,
     room: Optional[str] = None,
-    artwork: Optional[str] = None
+    artwork: Optional[str] = None,
+    visual_descriptions: bool = False,
 ) -> Optional[dict[str, Any]]:
     """Convert the user request to Cypher and return graph rows for final LLM context."""
     session_context = SESSION_CONTEXTS.get(session_id, {})
@@ -1826,6 +1853,7 @@ def retrieve_neo4j_context(
         room,
         artwork,
         previous_graph_context=session_context.get("last_graph_context"),
+        visual_descriptions=visual_descriptions,
     )
 
 
@@ -2011,7 +2039,7 @@ def chat_endpoint():
         if not message:
             return jsonify({"error": "Message cannot be empty"}), 400
 
-        graph_context = retrieve_neo4j_context(message, session_id, room, artwork)
+        graph_context = retrieve_neo4j_context(message, session_id, room, artwork, visual_descriptions)
         response = call_llm(
             message=message,
             session_id=session_id,
@@ -2058,7 +2086,7 @@ def chat_stream_endpoint():
     def generate():
         try:
             yield stream_event({"type": "start"})
-            graph_context = retrieve_neo4j_context(message, session_id, room, artwork)
+            graph_context = retrieve_neo4j_context(message, session_id, room, artwork, visual_descriptions)
             streamed_response = ""
 
             graph_rows = graph_context.get("rows") if graph_context else []

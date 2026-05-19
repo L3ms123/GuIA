@@ -382,6 +382,7 @@ select {
   background: var(--surface-lowest);
   border: 1px solid var(--outline-soft);
   cursor: pointer;
+  font-size: calc(1rem * var(--scale));
 }
 
 .toggle-row:hover {
@@ -406,6 +407,7 @@ select {
   padding: 1rem;
   background: var(--surface-low);
   border: 1px solid var(--outline-soft);
+  font-size: calc(1rem * var(--scale));
 }
 
 .info-block p {
@@ -1582,7 +1584,7 @@ select:focus-visible,
   .info-block {
     max-height: none;
     overflow-y: visible;
-    font-size: 1rem;
+    font-size: calc(1rem * var(--scale));
     line-height: 1.5;
   }
 
