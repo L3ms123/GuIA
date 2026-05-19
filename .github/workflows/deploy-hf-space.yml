@@ -1,0 +1,55 @@
+name: Deploy Hugging Face Space
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Hugging Face CLI
+        run: python -m pip install --upgrade huggingface_hub
+
+      - name: Check Hugging Face token
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "Missing GitHub Actions secret: HF_TOKEN"
+            echo "Add it in GitHub: Settings -> Secrets and variables -> Actions -> New repository secret"
+            exit 1
+          fi
+
+      - name: Upload Space files
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          hf upload RafelSV/guia-demo . . \
+            --repo-type space \
+            --token "$HF_TOKEN" \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude ".venv/*" \
+            --exclude ".codex-run/*" \
+            --exclude "__pycache__/*" \
+            --exclude "LLM/.env" \
+            --exclude "KG/.env" \
+            --exclude "KG/neo4j.dump" \
+            --exclude "VectorDB/chroma_db/*" \
+            --exclude "raw_data/*.pdf" \
+            --exclude "raw_data/*.pptx"

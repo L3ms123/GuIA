@@ -1,0 +1,13 @@
+.git
+.venv
+.codex-run
+__pycache__
+*.pyc
+*.pyo
+LLM/.env
+KG/.env
+.vscode
+KG/neo4j.dump
+VectorDB/chroma_db
+raw_data/*.pdf
+raw_data/*.pptx
