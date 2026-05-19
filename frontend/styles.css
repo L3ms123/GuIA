@@ -555,6 +555,7 @@ select {
   justify-content: flex-end;
   gap: 0.7rem;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .audio-group {
@@ -562,6 +563,11 @@ select {
   align-items: center;
   gap: 0.55rem;
   margin-top: 0;
+  flex-wrap: wrap;
+}
+
+.audio-group > * {
+  min-width: 0;
 }
 
 .audio-settings-btn {
@@ -1115,7 +1121,7 @@ select:focus-visible,
   }
 }
 
-@media (min-width: 641px) {
+@media (min-width: 1061px) {
   body.surface {
     height: 100dvh;
     overflow: hidden;
@@ -1220,7 +1226,7 @@ select:focus-visible,
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1060px) {
   :root {
     --gutter: 1rem;
     --bottom-bar-space: 0rem;

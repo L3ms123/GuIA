@@ -11,23 +11,20 @@ const state = {
 
   onboardingStep: 1,
   totalSteps: 3,
+  lastFocusedElement: null,
 
   accessibilityPrefs: {
     largeText: false,
     simpleLanguage: false,
-    audio: false,
+    spokenAudio: false,
     moreTime: false,
     visualDescriptions: false
+
   }
 };
 
 const sessionId = crypto.randomUUID();
 
-const AGE_RANGE_BY_KEY = {
-  young: 'Young person 10-19 years old',
-  adult: 'Adult 20-60 years old',
-  senior: 'Senior 60+ years old'
-};
 
 const API_BASES = (() => {
   const isLocalSplitServer =
@@ -54,10 +51,10 @@ const PERSONA_KEYS = ['artist', 'storyteller', 'explorer', 'scholar'];
 const AGE_KEYS = ['young', 'adult', 'senior'];
 const AUDIO_SPEED_KEYS = ['slow', 'normal', 'fast'];
 
-const SPEECH_PLAYBACK_RATE = {
-  slow: 0.65,
+const SPEECH_SPEED = {
+  slow: 0.8,
   normal: 1,
-  fast: 1.65
+  fast: 1.5
 };
 
 const BROWSER_SPEECH_LANG = {
@@ -73,24 +70,6 @@ const BROWSER_SPEECH_PERSONA = {
   senior: { pitch: 0.9, rate: 0.9 }
 };
 
-const BROWSER_SPEECH_SPEED = {
-  slow: 0.8,
-  normal: 1,
-  fast: 1.2
-};
-
-const CHAT_PLACEHOLDER_COMPACT = {
-  en: 'Ask GuIA...',
-  es: 'Pregunta a GuIA...',
-  ca: 'Pregunta a GuIA...'
-};
-
-const CONTEXT_SUGGESTION_PREFIX = {
-  en: 'Are you in',
-  es: 'Est\u00e1s en',
-  ca: 'Est\u00e0s a'
-};
-
 const VOICE_MIME_TYPES = [
   'audio/webm;codecs=opus',
   'audio/webm',
@@ -102,7 +81,6 @@ const VOICE_MIME_TYPES = [
 window.USE_KOKORO = true;
 
 // DOM helpers
-
 const dom = {
   byId: new Map(),
 
@@ -147,12 +125,13 @@ function setAttribute(node, name, value) {
 }
 
 // i18n
-
 function getNestedTranslation(source, key) {
   return key.split('.').reduce((obj, k) => (obj ? obj[k] : undefined), source);
 }
 
-function t(key, fallback = '') {
+let translationsLoaded = false;
+
+function t(key, fallback) {
   const currentLang = state.translations[state.selectedLang];
   const caLang = state.translations['ca'];
 
@@ -164,21 +143,49 @@ function t(key, fallback = '') {
   );
 }
 
-// Onboarding
+async function preloadTranslations() {
+  if (translationsLoaded) return;
 
+  try {
+    const res = await fetch(API_ENDPOINTS.translations);
+    if (!res.ok) throw new Error('translations.json fetch failed');
+    state.translations = await res.json();
+    translationsLoaded = true;
+  } catch (e) {
+    console.error('translations.json not found - serving without i18n', e);
+    state.translations = {};
+    translationsLoaded = false;
+  }
+}
+
+// Onboarding
 function showOnboarding() {
+  state.lastFocusedElement = document.activeElement;
   window.guiaResetSpeechQueue?.();
   const onboarding = el('onboarding');
   onboarding.style.display = 'flex';
   onboarding.removeAttribute('aria-hidden');
+  // Ensure onboarding is interactive when shown (remove any leftover inert)
+  onboarding.removeAttribute('inert');
   document.body.toggleAttribute('data-onboarding-open', true);
 }
 
 function hideOnboarding() {
   const onboarding = el('onboarding');
-  onboarding.style.display = 'none';
+
+  document.activeElement?.blur();
+
+  const previous = state.lastFocusedElement;
+
+  onboarding.setAttribute('inert', '');
   onboarding.setAttribute('aria-hidden', 'true');
+  onboarding.style.display = 'none';
   document.body.removeAttribute('data-onboarding-open');
+
+  requestAnimationFrame(() => {
+    previous?.focus?.();
+  });
+  
 }
 
 function initAppTitleButton() {
@@ -254,10 +261,10 @@ function applyOnboardingTranslations() {
   const optSimpleLanguageHelp = q('#opt-simple-language')?.closest('label')?.querySelector('.card-subtitle');
   setText(optSimpleLanguageHelp, t('onboarding.simpleLanguageHelp'));
 
-  const optCaptionsLabel =
-    q('label[for="opt-captions"] span') ||
-    q('#opt-captions')?.closest('label')?.querySelector('span');
-  setText(optCaptionsLabel, t('onboarding.spokenExplanations'));
+  const optSpokenAudioLabel =
+    q('label[for="opt-spoken-audio"] span') ||
+    q('#opt-spoken-audio')?.closest('label')?.querySelector('span');
+  setText(optSpokenAudioLabel, t('onboarding.spokenExplanations'));
 
   const optMoreTimeLabel =
     q('label[for="opt-more-time"] span') ||
@@ -324,14 +331,22 @@ function showOnboardingStep(step) {
 
   const desc = el('onboarding-desc');
   if (desc) {
-    if (step === 1) {
-      desc.textContent = t('onboarding.description');
-      desc.hidden = false;
-    } else if (step === 2) {
-      desc.textContent = t('onboarding.accessibilityHelp');
-      desc.hidden = false;
+    if (translationsLoaded || state.selectedLang !== 'ca') {
+      if (step === 1) {
+        desc.textContent = t('onboarding.description');
+        desc.hidden = false;
+      } else if (step === 2) {
+        desc.textContent = t('onboarding.accessibilityHelp');
+        desc.hidden = false;
+      } else {
+        desc.hidden = true;
+      }
     } else {
-      desc.hidden = true;
+      if (step === 3) {
+        desc.hidden = true;
+      } else {
+        desc.hidden = false;
+      }
     }
   }
 
@@ -343,8 +358,9 @@ function updateOnboardingButtons() {
   const nextBtn = el('onboarding-next');
   const stepCount = el('step-count');
   const consent = el('privacy-consent');
+  const useTranslations = translationsLoaded || state.selectedLang !== 'ca';
 
-  if (stepCount) {
+  if (stepCount && useTranslations) {
     const template = t('onboarding.stepCount', 'Step {current} of {total}');
     stepCount.textContent = template
       .replace('{current}', state.onboardingStep)
@@ -352,15 +368,17 @@ function updateOnboardingButtons() {
   }
 
   if (backBtn) {
-    backBtn.textContent = t('onboarding.back', 'Back');
+    if (useTranslations) backBtn.textContent = t('onboarding.back', 'Back');
     backBtn.hidden = state.onboardingStep === 1;
   }
 
   if (nextBtn) {
-    nextBtn.textContent =
-      state.onboardingStep === state.totalSteps
-        ? t('onboarding.start', 'Start')
-        : t('onboarding.continue', 'Continue');
+    if (useTranslations) {
+      nextBtn.textContent =
+        state.onboardingStep === state.totalSteps
+          ? t('onboarding.start', 'Start')
+          : t('onboarding.continue', 'Continue');
+    }
   }
 
   let valid = false;
@@ -379,7 +397,7 @@ function updateOnboardingButtons() {
 function applyAccessibilityPrefs() {
   document.body.toggleAttribute('data-large-text', state.accessibilityPrefs.largeText);
   document.body.toggleAttribute('data-simple-language', state.accessibilityPrefs.simpleLanguage);
-  document.body.toggleAttribute('data-captions', state.accessibilityPrefs.captions);
+  document.body.toggleAttribute('data-spoken-audio', state.accessibilityPrefs.spokenAudio);
   document.body.toggleAttribute('data-more-time', state.accessibilityPrefs.moreTime);
   document.body.toggleAttribute('data-visual-descriptions', state.accessibilityPrefs.visualDescriptions);
 
@@ -388,6 +406,8 @@ function applyAccessibilityPrefs() {
   if (state.accessibilityPrefs.moreTime) {
     setPreferredSpeechSpeed('slow');
   }
+  window.guiaUpdateSpokenAudio?.();
+  window.guiaReleaseAudioWaiters?.();
 }
 
 function setPreferredSpeechSpeed(speed) {
@@ -418,7 +438,7 @@ function bindOnboardingFlow() {
 
   bindAccessibilityPreference('opt-large-text', 'largeText');
   bindAccessibilityPreference('opt-simple-language', 'simpleLanguage');
-  bindAccessibilityPreference('opt-captions', 'captions');
+  bindAccessibilityPreference('opt-spoken-audio', 'spokenAudio');
   bindAccessibilityPreference('opt-more-time', 'moreTime');
   bindAccessibilityPreference('opt-visual-descriptions', 'visualDescriptions');
 
@@ -515,16 +535,8 @@ function applyAppTranslations() {
 
   setText(q('.helper-text'), t('chat.helper'));
   const chatInputEl = el('chat-input');
-  if (chatInputEl) chatInputEl.placeholder = getChatPlaceholder();
+  if (chatInputEl) chatInputEl.placeholder = t('chat.placeholder');
   setText(el('send-btn'), t('chat.send'));
-}
-
-function getChatPlaceholder() {
-  if (!window.matchMedia('(max-width: 640px)').matches) {
-    return t('chat.placeholder');
-  }
-
-  return CHAT_PLACEHOLDER_COMPACT[state.selectedLang] || CHAT_PLACEHOLDER_COMPACT.en;
 }
 
 // General helpers
@@ -701,19 +713,12 @@ function renderContextSuggestion() {
 // Boot
 
 async function loadTranslations() {
-  try {
-    const res = await fetch(API_ENDPOINTS.translations);
-    state.translations = await res.json();
-  } catch (e) {
-    console.error('translations.json not found - serving without i18n', e);
-    state.translations = {};
-  }
-  await loadLocations();
+  const translationsPromise = preloadTranslations();
+  const locationsPromise = loadLocations();
 
   const preChecked = q('#language-group [aria-checked="true"]');
   if (preChecked) state.selectedLang = preChecked.dataset.lang;
 
-  applyOnboardingTranslations();
   initLanguageSelector();
   initPersonaButtons();
   initAgeButtons();
@@ -723,7 +728,25 @@ async function loadTranslations() {
   initAppTitleButton();
   initApp();
   applyAppTranslations();
-  window.addEventListener('resize', applyAppTranslations);
+
+  if (state.selectedLang !== 'ca') {
+    await translationsPromise;
+    applyOnboardingTranslations();
+    applyAppTranslations();
+  } else {
+    translationsPromise.then(() => {
+      applyOnboardingTranslations();
+      applyAppTranslations();
+    });
+  }
+
+  window.addEventListener('resize', () => {
+    if (state.selectedLang !== 'ca' || translationsLoaded) {
+      applyAppTranslations();
+    }
+  });
+
+  await locationsPromise;
 }
 
 document.addEventListener('DOMContentLoaded', loadTranslations);
@@ -738,9 +761,16 @@ function initLanguageSelector() {
   );
 
   btns.forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       state.selectedLang = btn.dataset.lang;
       selectRadio(btns, btn);
+
+      if (state.selectedLang === 'ca' && !translationsLoaded) {
+        updateOnboardingButtons();
+        return;
+      }
+
+      await preloadTranslations();
       applyOnboardingTranslations();
       applyAppTranslations();
       updateOnboardingButtons();
@@ -850,6 +880,8 @@ function initAudioControls() {
   function updateSpokenAudioButton() {
     if (!spokenAudioBtn) return;
 
+    spokenAudioEnabled = !!state.accessibilityPrefs.spokenAudio;
+
     spokenAudioBtn.textContent = spokenAudioEnabled
       ? t('audio.spokenOn', 'Audio on')
       : t('audio.spokenOff', 'Audio off');
@@ -866,8 +898,8 @@ function initAudioControls() {
     if (!audio) return;
     audio.volume = isMuted || !spokenAudioEnabled ? 0 : currentVolume;
     audio.muted = isMuted || !spokenAudioEnabled || currentVolume === 0;
-    const baseRate = SPEECH_PLAYBACK_RATE[currentAudioBaseSpeed] || 1;
-    const targetRate = SPEECH_PLAYBACK_RATE[currentSpeechSpeed] || 1;
+    const baseRate = SPEECH_SPEED[currentAudioBaseSpeed];
+    const targetRate = SPEECH_SPEED[currentSpeechSpeed];
     audio.playbackRate = targetRate / baseRate;
   }
 
@@ -1008,11 +1040,11 @@ function initAudioControls() {
 
       utterance.lang = BROWSER_SPEECH_LANG[lang];
 
-      const style = BROWSER_SPEECH_PERSONA[persona] || BROWSER_SPEECH_PERSONA.adult;
+      const style = BROWSER_SPEECH_PERSONA[persona];
       utterance.pitch = style.pitch;
       utterance.volume = isMuted || !spokenAudioEnabled ? 0 : currentVolume;
 
-      utterance.rate = style.rate * (BROWSER_SPEECH_SPEED[currentSpeechSpeed] || 1);
+      utterance.rate = style.rate * (SPEECH_SPEED[currentSpeechSpeed]);
       utterance.onend = resolve;
       utterance.onerror = resolve;
 
@@ -1183,6 +1215,8 @@ function initAudioControls() {
   }
 
   window.guiaResetSpeechQueue = resetSpeechQueue;
+  window.guiaUpdateSpokenAudio = updateSpokenAudioButton;
+  window.guiaReleaseAudioWaiters = releaseAudioWaiters; 
 
   return {
     get lastAssistantText() {
@@ -1998,7 +2032,7 @@ function initChat(audio, voice) {
         session_id: sessionId,
         message: value,
         language: state.selectedLang,
-        age_range: AGE_RANGE_BY_KEY[state.selectedAge] || AGE_RANGE_BY_KEY.adult,
+        age_range: state.selectedAge || 'adult',
         personality: state.selectedPersona,
         simple_language: state.accessibilityPrefs.simpleLanguage,
         visual_descriptions: state.accessibilityPrefs.visualDescriptions,
