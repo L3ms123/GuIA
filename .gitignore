@@ -8,3 +8,8 @@ __pycache__/
 .codex-run/
 
 backend/
+
+KG/neo4j.dump
+VectorDB/chroma_db/
+raw_data/*.pdf
+raw_data/*.pptx

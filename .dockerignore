@@ -7,3 +7,7 @@ __pycache__
 LLM/.env
 KG/.env
 .vscode
+KG/neo4j.dump
+VectorDB/chroma_db
+raw_data/*.pdf
+raw_data/*.pptx
