@@ -1121,7 +1121,7 @@ select:focus-visible,
   }
 }
 
-@media (min-width: 1061px) {
+@media (min-width: 1301px) {
   body.surface {
     height: 100dvh;
     overflow: hidden;
@@ -1226,7 +1226,7 @@ select:focus-visible,
   }
 }
 
-@media (max-width: 1060px) {
+@media (max-width: 1300px) {
   :root {
     --gutter: 1rem;
     --bottom-bar-space: 0rem;
