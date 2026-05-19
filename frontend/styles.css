@@ -875,6 +875,8 @@ select {
 .context-box {
   background: var(--surface-lowest);
   padding: 0.9rem 0.9rem 0.8rem;
+  max-height: 50vh;
+  overflow-y: auto;
 }
 
 .context-heading {

@@ -1746,15 +1746,15 @@ function initContextPanel() {
   }
 
   async function fetchKokoroAudio(text, lang = state.selectedLang) {
-    // const res = await fetch("http://127.0.0.1:5000/speak", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     text,
-    //     lang,
-    //     speed: currentSpeechSpeed
-    //   })
-    // });
+    const res = await fetch("http://127.0.0.1:5000/speak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text,
+        lang,
+        speed: currentSpeechSpeed
+      })
+    });
 
     if (!res.ok) {
       throw new Error(await res.text());
