@@ -427,6 +427,16 @@ function applyAppTranslations() {
   const artworkLabel = el('artwork');
   if (artworkLabel) artworkLabel.textContent = t('app.artwork');
 
+  // NaviLens and QR scanner button labels
+  const openNaviLensText = el('open-navilens-text');
+  if (openNaviLensText) openNaviLensText.textContent = t('app.openNaviLens');
+  const scanQRText = el('scan-qr-text');
+  if (scanQRText) scanQRText.textContent = t('app.scanQRCode');
+  const closeScannerText = el('close-scanner-text');
+  if (closeScannerText) closeScannerText.textContent = t('app.closeScanner');
+  const confirmLocationText = el('confirm-location-text');
+  if (confirmLocationText) confirmLocationText.textContent = t('app.confirmLocation');
+
   // Opciones del select de sala
   renderLocationSelects();
 
@@ -1232,7 +1242,202 @@ function initApp() {
       : '';
 
     applyContext(roomText, artworkText);
-});
+  });
+
+  // ─── App Integration ──────────────────────────────────────────────────────────
+  let qrScannerActive = false;
+  let qrScannerStream = null;
+
+  el('open-app-btn').addEventListener('click', () => {
+    // Open NaviLens using deep linking
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    let APP_URL;
+    if (isAndroid) {
+      // Android: open NaviLens app
+      APP_URL = 'intent://com.navilens.navilens#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end';
+    } else if (isIOS) {
+      // iOS: open NaviLens app
+      APP_URL = 'navilens://';
+    } else {
+      // Web/other: direct to NaviLens store
+      APP_URL = 'https://navilens.com';
+    }
+    
+    try {
+      window.location.href = APP_URL;
+      // Fallback after timeout if app is not installed
+      setTimeout(() => {
+        // Fallback to app store if app is not installed
+        const fallbackURL = isAndroid 
+          ? 'https://play.google.com/store/apps/details?id=com.navilens.navilens'
+          : isIOS
+          ? 'https://apps.apple.com/app/navilens/id1400952156'
+          : 'https://navilens.com';
+        window.location.href = fallbackURL;
+      }, 2000);
+    } catch (err) {
+      console.error('Could not open NaviLens:', err);
+      alert('NaviLens app not installed. Redirecting to app store...');
+    }
+  });
+
+  el('scan-qr-btn').addEventListener('click', async () => {
+    const scanner = el('qr-scanner');
+    const video = el('qr-video');
+    const openAppBtn = el('open-app-btn');
+    const scanQrBtn = el('scan-qr-btn');
+
+    if (qrScannerActive) {
+      closeQRScanner();
+      return;
+    }
+
+    try {
+      // Request camera access
+      qrScannerStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+
+      video.srcObject = qrScannerStream;
+      video.play();
+
+      scanner.removeAttribute('hidden');
+      openAppBtn.hidden = true;
+      scanQrBtn.hidden = true;
+      qrScannerActive = true;
+
+      // Start QR code detection loop
+      startQRDetection(video);
+    } catch (err) {
+      console.error('Camera access denied:', err);
+      const cameraError = el('camera-error');
+      if (cameraError) {
+        cameraError.textContent = t('app.cameraError');
+        cameraError.hidden = false;
+      }
+    }
+  });
+
+  el('close-qr-btn').addEventListener('click', closeQRScanner);
+
+  function closeQRScanner() {
+    const scanner = el('qr-scanner');
+    const video = el('qr-video');
+    const openAppBtn = el('open-app-btn');
+    const scanQrBtn = el('scan-qr-btn');
+    const cameraError = el('camera-error');
+    const manualHint = el('manual-selection-hint');
+
+    if (qrScannerStream) {
+      qrScannerStream.getTracks().forEach(track => track.stop());
+      qrScannerStream = null;
+    }
+
+    video.srcObject = null;
+    scanner.setAttribute('hidden', '');
+    openAppBtn.hidden = false;
+    scanQrBtn.hidden = false;
+    qrScannerActive = false;
+    manualHint.hidden = false;
+
+
+    if (cameraError) cameraError.hidden = true;
+  }
+
+  function startQRDetection(video) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function detectQR() {
+      if (!qrScannerActive) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Try to detect QR code using jsQR if available, otherwise use a simple approach
+      if (window.jsQR) {
+        const code = window.jsQR(imageData.data, canvas.width, canvas.height);
+        if (code) {
+          handleQRCodeDetected(code.data);
+          closeQRScanner();
+          return;
+        }
+      } else {
+        // Fallback: look for simple pattern detection
+        console.warn('jsQR library not loaded. QR code detection limited.');
+      }
+
+      requestAnimationFrame(detectQR);
+    }
+
+    detectQR();
+  }
+
+  function handleQRCodeDetected(data) {
+    console.log('QR Code detected:', data);
+
+    try {
+      const qrData = JSON.parse(data);
+      
+      // Extract room and artwork IDs from QR code
+      const roomId = qrData.roomId || qrData.room;
+      const artworkId = qrData.artworkId || qrData.artwork;
+      
+      if (!roomId) {
+        console.warn('No room ID in QR code');
+        el('context-error').textContent = t('app.invalidQR', 'Invalid QR code');
+        return;
+      }
+
+      // Find room in location data by ID
+      const room = (state.locationData.rooms || []).find(r => r.id === roomId);
+      if (!room) {
+        console.warn('Room not found in location data:', roomId);
+        el('context-error').textContent = t('app.roomNotFound', 'Room not found');
+        return;
+      }
+
+      const roomText = room.label || room.id;
+      let artworkText = '';
+
+      // Set room select
+      const roomSelect = el('room-select');
+      if (roomSelect) {
+        roomSelect.value = roomId;
+        roomSelect.removeAttribute('aria-invalid');
+      }
+
+      // Find artwork if specified in QR code
+      if (artworkId) {
+        const artwork = (room.artworks || []).find(a => (a.id || a.title) === artworkId);
+        if (artwork) {
+          artworkText = artwork.title;
+          // Set artwork select
+          const artworkSelect = el('artwork-select');
+          if (artworkSelect) {
+            artworkSelect.value = artworkId;
+          }
+        } else {
+          console.warn('Artwork not found in room:', artworkId);
+        }
+      }
+
+      // Re-render artwork select to ensure it's updated
+      renderArtworkSelect();
+
+      // Apply context which updates state.currentRoom and state.currentArtwork
+      applyContext(roomText, artworkText);
+    } catch (err) {
+      console.error('Failed to parse QR code:', err);
+      el('context-error').textContent = t('app.invalidQR', 'Invalid QR code format');
+    }
+  }
 
   // Chat
   function speakBrowser(text, lang = state.selectedLang, persona = "adult", cancelExisting = true) {
@@ -1274,15 +1479,15 @@ function initApp() {
   }
 
   async function fetchKokoroAudio(text, lang = state.selectedLang) {
-    const res = await fetch("http://127.0.0.1:5000/speak", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text,
-        lang,
-        speed: currentSpeechSpeed
-      })
-    });
+    // const res = await fetch("http://127.0.0.1:5000/speak", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     text,
+    //     lang,
+    //     speed: currentSpeechSpeed
+    //   })
+    // });
 
     if (!res.ok) {
       throw new Error(await res.text());

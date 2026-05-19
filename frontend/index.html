@@ -420,6 +420,43 @@
         <div id="context-box" class="context-box" hidden>
           <h2 class="context-heading" id="choose-location">Choose your location</h2>
 
+          <div class="context-actions">
+            <button
+              id="open-app-btn"
+              type="button"
+              class="btn-secondary wide"
+              aria-label="Open NaviLens"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+              <span id="open-navilens-text">Open NaviLens</span>
+            </button>
+
+            <button
+              id="scan-qr-btn"
+              type="button"
+              class="btn-secondary wide"
+              aria-label="Scan QR code"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>
+              <span id="scan-qr-text">Scan QR Code</span>
+            </button>
+          </div>
+
+          <div id="qr-scanner" class="qr-scanner" hidden>
+            <video id="qr-video" aria-label="Camera feed for QR code scanning"></video>
+            <button
+              id="close-qr-btn"
+              type="button"
+              class="btn-secondary"
+              aria-label="Close QR scanner"
+            >
+              <span id="close-scanner-text">Close Scanner</span>
+            </button>
+          </div>
+
+          <p id="camera-error" class="field-error" aria-live="assertive" hidden></p>
+          <p id="manual-selection-hint" class="field-hint" hidden></p>
+
           <label class="field-label" id="room">Room</label>
           <select
             id="room-select"
@@ -443,7 +480,7 @@
             type="button"
             class="btn-primary wide"
           >
-            Confirm location
+            <span id="confirm-location-text">Confirm location</span>
           </button>
 
           <p id="context-error" class="field-error" aria-live="assertive"></p>
@@ -490,5 +527,7 @@
   </div>
 
   <script src="app.js"></script>
+  <!-- QR Code Detection Library -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 </body>
 </html>
