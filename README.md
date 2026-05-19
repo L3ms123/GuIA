@@ -157,6 +157,29 @@ You can also run the deployment manually from GitHub:
 Actions -> Deploy Hugging Face Space -> Run workflow
 ```
 
+### Keep Neo4j Aura Free awake
+
+Neo4j AuraDB Free pauses after 72 hours of inactivity. This repo includes `.github/workflows/keep-neo4j-awake.yml`, which runs a small daily query:
+
+```cypher
+RETURN 1 AS ok
+```
+
+Add these secrets in the GitHub repository:
+
+```env
+NEO4J_URI=your_neo4j_uri
+NEO4J_USERNAME=your_neo4j_username
+NEO4J_PASSWORD=your_neo4j_password
+NEO4J_DATABASE=neo4j
+```
+
+You can test it manually from GitHub:
+
+```text
+Actions -> Keep Neo4j Awake -> Run workflow
+```
+
 For local development, keep using:
 
 ```bash
