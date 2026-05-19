@@ -29,13 +29,24 @@ const AGE_RANGE_BY_KEY = {
   senior: 'Senior 60+ years old'
 };
 
+const API_BASES = (() => {
+  const isLocalSplitServer =
+    ['127.0.0.1', 'localhost'].includes(window.location.hostname) &&
+    window.location.port === '8000';
+
+  return {
+    llm: isLocalSplitServer ? 'http://127.0.0.1:5002' : '',
+    audio: isLocalSplitServer ? 'http://127.0.0.1:5000' : ''
+  };
+})();
+
 const API_ENDPOINTS = {
-  chatStream: 'http://127.0.0.1:5002/chat/stream',
-  context: 'http://127.0.0.1:5002/context',
-  easyWords: 'http://127.0.0.1:5002/easy-words',
-  locations: 'http://127.0.0.1:5002/locations',
-  speak: 'http://127.0.0.1:5000/speak',
-  transcribe: 'http://127.0.0.1:5000/transcribe',
+  chatStream: `${API_BASES.llm}/chat/stream`,
+  context: `${API_BASES.llm}/context`,
+  easyWords: `${API_BASES.llm}/easy-words`,
+  locations: `${API_BASES.llm}/locations`,
+  speak: `${API_BASES.audio}/speak`,
+  transcribe: `${API_BASES.audio}/transcribe`,
   translations: 'translations.json'
 };
 

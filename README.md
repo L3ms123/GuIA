@@ -96,6 +96,48 @@ GuIA sends iDEM a structured payload with `question`, `context`, `graph_context`
 
 This starts the frontend at `http://127.0.0.1:8000`, the audio API at `http://127.0.0.1:5000`, and the LLM API at `http://127.0.0.1:5002`. Press `Ctrl+C` in that same terminal to stop everything.
 
+## Deploy on Hugging Face Spaces
+
+This repository includes a Docker setup for Hugging Face Spaces. The Space runs one Flask app on port `7860` that serves:
+
+- the frontend from `frontend/`
+- the LLM routes such as `/chat/stream`, `/context`, `/locations`
+- the audio routes `/speak` and `/transcribe`
+
+Create a new Hugging Face Space with:
+
+```text
+SDK: Docker
+Visibility: Public or Private
+Hardware: CPU Basic
+```
+
+Then add these Space secrets:
+
+```env
+COHERE_LLM_KEY=your_cohere_key_here
+IDEM_API_URL=https://rafelsv-guia-idem-api.hf.space/answer
+```
+
+If you use Neo4j Aura or another public Neo4j endpoint for graph retrieval, also add:
+
+```env
+NEO4J_URI=your_neo4j_uri
+NEO4J_USERNAME=your_neo4j_username
+NEO4J_PASSWORD=your_neo4j_password
+NEO4J_DATABASE=neo4j
+```
+
+Push this repository to the Space repository. Hugging Face will build the `Dockerfile` and serve the demo at the Space URL.
+
+For local development, keep using:
+
+```bash
+python run_guia.py
+```
+
+The frontend automatically uses the local split services on `127.0.0.1:8000`, and uses same-origin API routes when deployed.
+
 
 
 
