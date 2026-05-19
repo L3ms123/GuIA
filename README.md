@@ -139,6 +139,24 @@ NEO4J_DATABASE=neo4j
 
 Push this repository to the Space repository. Hugging Face will build the `Dockerfile` and serve the demo at the Space URL.
 
+### Team deployment through GitHub
+
+For team work, use GitHub as the source of truth and let GitHub Actions deploy to Hugging Face automatically.
+
+In the GitHub repository, add this secret:
+
+```env
+HF_TOKEN=your_hugging_face_write_token
+```
+
+Then every push to `main` runs `.github/workflows/deploy-hf-space.yml`, uploads the deployable files to `RafelSV/guia-demo`, and excludes local env files and large binary files that Hugging Face rejects.
+
+You can also run the deployment manually from GitHub:
+
+```text
+Actions -> Deploy Hugging Face Space -> Run workflow
+```
+
 For local development, keep using:
 
 ```bash
