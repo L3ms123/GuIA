@@ -71,7 +71,12 @@
       "roomLabel": "Room",
       "artworkLabel": "Artwork",
       "confirmLocation": "Confirm location",
-      "contextError": "Please select a room so GuIA can guide you accurately."
+      "contextError": "Please select a room so GuIA can guide you accurately.",
+      "cameraError": "Camera access denied. Please enable camera permissions.",
+      "orSelectManually": "Or select it manually.",
+      "openNaviLens": "Open NaviLens",
+      "scanQRCode": "Scan QR Code",
+      "closeScanner": "Close Scanner"
     },
     "chat": {
       "placeholder": "Ask GuIA about the room, the artwork, or the museum...",
@@ -194,7 +199,12 @@
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
       "confirmLocation": "Confirmar ubicación",
-      "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión."
+      "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
+      "cameraError": "Acceso a la cámara denegado. Por favor habilita los permisos de cámara.",
+      "orSelectManually": "O selecciona manualmente.",
+      "openNaviLens": "Abrir NaviLens",
+      "scanQRCode": "Escanear código QR",
+      "closeScanner": "Cerrar escáner"
     },
     "chat": {
       "placeholder": "Pregunta a GuIA sobre la sala, la obra o el museo...",
@@ -317,7 +327,12 @@
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
       "confirmLocation": "Confirmar ubicació",
-      "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió."
+      "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
+      "cameraError": "Accés a la càmera denegat. Si us plau, habilita els permisos de càmera.",
+      "orSelectManually": "O selecciona manualment.",
+      "openNaviLens": "Obrir NaviLens",
+      "scanQRCode": "Escanejar codi QR",
+      "closeScanner": "Tancar escàner"
     },
     "chat": {
       "placeholder": "Pregunta a GuIA sobre la sala, l'obra o el museu...",
