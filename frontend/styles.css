@@ -1619,7 +1619,7 @@ select:focus-visible,
     font-size: 0.95rem;
     line-height: 1.4;
   }
-
+/*  */
   .toggle-row {
     align-items: flex-start;
     min-height: 3.75rem;
