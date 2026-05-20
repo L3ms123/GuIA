@@ -66,12 +66,13 @@
               <button
                 type="button"
                 class="card radio-card lang-card"
-                data-lang="en"
+                data-lang="ca"
                 role="radio"
-                aria-checked="false"
+                aria-checked="true"
+                tabindex="0"
               >
-                <h3 class="card-title">English</h3>
-                <p class="card-subtitle">en</p>
+                <h3 class="card-title">Català</h3>
+                <p class="card-subtitle">ca</p>
               </button>
  
               <button
@@ -80,6 +81,7 @@
                 data-lang="es"
                 role="radio"
                 aria-checked="false"
+                tabindex="0"
               >
                 <h3 class="card-title">Español</h3>
                 <p class="card-subtitle">es</p>
@@ -88,12 +90,13 @@
               <button
                 type="button"
                 class="card radio-card lang-card"
-                data-lang="ca"
+                data-lang="en"
                 role="radio"
-                aria-checked="true"
+                aria-checked="false"
+                tabindex="0"
               >
-                <h3 class="card-title">Català</h3>
-                <p class="card-subtitle">ca</p>
+                <h3 class="card-title">English</h3>
+                <p class="card-subtitle">en</p>
               </button>
             </div>
           </div>
@@ -216,14 +219,26 @@
         <!-- STEP 3: Privacy -->
         <section class="onboarding-step" data-step="3" hidden>
           <div class="onb-section">
-            <h2 class="section-label">IA i privacitat</h2>
+            <h2 id="privacy-notice-title" class="section-label">Avís d'IA i privacitat</h2>
  
-            <div class="info-block" role="note">
+            <div
+              id="privacy-notice"
+              class="info-block"
+              role="note"
+              tabindex="-1"
+              aria-labelledby="privacy-notice-title"
+              aria-describedby="privacy-notice-text"
+            >
+              <p id="privacy-notice-summary">
+                Aquest és un avís de privacitat. Llegeix-lo abans de començar.
+              </p>
+              <div id="privacy-notice-text">
               <p>Estàs parlant amb un guia de museu que utilitza IA.</p>
               <p>La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.</p>
               <p>Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.</p>
               <p>No es recullen ni emmagatzemen dades personals.</p>
               <p>Si parles amb la IA, l'àudio pot ser processat per entendre la parla i generar respostes parlades.</p>
+              </div>
             </div>
  
             <label class="toggle-row consent-row">
@@ -518,7 +533,7 @@
           id="mic-btn"
           type="button"
           class="icon-btn"
-          aria-label="Començar entrada de veu"
+          aria-label="Dicta una pregunta amb el micròfon"
           aria-pressed="false"
         >
           <span class="material-symbols-outlined" aria-hidden="true">mic</span>

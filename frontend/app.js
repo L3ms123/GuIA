@@ -52,6 +52,7 @@ const API_ENDPOINTS = {
 const PERSONA_KEYS = ['artist', 'storyteller', 'explorer', 'scholar'];
 const AGE_KEYS = ['young', 'adult', 'senior'];
 const AUDIO_SPEED_KEYS = ['slow', 'normal', 'fast'];
+const DEFAULT_LANGUAGE = 'ca';
 
 const SPEECH_SPEED = {
   slow: 0.8,
@@ -334,15 +335,11 @@ function applyOnboardingTranslations() {
   const optVisualDescriptionsHelp = q('#opt-visual-descriptions')?.closest('label')?.querySelector('.card-subtitle');
   setText(optVisualDescriptionsHelp, t('onboarding.visualDescriptionsHelp'));
 
-  const privacyLabel = q('[data-i18n="onboarding.privacy"]');
-  if (privacyLabel) {
-    setText(privacyLabel, t('onboarding.privacy'));
-  } else {
-    const privacyHeading = q('.onboarding-step[data-step="3"] .section-label');
-    setText(privacyHeading, t('onboarding.privacy'));
-  }
+  const privacyHeading = el('privacy-notice-title') || q('.onboarding-step[data-step="3"] .section-label');
+  setText(privacyHeading, t('onboarding.privacy'));
+  setText(el('privacy-notice-summary'), t('onboarding.privacyNoticeSummary'));
 
-  const privacyParagraphs = qa('.onboarding-step[data-step="3"] .info-block p');
+  const privacyParagraphs = qa('#privacy-notice-text p');
   setText(privacyParagraphs[0], t('onboarding.privacyIntro1'));
   setText(privacyParagraphs[1], t('onboarding.privacyIntro2'));
   setText(privacyParagraphs[2], t('onboarding.privacyIntro3'));
@@ -418,7 +415,14 @@ function showOnboardingStep(step) {
   }
 
   updateOnboardingButtons();
-  window.setTimeout(() => focusFirstAvailable(steps.find((section) => !section.hidden)), 0);
+  window.setTimeout(() => {
+    if (step === 3) {
+      el('privacy-notice')?.focus();
+      return;
+    }
+
+    focusFirstAvailable(steps.find((section) => !section.hidden));
+  }, 0);
 }
 
 function updateOnboardingButtons() {
@@ -545,6 +549,7 @@ function bindOnboardingFlow() {
   bindAccessibilityPreference('opt-spoken-audio', 'spokenAudio');
   bindAccessibilityPreference('opt-more-time', 'moreTime');
   bindAccessibilityPreference('opt-visual-descriptions', 'visualDescriptions');
+  initEnterToggleCheckboxes();
   syncAccessibilityControls();
 
   consent?.addEventListener('change', updateOnboardingButtons);
@@ -609,7 +614,9 @@ function applyAppTranslations() {
 
   setAttribute(el('audio-replay-btn'), 'aria-label', t('audio.replay', 'Replay last answer'));
 
-  setText(q('.assistant-bubble'), t('chat.welcome'));
+  const firstAssistantBubble = q('.assistant-bubble');
+  setText(firstAssistantBubble, t('chat.welcome'));
+  updateBubbleAccessibilityLabel(firstAssistantBubble, 'assistant');
 
   const suggestions = t('chat.suggestions');
   qa('.suggestion-btn').forEach((btn, i) => {
@@ -660,14 +667,56 @@ function applyAppTranslations() {
   const chatInputEl = el('chat-input');
   if (chatInputEl) chatInputEl.placeholder = t('chat.placeholder');
   setText(el('send-btn'), t('chat.send'));
+  window.guiaSetLastAssistantText?.(t('chat.welcome'));
+}
+
+async function applyLanguageChange() {
+  if (state.selectedLang !== 'ca' || !translationsLoaded) {
+    await preloadTranslations();
+  }
+
+  applyOnboardingTranslations();
+  applyAppTranslations();
+  updateOnboardingButtons();
+  window.guiaResetSpeechQueue?.();
 }
 
 // General helpers
 
 function selectRadio(buttons, clicked) {
-  buttons.forEach((b) =>
-    b.setAttribute('aria-checked', b === clicked ? 'true' : 'false')
-  );
+  buttons.forEach((b) => {
+    const selected = b === clicked;
+    b.setAttribute('aria-checked', selected ? 'true' : 'false');
+    b.setAttribute('tabindex', '0');
+  });
+}
+
+function initEnterToggleCheckboxes() {
+  qa('.toggle-row input[type="checkbox"]').forEach((input) => {
+    input.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      input.click();
+    });
+  });
+}
+
+function enableSelectEnterOpen(select) {
+  select?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+
+    if (typeof select.showPicker === 'function') {
+      event.preventDefault();
+      try {
+        select.showPicker();
+      } catch (err) {
+        select.click();
+      }
+      return;
+    }
+
+    select.click();
+  });
 }
 
 function initRadioGroupKeyboard(groupSelector, buttonSelector) {
@@ -882,8 +931,8 @@ async function loadTranslations() {
   const translationsPromise = preloadTranslations();
   const locationsPromise = loadLocations();
 
-  const preChecked = q('#language-group [aria-checked="true"]');
-  if (preChecked) state.selectedLang = preChecked.dataset.lang;
+  state.selectedLang = DEFAULT_LANGUAGE;
+  selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
 
   initLanguageSelector();
   initPersonaButtons();
@@ -927,21 +976,14 @@ function initLanguageSelector() {
   btns.forEach((b) =>
     b.setAttribute('aria-checked', b.dataset.lang === state.selectedLang ? 'true' : 'false')
   );
+  btns.forEach((b) => b.setAttribute('tabindex', '0'));
 
   btns.forEach((btn) => {
     btn.addEventListener('click', async () => {
+      if (state.selectedLang === btn.dataset.lang) return;
       state.selectedLang = btn.dataset.lang;
       selectRadio(btns, btn);
-
-      if (state.selectedLang === 'ca' && !translationsLoaded) {
-        updateOnboardingButtons();
-        return;
-      }
-
-      await preloadTranslations();
-      applyOnboardingTranslations();
-      applyAppTranslations();
-      updateOnboardingButtons();
+      await applyLanguageChange();
     });
   });
 }
@@ -1017,6 +1059,8 @@ function initAudioControls() {
     if (!audioSettingsBtn) return;
 
     audioSettingsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    const icon = q('.material-symbols-outlined', audioSettingsBtn);
+    if (icon) icon.textContent = open ? 'close' : 'tune';
     audioSettingsBtn.setAttribute(
       'aria-label',
       open
@@ -1438,6 +1482,11 @@ function initAudioControls() {
   window.guiaUpdateSpokenAudio = updateSpokenAudioButton;
   window.guiaReleaseAudioWaiters = releaseAudioWaiters; 
   window.guiaHandleNarrationPreferenceChange = handleNarrationPreferenceChange;
+  window.guiaSetLastAssistantText = (text) => {
+    if (typeof text === 'string' && text.trim()) {
+      lastAssistantText = text.trim();
+    }
+  };
 
   return {
     get lastAssistantText() {
@@ -1541,6 +1590,7 @@ function initVoiceInput(audio) {
   function setVoiceButtonState(recording) {
     micBtn.setAttribute('aria-pressed', recording ? 'true' : 'false');
     micBtn.setAttribute('aria-label', recording ? t('audio.stop') : t('audio.voice'));
+    micBtn.setAttribute('title', recording ? t('audio.stop') : t('audio.voice'));
     micBtn.classList.toggle('is-listening', recording);
     if (micIcon) micIcon.textContent = recording ? 'stop' : 'mic';
   }
@@ -1742,6 +1792,8 @@ function initContextPanel() {
   const manualLocationPanel = el('manual-location-panel');
 
   renderLocationSelects();
+  enableSelectEnterOpen(roomSelect);
+  enableSelectEnterOpen(artworkSelect);
 
   function setLocationPanelOpen(open) {
     document.body.toggleAttribute('data-location-panel-open', open);
