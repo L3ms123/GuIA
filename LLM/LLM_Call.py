@@ -1994,10 +1994,125 @@ def stream_event(payload: dict) -> str:
     return json.dumps(payload, ensure_ascii=False) + "\n"
 
 
+def language_name(language: str) -> str:
+    return {
+        "ca": "Catalan",
+        "es": "Spanish",
+        "en": "English",
+        "catalan": "Catalan",
+        "spanish": "Spanish",
+        "english": "English",
+    }.get((language or "").lower(), language or "the target language")
+
+
+def parse_translation_response(raw: str) -> list[dict[str, Any]]:
+    text = (raw or "").strip()
+    if not text:
+        return []
+
+    candidates = [text]
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        candidates.append(text[start:end + 1])
+
+    for candidate in candidates:
+        try:
+            parsed = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+
+        translations = parsed.get("translations") if isinstance(parsed, dict) else parsed
+        if isinstance(translations, list):
+            parsed_translations = []
+            for item in translations:
+                if isinstance(item, dict):
+                    parsed_translations.append({
+                        "index": item.get("index"),
+                        "role": item.get("role"),
+                        "text": str(item.get("text", "")),
+                    })
+                else:
+                    parsed_translations.append({"text": str(item)})
+            return parsed_translations
+
+    return []
+
+
+def translate_conversation_items(items: list[dict[str, Any]], from_language: str, to_language: str) -> list[dict[str, Any]]:
+    if not items:
+        return []
+
+    target = language_name(to_language)
+    payload = [
+        {
+            "index": item.get("index"),
+            "role": item.get("role", "assistant"),
+            "source_language": language_name(item.get("source_language") or from_language),
+            "text": str(item.get("text", ""))[:4000],
+        }
+        for item in items[:40]
+        if str(item.get("text", "")).strip()
+    ]
+
+    prompt = (
+        f"Translate this museum guide conversation to {target}.\n"
+        "Each item includes its own source_language.\n"
+        "Return only valid JSON with this exact shape: {\"translations\":[{\"index\":0,\"role\":\"assistant\",\"text\":\"...\"}]}.\n"
+        "Rules:\n"
+        "- Preserve the number, order, index, and role of every item.\n"
+        "- Translate only the text field.\n"
+        "- If an item is already in the target language, keep it unchanged.\n"
+        "- Preserve meaning, tone, museum terminology, names, and paragraph breaks.\n"
+        "- Do not add explanations or markdown.\n\n"
+        f"Items:\n{json.dumps(payload, ensure_ascii=False)}"
+    )
+
+    response = COHERE_CLIENT.chat(
+        model=MODEL_USED,
+        preamble="You are a precise translation engine for a museum guide web app.",
+        message=prompt,
+    )
+
+    translated_texts = parse_translation_response(response.text)
+    translations = []
+
+    for position, item in enumerate(payload):
+        translated_item = translated_texts[position] if position < len(translated_texts) else {}
+        translated = str(translated_item.get("text", "")).strip()
+        translations.append({
+            "index": translated_item.get("index", item["index"]),
+            "role": translated_item.get("role", item["role"]),
+            "text": format_chat_text(translated) if translated else item["text"],
+        })
+
+    return translations
+
+
 # ─── Flask API ────────────────────────────────────────────────────────────────
 
 app = Flask(__name__)
 CORS(app)
+
+
+@app.route("/translate-conversation", methods=["POST"])
+def translate_conversation_endpoint():
+    """Translate visible chat bubbles after the visitor changes language."""
+    try:
+        data = request.get_json() or {}
+        items = data.get("items") or []
+        if not isinstance(items, list):
+            return jsonify({"error": "items must be a list"}), 400
+
+        translations = translate_conversation_items(
+            items=items,
+            from_language=data.get("from_language", ""),
+            to_language=data.get("to_language", "en"),
+        )
+        return jsonify({"translations": translations}), 200
+    except Exception as exc:
+        app.logger.exception("Conversation translation failed")
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.route("/easy-words", methods=["POST"])

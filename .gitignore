@@ -4,6 +4,8 @@ LLM/.env
 .venv/
 __pycache__/
 *.py[cod]
+*.log
+.DS_Store
 
 .codex-run/
 

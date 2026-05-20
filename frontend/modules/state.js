@@ -14,7 +14,11 @@ const state = {
   lastFocusedElement: null,
   privacyAccepted: false,
   chatStarted: false,
+  showTutorialOnStart: false,
   deferredSpokenAudioChange: null,
+  conversationTranslationRequestId: 0,
+  chatGenerating: false,
+  conversationTranslating: false,
 
   accessibilityPrefs: {
     largeText: false,
@@ -42,6 +46,7 @@ const API_BASES = (() => {
 
 const API_ENDPOINTS = {
   chatStream: `${API_BASES.llm}/chat/stream`,
+  translateConversation: `${API_BASES.llm}/translate-conversation`,
   context: `${API_BASES.llm}/context`,
   easyWords: `${API_BASES.llm}/easy-words`,
   locations: `${API_BASES.llm}/locations`,

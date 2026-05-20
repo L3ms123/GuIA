@@ -157,6 +157,12 @@ function applyOnboardingTranslations() {
   const optVisualDescriptionsHelp = q('#opt-visual-descriptions')?.closest('label')?.querySelector('.card-subtitle');
   setText(optVisualDescriptionsHelp, t('onboarding.visualDescriptionsHelp'));
 
+  setText(el('label-tutorial-choice'), t('onboarding.tutorial'));
+  const optStartTutorialLabel = q('#opt-start-tutorial')?.closest('label')?.querySelector('span');
+  setText(optStartTutorialLabel, t('onboarding.startTutorial'));
+  const optStartTutorialHelp = q('#opt-start-tutorial')?.closest('label')?.querySelector('.card-subtitle');
+  setText(optStartTutorialHelp, t('onboarding.startTutorialHelp'));
+
   const privacyHeading = el('privacy-notice-title') || q('.onboarding-step[data-step="3"] .section-label');
   setText(privacyHeading, t('onboarding.privacy'));
   setText(el('privacy-notice-summary'), t('onboarding.privacyNoticeSummary'));
@@ -319,6 +325,9 @@ function syncAccessibilityControls() {
     const input = el(id);
     if (input) input.checked = !!state.accessibilityPrefs[preference];
   });
+
+  const tutorialInput = el('opt-start-tutorial');
+  if (tutorialInput) tutorialInput.checked = !!state.showTutorialOnStart;
 }
 
 function setPreferredSpeechSpeed(speed) {
@@ -368,23 +377,20 @@ function bindOnboardingFlow() {
       window.guiaHandleNarrationPreferenceChange?.(wasEnabled, isEnabled);
     }
     window.guiaSpeakInitialWelcome?.();
+    if (state.showTutorialOnStart) {
+      window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
+    }
   }
-
-  qa('.interaction-card').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      selectedInteraction = btn.dataset.interaction;
-      qa('.interaction-card').forEach((card) => {
-        card.setAttribute('aria-checked', String(card === btn));
-      });
-      updateOnboardingButtons();
-    });
-  });
 
   bindAccessibilityPreference('opt-large-text', 'largeText');
   bindAccessibilityPreference('opt-simple-language', 'simpleLanguage');
   bindAccessibilityPreference('opt-spoken-audio', 'spokenAudio');
   bindAccessibilityPreference('opt-more-time', 'moreTime');
   bindAccessibilityPreference('opt-visual-descriptions', 'visualDescriptions');
+  el('opt-start-tutorial')?.addEventListener('change', (event) => {
+    state.showTutorialOnStart = event.target.checked;
+    syncAccessibilityControls();
+  });
   initEnterToggleCheckboxes();
   syncAccessibilityControls();
 

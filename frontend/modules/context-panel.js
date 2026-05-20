@@ -72,7 +72,6 @@ function initContextPanel() {
 
   // ─── Navi Lens Integration ──────────────────────────────────────────────────────────
   let qrScannerActive = false;
-  let qrScannerStream = null;
 
   el('open-app-btn').addEventListener('click', () => {
     const ua = navigator.userAgent;
@@ -209,7 +208,6 @@ function initContextPanel() {
     html5QrCodeScanner = new Html5Qrcode('qr-video');
 
     const onScanSuccess = (decodedText) => {
-      console.log('QR Code detected:', decodedText);
       announce(t('app.qrScanSuccess', 'QR code scanned.'));
       handleQRCodeDetected(decodedText);
       closeQRScanner({ announceClose: false });
@@ -240,8 +238,6 @@ function initContextPanel() {
   }
 
   function handleQRCodeDetected(data) {
-    console.log('QR Code detected:', data);
-
     try {
       const qrData = JSON.parse(data);
       

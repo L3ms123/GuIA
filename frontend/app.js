@@ -54,9 +54,14 @@ function initLanguageSelector() {
   btns.forEach((btn) => {
     btn.addEventListener('click', async () => {
       if (state.selectedLang === btn.dataset.lang) return;
+      if (state.chatGenerating || state.conversationTranslating) {
+        announce(t('chat.languageChangeBusy', 'Wait until the current response or translation finishes before changing language.'));
+        return;
+      }
+      const previousLang = state.selectedLang;
       state.selectedLang = btn.dataset.lang;
       selectRadio(btns, btn);
-      await applyLanguageChange();
+      await applyLanguageChange(previousLang);
     });
   });
 }
@@ -95,6 +100,7 @@ function initApp() {
   const voice = initVoiceInput(audio);
 
   warmTranscriptionModel();
+  initTutorial();
   initInitialWelcomeSpeech(audio);
   initContextPanel();
   initChat(audio, voice);

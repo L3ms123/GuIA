@@ -13,6 +13,9 @@
       "continue": "Continue",
       "accessibility": "Accessibility",
       "accessibilityHelp": "Select any options that would make the experience easier.",
+      "tutorial": "Tutorial",
+      "startTutorial": "Show me a tutorial before I start",
+      "startTutorialHelp": "Explains the recommended order and what each main button does.",
       "largeText": "Large text",
       "simpleLanguage": "Simpler language",
       "simpleLanguageHelp": "Short sentences, common words, and dictionary help.",
@@ -80,6 +83,8 @@
       "qrScannerHelp": "The camera is active to scan a location QR code.",
       "confirmLocation": "Confirm location",
       "contextError": "Please select a room so GuIA can guide you accurately.",
+      "contextSendError": "Could not update your location. Please try again.",
+      "contextBusy": "Wait until the current response finishes before changing location.",
       "cameraError": "Camera access denied. Please enable camera permissions.",
       "orSelectManually": "Or select it manually.",
       "chooseManually": "Choose manually",
@@ -92,7 +97,7 @@
       "locationPanelClosed": "Location panel closed.",
       "openNaviLens": "Open NaviLens",
       "scanQRCode": "Scan QR Code",
-      "closeScanner": "Close Scanner"
+      "closeScanner": "Close scanner"
     },
     "chat": {
       "placeholder": "Ask GuIA about the room, the artwork, or the museum...",
@@ -105,6 +110,11 @@
       ],
       "welcome": "Welcome to the Museu del Renaixement. Select where you'd like to start your visit or ask me anything about the museum!",
       "connectionError": "Sorry, I’m having trouble connecting right now.",
+      "translatingConversation": "Translating the conversation.",
+      "conversationTranslated": "Conversation translated.",
+      "conversationTranslationFailed": "Conversation translation failed.",
+      "typingStatus": "GuIA is writing.",
+      "languageChangeBusy": "Wait until the current response or translation finishes before changing language.",
       "userMessageLabel": "You",
       "assistantMessageLabel": "GuIA"
     },
@@ -113,11 +123,13 @@
       "normal": "Normal",
       "fast": "Fast",
       "volume": "Volume",
+      "panelButton": "Audio",
       "mute": "Mute audio",
       "unmute": "Unmute audio",
       "pause": "Pause audio",
       "resume": "Resume audio",
       "replay": "Replay last answer",
+      "languageChanged": "Audio language changed.",
       "spokenOn": "Audio on",
       "spokenOff": "Audio off",
       "turnSpokenOff": "Turn spoken audio off",
@@ -128,6 +140,7 @@
       "recording": "Listening. Speak your question now.",
       "listening": "I’m listening. Speak now.",
       "transcribing": "Turning your voice into text…",
+      "reviewTranscription": "Wait for transcription to finish, then review the text before sending.",
       "empty": "I didn’t detect any speech. Please try again.",
       "unavailable": "The microphone is not available in this browser.",
       "denied": "I don’t have permission to use the microphone.",
@@ -143,6 +156,59 @@
       "annunciation": "The Annunciation",
       "lastSupper": "The Last Supper",
       "notSet": "Not set"
+    },
+    "tutorial": {
+      "open": "Help",
+      "openLabel": "Help: how to use GuIA",
+      "kicker": "Help",
+      "title": "How to use GuIA",
+      "intro": "Follow these steps: first choose an artwork, then read the basic information, and then ask for more details.",
+      "close": "Close help",
+      "done": "Got it",
+      "steps": [
+        {
+          "icon": "place",
+          "title": "1. Choose the artwork",
+          "body": "Start with Location. Scan a QR code, open NaviLens, or choose the room and artwork manually."
+        },
+        {
+          "icon": "info",
+          "title": "2. Read the first explanation",
+          "body": "After you choose an artwork, GuIA gives you the basic information so you know what you are looking at."
+        },
+        {
+          "icon": "chat",
+          "title": "3. Ask for details",
+          "body": "Then ask specific questions, such as who the artist was, what year it was made, what it represents, or why it matters."
+        },
+        {
+          "icon": "keyboard_voice",
+          "title": "4. Write or use the microphone",
+          "body": "You can type in the text box or press the microphone button and speak. If you dictate, check the text before sending it."
+        },
+        {
+          "icon": "volume_up",
+          "device": "desktop",
+          "title": "5. Listen on desktop",
+          "body": "Use the speaker button to unmute spoken answers. You can also pause, replay, change volume, or change speed."
+        },
+        {
+          "icon": "tune",
+          "device": "mobile",
+          "title": "6. Listen on mobile",
+          "body": "First press Audio. Then press the unmute button. The same panel also has pause, replay, volume, and speed controls."
+        },
+        {
+          "icon": "settings",
+          "title": "7. Change settings",
+          "body": "Use the gear button to change language, guide style, text size, simpler language, or other accessibility options."
+        },
+        {
+          "icon": "visibility",
+          "title": "8. Ask for visual descriptions",
+          "body": "If you are blind or want extra support, turn on visual descriptions. GuIA can describe what is visible in the artwork."
+        }
+      ]
     }
   },
   "es": {
@@ -159,6 +225,9 @@
       "continue": "Continuar",
       "accessibility": "Accesibilidad",
       "accessibilityHelp": "Selecciona cualquier opción que haga la experiencia más fácil.",
+      "tutorial": "Tutorial",
+      "startTutorial": "Quiero ver un tutorial antes de empezar",
+      "startTutorialHelp": "Explica el orden recomendado y qué hace cada botón principal.",
       "largeText": "Texto grande",
       "simpleLanguage": "Texto fácil",
       "simpleLanguageHelp": "Frases cortas, palabras habituales y ayuda del diccionario.",
@@ -226,6 +295,8 @@
       "qrScannerHelp": "La cámara está activa para escanear un código QR de ubicación.",
       "confirmLocation": "Confirmar ubicación",
       "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
+      "contextSendError": "No se ha podido actualizar tu ubicación. Inténtalo de nuevo.",
+      "contextBusy": "Espera a que termine la respuesta actual antes de cambiar de ubicación.",
       "cameraError": "Acceso a la cámara denegado. Por favor habilita los permisos de cámara.",
       "orSelectManually": "O selecciona manualmente.",
       "chooseManually": "Elegir manualmente",
@@ -251,6 +322,11 @@
       ],
       "welcome": "Bienvenido al Museu del Renaixement. Selecciona dónde te gustaría comenzar tu visita o pregúntame cualquier cosa sobre el museo.",
       "connectionError": "Ahora mismo tengo problemas para conectarme.",
+      "translatingConversation": "Traduciendo la conversación.",
+      "conversationTranslated": "Conversación traducida.",
+      "conversationTranslationFailed": "No se ha podido traducir la conversación.",
+      "typingStatus": "GuIA está escribiendo.",
+      "languageChangeBusy": "Espera a que termine la respuesta o la traducción antes de cambiar de idioma.",
       "userMessageLabel": "Tú",
       "assistantMessageLabel": "GuIA"
     },
@@ -259,11 +335,13 @@
       "normal": "Normal",
       "fast": "Rápido",
       "volume": "Volumen",
+      "panelButton": "Audio",
       "mute": "Silenciar audio",
       "unmute": "Activar audio",
       "pause": "Pausar audio",
       "resume": "Reanudar audio",
       "replay": "Repetir última respuesta",
+      "languageChanged": "Idioma del audio cambiado.",
       "spokenOn": "Audio activado",
       "spokenOff": "Audio desactivado",
       "turnSpokenOff": "Desactivar audio hablado",
@@ -274,6 +352,7 @@
       "recording": "Escuchando. Di tu pregunta ahora.",
       "listening": "Te estoy escuchando. Habla ahora.",
       "transcribing": "Convirtiendo tu voz en texto…",
+      "reviewTranscription": "Espera a que termine la transcripción y revisa el texto antes de enviarlo.",
       "empty": "No he detectado ninguna voz. Inténtalo de nuevo.",
       "unavailable": "El micrófono no está disponible en este navegador.",
       "denied": "No tengo permiso para acceder al micrófono.",
@@ -289,6 +368,59 @@
       "annunciation": "La Anunciación",
       "lastSupper": "La Última Cena",
       "notSet": "No establecido"
+    },
+    "tutorial": {
+      "open": "Ayuda",
+      "openLabel": "Ayuda: cómo usar GuIA",
+      "kicker": "Ayuda",
+      "title": "Cómo usar GuIA",
+      "intro": "Sigue estos pasos: primero elige una obra, después lee la información básica y luego pregunta más detalles.",
+      "close": "Cerrar ayuda",
+      "done": "Entendido",
+      "steps": [
+        {
+          "icon": "place",
+          "title": "1. Elige la obra",
+          "body": "Empieza con Ubicación. Escanea un QR, abre NaviLens o elige la sala y la obra manualmente."
+        },
+        {
+          "icon": "info",
+          "title": "2. Lee la primera explicación",
+          "body": "Cuando elijas una obra, GuIA te dará la información básica para entender qué estás mirando."
+        },
+        {
+          "icon": "chat",
+          "title": "3. Pregunta detalles",
+          "body": "Después pregunta cosas concretas, como quién era el artista, en qué año se hizo, qué representa o por qué es importante."
+        },
+        {
+          "icon": "keyboard_voice",
+          "title": "4. Escribe o usa el micrófono",
+          "body": "Puedes escribir en el cuadro de texto o pulsar el botón del micrófono y hablar. Si dictas, revisa el texto antes de enviarlo."
+        },
+        {
+          "icon": "volume_up",
+          "device": "desktop",
+          "title": "5. Escucha en ordenador",
+          "body": "Usa el botón del altavoz para activar las respuestas habladas. También puedes pausar, repetir, cambiar el volumen o la velocidad."
+        },
+        {
+          "icon": "tune",
+          "device": "mobile",
+          "title": "6. Escucha en móvil",
+          "body": "Primero pulsa Audio. Después pulsa el botón de desmutear. En ese mismo panel también están pausar, repetir, volumen y velocidad."
+        },
+        {
+          "icon": "settings",
+          "title": "7. Cambia los ajustes",
+          "body": "Usa el botón de engranaje para cambiar idioma, estilo de guía, tamaño del texto, lenguaje simple u otras opciones de accesibilidad."
+        },
+        {
+          "icon": "visibility",
+          "title": "8. Pide descripciones visuales",
+          "body": "Si eres una persona ciega o quieres más apoyo, activa las descripciones visuales. GuIA puede describir lo que se ve en la obra."
+        }
+      ]
     }
   },
   "ca": {
@@ -305,6 +437,9 @@
       "continue": "Continuar",
       "accessibility": "Accessibilitat",
       "accessibilityHelp": "Selecciona qualsevol opció que faciliti l'experiència.",
+      "tutorial": "Tutorial",
+      "startTutorial": "Vull veure un tutorial abans de començar",
+      "startTutorialHelp": "Explica l'ordre recomanat i què fa cada botó principal.",
       "largeText": "Text gran",
       "simpleLanguage": "Llenguatge més simple",
       "simpleLanguageHelp": "Frases curtes, paraules habituals i ajuda del diccionari.",
@@ -372,6 +507,8 @@
       "qrScannerHelp": "La càmera està activa per escanejar un codi QR de la ubicació.",
       "confirmLocation": "Confirmar ubicació",
       "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
+      "contextSendError": "No s'ha pogut actualitzar la ubicació. Torna-ho a provar.",
+      "contextBusy": "Espera que acabi la resposta actual abans de canviar d'ubicació.",
       "cameraError": "Accés a la càmera denegat. Si us plau, habilita els permisos de càmera.",
       "orSelectManually": "O selecciona manualment.",
       "chooseManually": "Tria manual",
@@ -397,6 +534,11 @@
       ],
       "welcome": "Benvingut al Museu del Renaixement. Selecciona on t'agradaria començar la teva visita o pregunta'm qualsevol cosa sobre el museu.",
       "connectionError": "Ara mateix tinc problemes per connectar-me.",
+      "translatingConversation": "Traduint la conversa.",
+      "conversationTranslated": "Conversa traduïda.",
+      "conversationTranslationFailed": "No s'ha pogut traduir la conversa.",
+      "typingStatus": "GuIA està escrivint.",
+      "languageChangeBusy": "Espera que acabi la resposta o la traducció abans de canviar d'idioma.",
       "userMessageLabel": "Tu",
       "assistantMessageLabel": "GuIA"
     },
@@ -405,11 +547,13 @@
     "normal": "Normal",
     "fast": "Ràpid",
     "volume": "Volum",
+    "panelButton": "Àudio",
     "mute": "Silencia l'audio",
     "unmute": "Activa l'audio",
     "pause": "Pausa l'audio",
     "resume": "Repren l'audio",
-    "replay": "Repeteix l'ultima resposta",
+    "replay": "Repeteix l'última resposta",
+    "languageChanged": "Idioma de l'àudio canviat.",
     "spokenOn": "Audio activat",
     "spokenOff": "Audio desactivat",
     "turnSpokenOff": "Desactiva l'audio parlat",
@@ -420,6 +564,7 @@
     "recording": "Escoltant. Digues la teva pregunta ara.",
     "listening": "T’estic escoltant. Parla ara.",
     "transcribing": "Convertint la veu en text…",
+    "reviewTranscription": "Espera que acabi la transcripció i revisa el text abans d'enviar-lo.",
     "empty": "No he detectat cap veu. Torna-ho a provar.",
     "unavailable": "El micròfon no està disponible en aquest navegador.",
     "denied": "No tinc permís per accedir al micròfon.",
@@ -435,6 +580,59 @@
       "annunciation": "L'Anunciació",
       "lastSupper": "L'Últim Sopar",
       "notSet": "No establert"
+    },
+    "tutorial": {
+      "open": "Ajuda",
+      "openLabel": "Ajuda: com utilitzar GuIA",
+      "kicker": "Ajuda",
+      "title": "Com utilitzar GuIA",
+      "intro": "Segueix aquests passos: primer tria una obra, després llegeix la informació bàsica i després pregunta més detalls.",
+      "close": "Tancar ajuda",
+      "done": "Entesos",
+      "steps": [
+        {
+          "icon": "place",
+          "title": "1. Tria l'obra",
+          "body": "Comença amb Ubicació. Escaneja un QR, obre NaviLens o tria la sala i l'obra manualment."
+        },
+        {
+          "icon": "info",
+          "title": "2. Llegeix la primera explicació",
+          "body": "Quan triïs una obra, GuIA et donarà la informació bàsica per entendre què estàs mirant."
+        },
+        {
+          "icon": "chat",
+          "title": "3. Pregunta detalls",
+          "body": "Després pregunta coses concretes, com qui era l'artista, en quin any es va fer, què representa o per què és important."
+        },
+        {
+          "icon": "keyboard_voice",
+          "title": "4. Escriu o utilitza el micròfon",
+          "body": "Pots escriure al quadre de text o prémer el botó del micròfon i parlar. Si dictes, revisa el text abans d'enviar-lo."
+        },
+        {
+          "icon": "volume_up",
+          "device": "desktop",
+          "title": "5. Escolta a l'ordinador",
+          "body": "Utilitza el botó de l'altaveu per activar les respostes parlades. També pots pausar, repetir, canviar el volum o la velocitat."
+        },
+        {
+          "icon": "tune",
+          "device": "mobile",
+          "title": "6. Escolta al mòbil",
+          "body": "Primer prem Àudio. Després prem el botó de desmutejar. En aquest mateix panell també hi ha pausa, repetició, volum i velocitat."
+        },
+        {
+          "icon": "settings",
+          "title": "7. Canvia els ajustos",
+          "body": "Utilitza el botó d'engranatge per canviar idioma, estil de guia, mida del text, llenguatge simple o altres opcions d'accessibilitat."
+        },
+        {
+          "icon": "visibility",
+          "title": "8. Demana descripcions visuals",
+          "body": "Si ets invident o vols més suport, activa les descripcions visuals. GuIA pot descriure què es veu a l'obra."
+        }
+      ]
     }
   }
 }

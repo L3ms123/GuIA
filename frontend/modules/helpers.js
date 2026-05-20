@@ -41,6 +41,15 @@ function initRadioGroupKeyboard(groupSelector, buttonSelector) {
   if (!group) return;
 
   group.addEventListener('keydown', (event) => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      const active = document.activeElement;
+      if (active?.matches?.(buttonSelector)) {
+        event.preventDefault();
+        active.click();
+      }
+      return;
+    }
+
     const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
     if (!keys.includes(event.key)) return;
 
@@ -67,13 +76,42 @@ function initRadioGroupKeyboard(groupSelector, buttonSelector) {
   });
 }
 
-function addBubble(role, text) {
+function setBubbleSource(bubble, text, lang = state.selectedLang) {
+  if (!bubble || !text?.trim()) return;
+  bubble.dataset.originalText = text.trim();
+  bubble.dataset.originalLang = lang || state.selectedLang || DEFAULT_LANGUAGE;
+}
+
+function getBubbleText(bubble) {
+  if (!bubble) return '';
+  const clone = bubble.cloneNode(true);
+  clone.querySelectorAll('.bubble-speaker').forEach((node) => node.remove());
+  return clone.textContent.trim();
+}
+
+function setBubbleText(bubble, text, role = bubble?.dataset.role || 'assistant') {
+  if (!bubble) return;
+  bubble.textContent = '';
+  const speaker = document.createElement('span');
+  speaker.className = 'sr-only bubble-speaker';
+  speaker.textContent = role === 'user'
+    ? `${t('chat.userMessageLabel', 'You')}: `
+    : `${t('chat.assistantMessageLabel', 'GuIA')}: `;
+  bubble.appendChild(speaker);
+  bubble.appendChild(document.createTextNode(text || ''));
+}
+
+function addBubble(role, text, options = {}) {
   const chatThread = el('chat-thread');
   const row = document.createElement('div');
   row.className = `msg-row ${role}`;
   const bubble = document.createElement('div');
   bubble.className = `msg-bubble ${role === 'user' ? 'user-bubble' : 'assistant-bubble'}`;
-  bubble.textContent = text;
+  bubble.dataset.role = role;
+  bubble.dataset.messageLang = options.lang || state.selectedLang || DEFAULT_LANGUAGE;
+  bubble.tabIndex = 0;
+  setBubbleText(bubble, text, role);
+  setBubbleSource(bubble, options.sourceText ?? text, options.sourceLang || bubble.dataset.messageLang);
   updateBubbleAccessibilityLabel(bubble, role);
   row.appendChild(bubble);
   chatThread.appendChild(row);
@@ -83,11 +121,8 @@ function addBubble(role, text) {
 
 function updateBubbleAccessibilityLabel(bubble, role) {
   if (!bubble) return;
-  const label =
-    role === 'user'
-      ? t('chat.userMessageLabel', 'You')
-      : t('chat.assistantMessageLabel', 'GuIA');
-  bubble.setAttribute('aria-label', `${label}: ${bubble.textContent.trim()}`);
+  const currentText = getBubbleText(bubble);
+  setBubbleText(bubble, currentText, role);
 }
 
 function easyWordAnnotationsEnabled() {
@@ -97,7 +132,7 @@ function easyWordAnnotationsEnabled() {
 async function annotateEasyWords(bubble) {
   if (!bubble || !easyWordAnnotationsEnabled()) return;
 
-  const text = bubble.textContent.trim();
+  const text = getBubbleText(bubble);
   if (!text) return;
 
   try {
@@ -110,7 +145,9 @@ async function annotateEasyWords(bubble) {
     if (!res.ok) return;
     const data = await res.json();
     if (typeof data.rewritten_text === 'string' && data.rewritten_text.trim()) {
-      bubble.textContent = data.rewritten_text.trim();
+      setBubbleText(bubble, data.rewritten_text.trim(), 'assistant');
+      setBubbleSource(bubble, getBubbleText(bubble), state.selectedLang);
+      bubble.dataset.messageLang = state.selectedLang;
       updateBubbleAccessibilityLabel(bubble, 'assistant');
       return;
     }
@@ -151,6 +188,7 @@ function renderAnnotatedText(container, text, annotations) {
     const label = item.replacement ? `${match[0]}: ${item.definition}` : item.definition;
     span.title = label;
     span.setAttribute('aria-label', label);
+    span.tabIndex = 0;
     fragment.appendChild(span);
     lastIndex = pattern.lastIndex;
   }
@@ -160,8 +198,13 @@ function renderAnnotatedText(container, text, annotations) {
   }
 
   container.textContent = '';
+  const speaker = document.createElement('span');
+  speaker.className = 'sr-only bubble-speaker';
+  speaker.textContent = `${t('chat.assistantMessageLabel', 'GuIA')}: `;
+  container.appendChild(speaker);
   container.appendChild(fragment);
-  updateBubbleAccessibilityLabel(container, 'assistant');
+  setBubbleSource(container, getBubbleText(container), state.selectedLang);
+  container.dataset.messageLang = state.selectedLang;
 }
 
 function escapeRegExp(value) {

@@ -46,10 +46,14 @@ jobs:
             --exclude ".github/*" \
             --exclude ".venv/*" \
             --exclude ".codex-run/*" \
+            --exclude ".DS_Store" \
+            --exclude "*.log" \
+            --exclude "*.ipynb" \
             --exclude "__pycache__/*" \
             --exclude "LLM/.env" \
             --exclude "KG/.env" \
             --exclude "KG/neo4j.dump" \
             --exclude "VectorDB/chroma_db/*" \
             --exclude "raw_data/*.pdf" \
-            --exclude "raw_data/*.pptx"
+            --exclude "raw_data/*.pptx" \
+            --exclude "raw_data/*.docx"

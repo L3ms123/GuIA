@@ -9,6 +9,7 @@ function applyAppTranslations() {
   });
 
   setText(q('.audio-label'), t('audio.volume', 'Volume'));
+  setText(el('audio-settings-text'), t('audio.panelButton', 'Audio'));
 
   const spokenAudioBtn = el('spoken-audio-btn');
   if (spokenAudioBtn) {
@@ -31,8 +32,12 @@ function applyAppTranslations() {
   setAttribute(el('audio-replay-btn'), 'aria-label', t('audio.replay', 'Replay last answer'));
 
   const firstAssistantBubble = q('.assistant-bubble');
-  setText(firstAssistantBubble, t('chat.welcome'));
-  updateBubbleAccessibilityLabel(firstAssistantBubble, 'assistant');
+  if (firstAssistantBubble?.dataset.i18nKey === 'chat.welcome') {
+    setBubbleText(firstAssistantBubble, t('chat.welcome'), 'assistant');
+    firstAssistantBubble.dataset.messageLang = state.selectedLang;
+    setBubbleSource(firstAssistantBubble, state.translations.ca?.chat?.welcome || t('chat.welcome'), 'ca');
+    updateBubbleAccessibilityLabel(firstAssistantBubble, 'assistant');
+  }
 
   const suggestions = t('chat.suggestions');
   qa('.suggestion-btn').forEach((btn, i) => {
@@ -45,6 +50,7 @@ function applyAppTranslations() {
   if (appTitle) {
     appTitle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">settings</span>';
     appTitle.setAttribute('aria-label', t('app.openSettings', 'Open guide settings'));
+    appTitle.setAttribute('title', t('app.openSettings', 'Open guide settings'));
   }
 
   setText(el('choose-location'), t('app.chooseLocation'));
@@ -83,15 +89,159 @@ function applyAppTranslations() {
   const chatInputEl = el('chat-input');
   if (chatInputEl) chatInputEl.placeholder = t('chat.placeholder');
   setText(el('send-btn'), t('chat.send'));
+  window.guiaApplyTutorialTranslations?.();
 }
 
-async function applyLanguageChange() {
+function setChatTranslationStatus(message = '') {
+  const status = el('chat-translation-status');
+  if (!status) return;
+
+  if (!message) {
+    status.setAttribute('hidden', '');
+    status.textContent = '';
+    return;
+  }
+
+  status.textContent = message;
+  status.hidden = false;
+}
+
+function setLanguageOptionsDisabled(disabled) {
+  qa('#language-group [data-lang]').forEach((button) => {
+    button.disabled = disabled;
+    button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+  });
+}
+
+function collectConversationTranslationItems(bubbles) {
+  const maxItems = 25;
+  const maxChars = 12000;
+  let usedChars = 0;
+  const items = [];
+
+  for (const [index, bubble] of bubbles.entries()) {
+    const visibleText = getBubbleText(bubble);
+    const sourceText = (bubble.dataset.originalText || visibleText).trim();
+    const sourceLang = bubble.dataset.originalLang || bubble.dataset.messageLang || state.selectedLang;
+
+    if (!sourceText || bubble.dataset.i18nKey || bubble.dataset.messageLang === state.selectedLang) {
+      continue;
+    }
+
+    if (sourceLang === state.selectedLang) {
+      setBubbleText(bubble, sourceText, bubble.classList.contains('user-bubble') ? 'user' : 'assistant');
+      bubble.dataset.messageLang = state.selectedLang;
+      updateBubbleAccessibilityLabel(bubble, bubble.classList.contains('user-bubble') ? 'user' : 'assistant');
+      continue;
+    }
+
+    const nextChars = usedChars + sourceText.length;
+    if (items.length >= maxItems || nextChars > maxChars) {
+      break;
+    }
+
+    usedChars = nextChars;
+    items.push({
+      index,
+      role: bubble.classList.contains('user-bubble') ? 'user' : 'assistant',
+      source_language: sourceLang,
+      text: sourceText
+    });
+  }
+
+  return items;
+}
+
+function updateReplayFromLastAssistantBubble(bubbles = qa('#chat-thread .msg-bubble')) {
+  const lastAssistantBubble = [...bubbles].reverse().find((bubble) => bubble.classList.contains('assistant-bubble'));
+  const text = getBubbleText(lastAssistantBubble);
+  if (text) {
+    window.guiaSetLastAssistantText?.(text);
+    announce(t('audio.languageChanged', 'Audio language changed.'));
+  }
+}
+
+async function translateExistingConversation(previousLang) {
+  if (!state.chatStarted || !previousLang || previousLang === state.selectedLang) return;
+
+  const requestId = state.conversationTranslationRequestId + 1;
+  state.conversationTranslationRequestId = requestId;
+  const bubbles = qa('#chat-thread .msg-bubble');
+  const items = collectConversationTranslationItems(bubbles);
+
+  if (!items.length) {
+    updateReplayFromLastAssistantBubble(bubbles);
+    return;
+  }
+
+  const translatingText = t('chat.translatingConversation', 'Translating the conversation.');
+  state.conversationTranslating = true;
+  setLanguageOptionsDisabled(true);
+  bubbles.forEach((bubble) => bubble.setAttribute('aria-busy', 'true'));
+  setChatTranslationStatus(translatingText);
+  announce(translatingText);
+
+  try {
+    const res = await fetch(API_ENDPOINTS.translateConversation, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from_language: previousLang,
+        to_language: state.selectedLang,
+        items
+      })
+    });
+
+    if (requestId !== state.conversationTranslationRequestId) return;
+
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+
+    const data = await res.json();
+    const translations = Array.isArray(data.translations) ? data.translations : [];
+
+    translations.forEach((item) => {
+      const bubble = bubbles[item.index];
+      const text = typeof item.text === 'string' ? item.text.trim() : '';
+      if (!bubble || !text) return;
+
+      setBubbleText(bubble, text, item.role === 'user' ? 'user' : 'assistant');
+      bubble.dataset.messageLang = state.selectedLang;
+      updateBubbleAccessibilityLabel(bubble, item.role === 'user' ? 'user' : 'assistant');
+    });
+
+    updateReplayFromLastAssistantBubble(bubbles);
+
+    const translatedText = t('chat.conversationTranslated', 'Conversation translated.');
+    setChatTranslationStatus(translatedText);
+    announce(translatedText);
+    window.setTimeout(() => {
+      if (requestId === state.conversationTranslationRequestId) setChatTranslationStatus('');
+    }, 2500);
+  } catch (err) {
+    console.error('Conversation translation failed:', err);
+    const failedText = t('chat.conversationTranslationFailed', 'Conversation translation failed.');
+    setChatTranslationStatus(failedText);
+    announce(failedText);
+  } finally {
+    if (requestId === state.conversationTranslationRequestId) {
+      bubbles.forEach((bubble) => bubble.removeAttribute('aria-busy'));
+      state.conversationTranslating = false;
+      setLanguageOptionsDisabled(false);
+    }
+  }
+}
+
+async function applyLanguageChange(previousLang = null) {
   if (state.selectedLang !== 'ca' || !translationsLoaded) {
     await preloadTranslations();
   }
 
   applyOnboardingTranslations();
   applyAppTranslations();
+  window.guiaResetSpeechQueue?.();
+  await translateExistingConversation(previousLang);
   updateOnboardingButtons();
   window.guiaResetSpeechQueue?.();
 }

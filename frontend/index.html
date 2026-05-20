@@ -159,7 +159,7 @@
  
               <button type="button" class="chip radio-chip" data-age="senior" role="radio" aria-checked="false">
                 <img class="chip-icon" src="assets/senior-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <span class="age-title">Senior</span>
+                <span class="age-title">Sènior</span>
                 <p class="card-subtitle">(60+ anys)</p>
               </button>
             </div>
@@ -214,6 +214,19 @@
               </label>
             </div>
           </div>
+
+          <div class="onb-section">
+            <h2 id="label-tutorial-choice" class="section-label">Tutorial</h2>
+            <div class="toggle-list" role="group" aria-labelledby="label-tutorial-choice">
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-start-tutorial" />
+                <div class="toggle-content">
+                  <span>Vull veure un tutorial abans de començar</span>
+                  <p class="card-subtitle">T'explica l'ordre recomanat i què fa cada botó principal.</p>
+                </div>
+              </label>
+            </div>
+          </div>
         </section>
  
         <!-- STEP 3: Privacy -->
@@ -264,7 +277,7 @@
   <!-- Main application -->
   <div class="app-shell" inert>
     <!-- Capcalera: GuIA i audio -->
-    <header class="top-bar" aria-label="CapÃ§alera de l'aplicaciÃ³">
+    <header class="top-bar" aria-label="Capçalera de l'aplicació">
       <div class="top-left">
         <div class="brand-title">GuIA del Museu del Renaixement</div>
         <button
@@ -272,8 +285,19 @@
           id="app-title"
           type="button"
           aria-label="Obrir ajustos de la guia"
+          title="Obrir ajustos de la guia"
         >
           <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+        </button>
+        <button
+          class="help-btn"
+          id="tutorial-open-btn"
+          type="button"
+          aria-label="Ajuda: com utilitzar GuIA"
+          title="Ajuda: com utilitzar GuIA"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">help</span>
+          <span id="tutorial-open-text" class="help-btn-text">Ajuda</span>
         </button>
       </div>
 
@@ -282,7 +306,7 @@
           id="location-panel-btn"
           type="button"
           class="location-panel-btn"
-          aria-label="Tria la teva ubicaciÃ³"
+          aria-label="Tria la teva ubicació"
           aria-expanded="false"
           aria-controls="context-box"
         >
@@ -295,12 +319,12 @@
           id="audio-settings-btn"
           type="button"
           class="audio-settings-btn"
-          aria-label="Obrir ajustos d'Audio"
+          aria-label="Obrir ajustos d'àudio"
           aria-expanded="false"
           aria-controls="audio-controls-panel"
         >
           <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-          <span>Audio</span>
+          <span id="audio-settings-text">Àudio</span>
         </button>
 
         <div id="audio-controls-panel" class="audio-group" aria-label="Controls d'audio">
@@ -311,7 +335,7 @@
             aria-label="Silenciar o activar l'audio"
             aria-pressed="false"
           >
-            ðŸ”ˆ
+            <span class="material-symbols-outlined" aria-hidden="true">volume_off</span>
           </button>
 
           <button
@@ -398,7 +422,14 @@
       >
         <div id="chat-thread" class="chat-thread">
           <div class="msg-row assistant">
-            <div class="msg-bubble assistant-bubble">
+            <div
+              class="msg-bubble assistant-bubble"
+              data-role="assistant"
+              data-i18n-key="chat.welcome"
+              data-original-lang="ca"
+              data-message-lang="ca"
+              tabindex="0"
+            >
               Benvingut al Museu del Renaixement. Selecciona on t'agradaria començar la teva visita o pregunta'm qualsevol cosa sobre el museu.
             </div>
           </div>
@@ -407,6 +438,8 @@
         <div id="typing-indicator" class="typing" aria-hidden="true" hidden>
           <span></span><span></span><span></span>
         </div>
+        <div id="typing-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+        <div id="chat-translation-status" class="chat-translation-status" role="status" aria-live="polite" hidden></div>
 
         <!-- suggestion bar -->
         <div id="suggestion-bar" class="suggestion-bar" ></div>
@@ -437,7 +470,7 @@
               aria-controls="qr-scanner"
             >
               <span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>
-              <span id="scan-qr-text">Scanejar Codi QR</span>
+              <span id="scan-qr-text">Escanejar codi QR</span>
             </button>
 
             <button
@@ -452,15 +485,20 @@
             </button>
           </div>
 
-          <div id="qr-scanner" class="qr-scanner" hidden>
+          <div
+            id="qr-scanner"
+            class="qr-scanner"
+            role="region"
+            aria-labelledby="scan-qr-text"
+            aria-describedby="qr-scanner-help"
+            hidden
+          >
             <p id="qr-scanner-help" class="sr-only">
               La càmera s'ha activat per escanejar un codi QR de la ubicació.
             </p>
             <div
               id="qr-video"
-              role="img"
               aria-label="Vista de la càmera per escanejar codis QR"
-              aria-describedby="qr-scanner-help"
             ></div>
             <button
               id="close-qr-btn"
@@ -468,7 +506,7 @@
               class="btn-secondary"
               aria-label="Close QR scanner"
             >
-              <span id="close-scanner-text">Tancar Scanner</span>
+              <span id="close-scanner-text">Tancar escàner</span>
             </button>
           </div>
 
@@ -546,6 +584,46 @@
     </footer>
   </div>
 
+  <div
+    id="tutorial-modal"
+    class="tutorial-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tutorial-title"
+    aria-describedby="tutorial-intro"
+    aria-hidden="true"
+    hidden
+  >
+    <section class="tutorial-panel">
+      <header class="tutorial-header">
+        <div>
+          <p id="tutorial-kicker" class="eyebrow">Ajuda</p>
+          <h2 id="tutorial-title" class="tutorial-title">Com utilitzar GuIA</h2>
+        </div>
+        <button
+          id="tutorial-close-btn"
+          type="button"
+          class="icon-btn tutorial-close-btn"
+          aria-label="Tancar ajuda"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </header>
+
+      <p id="tutorial-intro" class="tutorial-intro">
+        Aquesta guia explica els botons principals. Pots llegir-la i tancar-la quan vulguis.
+      </p>
+
+      <ol id="tutorial-steps" class="tutorial-steps"></ol>
+
+      <footer class="tutorial-footer">
+        <button id="tutorial-done-btn" type="button" class="btn-primary">
+          Entesos
+        </button>
+      </footer>
+    </section>
+  </div>
+
   <!-- QR Code Detection Library -->
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/dist/html5-qrcode.min.js"></script>
   <script src="./modules/state.js"></script>
@@ -556,6 +634,7 @@
   <script src="./modules/helpers.js"></script>
   <script src="./modules/locations.js"></script>
   <script src="./app.js"></script>
+  <script src="./modules/tutorial.js"></script>
   <script src="./modules/audio.js"></script>
   <script src="./modules/voice.js"></script>
   <script src="./modules/context-panel.js"></script>

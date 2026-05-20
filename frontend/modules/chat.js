@@ -5,6 +5,7 @@ function initChat(audio, voice) {
   const chatInput = el('chat-input');
   const sendBtn = el('send-btn');
   const typingIndicator = el('typing-indicator');
+  const typingStatus = el('typing-status');
 
   let isGenerating = false;
 
@@ -17,17 +18,19 @@ function initChat(audio, voice) {
       typingIndicator.setAttribute('aria-hidden', 'false');
       typingIndicator.classList.add('is-visible');
       typingIndicator.style.display = 'inline-flex';
+      if (typingStatus) typingStatus.textContent = t('chat.typingStatus', 'GuIA is writing.');
     } else {
       typingIndicator.hidden = true;
       typingIndicator.setAttribute('hidden', '');
       typingIndicator.setAttribute('aria-hidden', 'true');
       typingIndicator.classList.remove('is-visible');
       typingIndicator.style.display = 'none';
+      if (typingStatus) typingStatus.textContent = '';
     }
   }
 
   function appendToBubble(bubble, text) {
-    bubble.textContent += text;
+    setBubbleText(bubble, getBubbleText(bubble) + text, 'assistant');
     updateBubbleAccessibilityLabel(bubble, 'assistant');
     chatThread.scrollTop = chatThread.scrollHeight;
   }
@@ -126,7 +129,7 @@ function initChat(audio, voice) {
             assistantBubble = addBubble('assistant', '');
           }
 
-          assistantBubble.textContent = text;
+          setBubbleText(assistantBubble, text, 'assistant');
           updateBubbleAccessibilityLabel(assistantBubble, 'assistant');
           fullAssistantText = text;
           sentenceBuffer = '';
@@ -143,6 +146,10 @@ function initChat(audio, voice) {
 
       if (fullAssistantText.trim()) {
         audio.lastAssistantText = fullAssistantText.trim();
+        if (assistantBubble) {
+          setBubbleSource(assistantBubble, fullAssistantText.trim(), state.selectedLang);
+          assistantBubble.dataset.messageLang = state.selectedLang;
+        }
         if (payload.simple_language) {
           audio.resetSpeechQueue();
           audio.queueSpeech(audio.lastAssistantText);
@@ -154,7 +161,10 @@ function initChat(audio, voice) {
       }
 
       if (!receivedText) {
-        const emptyBubble = addBubble('assistant', t('chat.emptyResponse', "I couldn't generate a response."));
+        const emptyBubble = addBubble('assistant', t('chat.emptyResponse', "I couldn't generate a response."), {
+          sourceText: t('chat.emptyResponse', "I couldn't generate a response."),
+          sourceLang: state.selectedLang
+        });
         if (!payload.simple_language) {
           await annotateEasyWords(emptyBubble);
         }
@@ -168,25 +178,26 @@ function initChat(audio, voice) {
     if (isGenerating) return;
 
     if (voice.isRecording()) {
-      voice.stopRecording(true);
+      voice.stopRecording(false);
       return;
     }
 
     if (voice.isProcessing()) {
-      voice.sendAfterTranscription();
+      announce(t('audio.reviewTranscription', 'Wait for transcription to finish, then review the text before sending.'));
       return;
     }
 
     const value = chatInput.value.trim();
     if (!value) return;
 
-    addBubble('user', value);
+    addBubble('user', value, { sourceText: value, sourceLang: state.selectedLang });
     chatInput.value = '';
 
     audio.resetSpeechQueue();
     setThinkingIndicator(true);
 
     isGenerating = true;
+    state.chatGenerating = true;
     sendBtn.disabled = true;
 
     try {
@@ -205,9 +216,13 @@ function initChat(audio, voice) {
     } catch (e) {
       console.error('Chat error:', e);
       setThinkingIndicator(false);
-      addBubble('assistant', t('chat.connectionError'));
+      addBubble('assistant', t('chat.connectionError'), {
+        sourceText: t('chat.connectionError'),
+        sourceLang: state.selectedLang
+      });
     } finally {
       isGenerating = false;
+      state.chatGenerating = false;
       sendBtn.disabled = false;
       setThinkingIndicator(false);
     }
@@ -221,6 +236,7 @@ function initChat(audio, voice) {
     setThinkingIndicator(true);
 
     isGenerating = true;
+    state.chatGenerating = true;
     sendBtn.disabled = true;
 
     try {
@@ -239,9 +255,13 @@ function initChat(audio, voice) {
     } catch (e) {
       console.error('Chat error:', e);
       setThinkingIndicator(false);
-      addBubble('assistant', t('chat.connectionError'));
+      addBubble('assistant', t('chat.connectionError'), {
+        sourceText: t('chat.connectionError'),
+        sourceLang: state.selectedLang
+      });
     } finally {
       isGenerating = false;
+      state.chatGenerating = false;
       sendBtn.disabled = false;
       setThinkingIndicator(false);
     }

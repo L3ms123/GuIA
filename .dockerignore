@@ -4,10 +4,14 @@
 __pycache__
 *.pyc
 *.pyo
+*.log
+.DS_Store
 LLM/.env
 KG/.env
 .vscode
 KG/neo4j.dump
 VectorDB/chroma_db
+*.ipynb
 raw_data/*.pdf
 raw_data/*.pptx
+raw_data/*.docx
