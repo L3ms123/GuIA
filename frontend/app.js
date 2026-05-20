@@ -1586,7 +1586,6 @@ function initContextPanel() {
 
   el('scan-qr-btn').addEventListener('click', async () => {
     const scanner = el('qr-scanner');
-    const video = el('qr-video');
     const openAppBtn = el('open-app-btn');
     const scanQrBtn = el('scan-qr-btn');
 
@@ -1602,7 +1601,7 @@ function initContextPanel() {
       qrScannerActive = true;
 
       // html5-qrcode will handle camera access internally
-      startQRDetection(video);
+      startQRDetection();
     } catch (err) {
       console.error('QR scanner error:', err);
       const cameraError = el('camera-error');
@@ -1617,7 +1616,6 @@ function initContextPanel() {
 
   function closeQRScanner() {
     const scanner = el('qr-scanner');
-    const video = el('qr-video');
     const openAppBtn = el('open-app-btn');
     const scanQrBtn = el('scan-qr-btn');
     const cameraError = el('camera-error');
@@ -1629,35 +1627,26 @@ function initContextPanel() {
       html5QrCodeScanner = null;
     }
 
-    if (qrScannerStream) {
-      qrScannerStream.getTracks().forEach(track => track.stop());
-      qrScannerStream = null;
-    }
-
-    video.srcObject = null;
     scanner.setAttribute('hidden', '');
     openAppBtn.hidden = false;
     scanQrBtn.hidden = false;
     qrScannerActive = false;
     manualHint.hidden = false;
 
-
     if (cameraError) cameraError.hidden = true;
   }
 
   let html5QrCodeScanner = null;
 
-  function startQRDetection(video) {
+  function startQRDetection() {
     if (!window.Html5Qrcode) {
       console.error('Html5Qrcode library not loaded');
       el('context-error').textContent = 'QR code library not loaded';
       return;
     }
 
-    const videoId = video.id;
-
-    // Create a new Html5Qrcode instance
-    html5QrCodeScanner = new Html5Qrcode(videoId);
+    // Create a new Html5Qrcode instance with the div element ID
+    html5QrCodeScanner = new Html5Qrcode('qr-video');
 
     const onScanSuccess = (decodedText) => {
       console.log('QR Code detected:', decodedText);

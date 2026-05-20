@@ -419,7 +419,7 @@
           </div>
 
           <div id="qr-scanner" class="qr-scanner" hidden>
-            <video id="qr-video" aria-label="Camera feed for QR code scanning"></video>
+            <div id="qr-video" aria-label="Camera feed for QR code scanning"></div>
             <button
               id="close-qr-btn"
               type="button"
@@ -502,8 +502,8 @@
     </footer>
   </div>
 
-  <script src="./app.js"></script>
   <!-- QR Code Detection Library -->
-  <script async src="https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/dist/html5-qrcode.min.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
