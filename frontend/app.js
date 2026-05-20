@@ -162,6 +162,7 @@ async function preloadTranslations() {
 function showOnboarding() {
   state.lastFocusedElement = document.activeElement;
   window.guiaResetSpeechQueue?.();
+  syncAccessibilityControls();
   const onboarding = el('onboarding');
   onboarding.style.display = 'flex';
   onboarding.removeAttribute('aria-hidden');
@@ -265,14 +266,20 @@ function applyOnboardingTranslations() {
     q('label[for="opt-spoken-audio"] span') ||
     q('#opt-spoken-audio')?.closest('label')?.querySelector('span');
   setText(optSpokenAudioLabel, t('onboarding.spokenExplanations'));
+  const optSpokenAudioHelp = q('#opt-spoken-audio')?.closest('label')?.querySelector('.card-subtitle');
+  setText(optSpokenAudioHelp, t('onboarding.spokenExplanationsHelp'));
 
   const optMoreTimeLabel =
     q('label[for="opt-more-time"] span') ||
     q('#opt-more-time')?.closest('label')?.querySelector('span');
   setText(optMoreTimeLabel, t('onboarding.moreTime'));
+  const optMoreTimeHelp = q('#opt-more-time')?.closest('label')?.querySelector('.card-subtitle');
+  setText(optMoreTimeHelp, t('onboarding.moreTimeHelp'));
 
   const optVisualDescriptionsLabel = q('#opt-visual-descriptions')?.closest('label')?.querySelector('span');
   setText(optVisualDescriptionsLabel, t('onboarding.visualDescriptions'));
+  const optVisualDescriptionsHelp = q('#opt-visual-descriptions')?.closest('label')?.querySelector('.card-subtitle');
+  setText(optVisualDescriptionsHelp, t('onboarding.visualDescriptionsHelp'));
 
   const privacyLabel = q('[data-i18n="onboarding.privacy"]');
   if (privacyLabel) {
@@ -395,6 +402,10 @@ function updateOnboardingButtons() {
 }
 
 function applyAccessibilityPrefs() {
+  if (state.accessibilityPrefs.visualDescriptions) {
+    state.accessibilityPrefs.spokenAudio = true;
+  }
+
   document.body.toggleAttribute('data-large-text', state.accessibilityPrefs.largeText);
   document.body.toggleAttribute('data-simple-language', state.accessibilityPrefs.simpleLanguage);
   document.body.toggleAttribute('data-spoken-audio', state.accessibilityPrefs.spokenAudio);
@@ -410,6 +421,21 @@ function applyAccessibilityPrefs() {
   window.guiaReleaseAudioWaiters?.();
 }
 
+function syncAccessibilityControls() {
+  const preferences = {
+    'opt-large-text': 'largeText',
+    'opt-simple-language': 'simpleLanguage',
+    'opt-spoken-audio': 'spokenAudio',
+    'opt-more-time': 'moreTime',
+    'opt-visual-descriptions': 'visualDescriptions'
+  };
+
+  Object.entries(preferences).forEach(([id, preference]) => {
+    const input = el(id);
+    if (input) input.checked = !!state.accessibilityPrefs[preference];
+  });
+}
+
 function setPreferredSpeechSpeed(speed) {
   const btn = q(`.speed-btn[data-speed="${speed}"]`);
   if (btn && btn.getAttribute('aria-checked') !== 'true') {
@@ -419,7 +445,20 @@ function setPreferredSpeechSpeed(speed) {
 
 function bindAccessibilityPreference(id, preference) {
   el(id)?.addEventListener('change', (event) => {
+    const wasSpokenAudio = state.accessibilityPrefs.spokenAudio;
+
     state.accessibilityPrefs[preference] = event.target.checked;
+
+    if (preference === 'visualDescriptions' && event.target.checked) {
+      state.accessibilityPrefs.spokenAudio = true;
+    }
+
+    syncAccessibilityControls();
+    applyAccessibilityPrefs();
+
+    if (preference === 'spokenAudio' || preference === 'visualDescriptions') {
+      window.guiaHandleNarrationPreferenceChange?.(wasSpokenAudio, state.accessibilityPrefs.spokenAudio);
+    }
   });
 }
 
@@ -441,6 +480,7 @@ function bindOnboardingFlow() {
   bindAccessibilityPreference('opt-spoken-audio', 'spokenAudio');
   bindAccessibilityPreference('opt-more-time', 'moreTime');
   bindAccessibilityPreference('opt-visual-descriptions', 'visualDescriptions');
+  syncAccessibilityControls();
 
   consent?.addEventListener('change', updateOnboardingButtons);
 
@@ -454,9 +494,10 @@ function bindOnboardingFlow() {
       return;
     }
 
+    applyAppTranslations();
     applyAccessibilityPrefs();
     hideOnboarding();
-    applyAppTranslations();
+    window.guiaSpeakInitialWelcome?.();
   });
 
   showOnboardingStep(1);
@@ -500,8 +541,6 @@ function applyAppTranslations() {
     if (suggestions[i]) btn.textContent = suggestions[i];
   });
 
-  setText(el('where-am-i-btn'), t('app.whereAmI'));
-
   setText(q('.brand-title'), t('app.title'));
 
   const appTitle = el('app-title');
@@ -522,6 +561,8 @@ function applyAppTranslations() {
   if (openNaviLensText) openNaviLensText.textContent = t('app.openNaviLens');
   const scanQRText = el('scan-qr-text');
   if (scanQRText) scanQRText.textContent = t('app.scanQRCode');
+  const manualLocationText = el('manual-location-text');
+  if (manualLocationText) manualLocationText.textContent = t('app.chooseManually', 'Choose manually');
   const closeScannerText = el('close-scanner-text');
   if (closeScannerText) closeScannerText.textContent = t('app.closeScanner');
   const confirmLocationText = el('confirm-location-text');
@@ -859,7 +900,7 @@ function initAudioControls() {
 
   function updateMuteIcon() {
     if (!muteBtn) return;
-    const muted = isMuted || currentVolume === 0;
+    const muted = isMuted || !spokenAudioEnabled || currentVolume === 0;
     muteBtn.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">${muted ? 'volume_off' : 'volume_up'}</span>`;
     muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
     muteBtn.setAttribute('aria-label', muted ? t('audio.unmute', 'Unmute audio') : t('audio.mute', 'Mute audio'));
@@ -878,9 +919,24 @@ function initAudioControls() {
   }
 
   function updateSpokenAudioButton() {
-    if (!spokenAudioBtn) return;
-
     spokenAudioEnabled = !!state.accessibilityPrefs.spokenAudio;
+    isMuted = !spokenAudioEnabled;
+
+    if (spokenAudioEnabled && volumeSlider && Number(volumeSlider.value) === 0) {
+      volumeSlider.value = Math.round((previousVolume || 0.5) * 100);
+      currentVolume = Number(volumeSlider.value) / 100;
+    }
+
+    applyAudioSettings();
+    updateMuteIcon();
+
+    if (spokenAudioEnabled) {
+      resumeAudioOutput();
+    } else {
+      pauseAudioOutput();
+    }
+
+    if (!spokenAudioBtn) return;
 
     spokenAudioBtn.textContent = spokenAudioEnabled
       ? t('audio.spokenOn', 'Audio on')
@@ -1007,29 +1063,29 @@ function initAudioControls() {
       currentAudioBaseSpeed = generatedSpeed;
       applyAudioSettings(audio);
 
-      const cleanup = () => {
+      const cleanup = (played = true) => {
         if (currentAudio === audio) {
           currentAudio = null;
         }
         URL.revokeObjectURL(url);
-        resolve();
+        resolve(played);
       };
 
-      audio.onended = cleanup;
-      audio.onerror = cleanup;
+      audio.onended = () => cleanup(true);
+      audio.onerror = () => cleanup(false);
 
       try {
         await waitUntilAudioAllowed();
 
         if (currentAudio !== audio) {
-          cleanup();
+          cleanup(false);
           return;
         }
 
         await audio.play();
       } catch (err) {
         console.error('Audio playback failed:', err);
-        cleanup();
+        cleanup(false);
       }
     });
   }
@@ -1082,9 +1138,15 @@ function initAudioControls() {
             if (queueVersion !== speechQueueVersion) return;
             if (result.err) throw result.err;
 
-            await playAudioBlob(result.blob, requestedSpeed);
+            const played = await playAudioBlob(result.blob, requestedSpeed);
+            if (!played && queueVersion === speechQueueVersion) {
+              await speakBrowser(sentence, lang, persona, false);
+            }
           } catch (err) {
             console.error('Kokoro fail:', err);
+            if (queueVersion === speechQueueVersion) {
+              await speakBrowser(sentence, lang, persona, false);
+            }
           }
         });
 
@@ -1102,6 +1164,34 @@ function initAudioControls() {
 
         return speakBrowser(sentence, lang, persona, false);
       });
+  }
+
+  function replayLastAssistantSpeech() {
+    const text = lastAssistantText.trim();
+    if (!text) return;
+
+    isAudioPaused = false;
+    resetSpeechQueue();
+    updateSpokenAudioButton();
+    updatePlaybackButton();
+    queueSpeech(text);
+  }
+
+  function handleNarrationPreferenceChange(wasEnabled, isEnabled) {
+    if (!isEnabled) {
+      resetSpeechQueue();
+      updateSpokenAudioButton();
+      updatePlaybackButton();
+      return;
+    }
+
+    isAudioPaused = false;
+    updateSpokenAudioButton();
+    updatePlaybackButton();
+
+    if (!wasEnabled) {
+      replayLastAssistantSpeech();
+    }
   }
 
   // Event listeners
@@ -1149,12 +1239,14 @@ function initAudioControls() {
       isMuted = !isMuted;
 
       muteBtn.setAttribute('aria-pressed', isMuted ? 'true' : 'false');
-      muteBtn.setAttribute('aria-label', isMuted ? 'Unmute audio' : 'Mute audio');
+      muteBtn.setAttribute('aria-label', isMuted ? t('audio.unmute', 'Unmute audio') : t('audio.mute', 'Mute audio'));
 
       if (isMuted) {
+        state.accessibilityPrefs.spokenAudio = false;
         if (volumeSlider) volumeSlider.value = 0;
         applyAudioSettings();
       } else {
+        state.accessibilityPrefs.spokenAudio = true;
         if (volumeSlider && Number(volumeSlider.value) === 0) {
           volumeSlider.value = Math.round((previousVolume || 0.5) * 100);
         }
@@ -1163,6 +1255,9 @@ function initAudioControls() {
         applyAudioSettings();
       }
 
+      document.body.toggleAttribute('data-spoken-audio', state.accessibilityPrefs.spokenAudio);
+      syncAccessibilityControls();
+      updateSpokenAudioButton();
       releaseAudioWaiters();
       updateMuteIcon();
     });
@@ -1186,29 +1281,22 @@ function initAudioControls() {
 
   if (replayBtn) {
     replayBtn.addEventListener('click', () => {
-      const text = lastAssistantText.trim();
-      if (!text) return;
-
-      spokenAudioEnabled = true;
+      state.accessibilityPrefs.spokenAudio = true;
       isAudioPaused = false;
-      resetSpeechQueue();
-      updateSpokenAudioButton();
-      updatePlaybackButton();
-      queueSpeech(text);
+      document.body.toggleAttribute('data-spoken-audio', true);
+      syncAccessibilityControls();
+      replayLastAssistantSpeech();
     });
   }
 
   if (spokenAudioBtn) {
     spokenAudioBtn.addEventListener('click', () => {
-      spokenAudioEnabled = !spokenAudioEnabled;
+      const wasSpokenAudio = state.accessibilityPrefs.spokenAudio;
+      state.accessibilityPrefs.spokenAudio = !state.accessibilityPrefs.spokenAudio;
 
-      if (!spokenAudioEnabled) {
-        resetSpeechQueue();
-      } else {
-        resumeAudioOutput();
-      }
-
-      updateSpokenAudioButton();
+      document.body.toggleAttribute('data-spoken-audio', state.accessibilityPrefs.spokenAudio);
+      syncAccessibilityControls();
+      handleNarrationPreferenceChange(wasSpokenAudio, state.accessibilityPrefs.spokenAudio);
     });
 
     updateSpokenAudioButton();
@@ -1217,6 +1305,7 @@ function initAudioControls() {
   window.guiaResetSpeechQueue = resetSpeechQueue;
   window.guiaUpdateSpokenAudio = updateSpokenAudioButton;
   window.guiaReleaseAudioWaiters = releaseAudioWaiters; 
+  window.guiaHandleNarrationPreferenceChange = handleNarrationPreferenceChange;
 
   return {
     get lastAssistantText() {
@@ -1240,16 +1329,22 @@ function initAudioControls() {
 
 function initInitialWelcomeSpeech(audio) {
   const onboarding = el('onboarding');
+  let welcomeSpoken = false;
 
   function speakInitialWelcome() {
+    if (welcomeSpoken) return;
+
     const firstBubble = q('.assistant-bubble');
     const text = firstBubble?.textContent?.trim();
     if (!text) return;
 
+    welcomeSpoken = true;
     audio.lastAssistantText = text;
     audio.resetSpeechQueue();
     audio.queueSpeech(text, state.selectedLang, state.selectedPersona);
   }
+
+  window.guiaSpeakInitialWelcome = speakInitialWelcome;
 
   if (!onboarding) return;
 
@@ -1506,21 +1601,11 @@ function initVoiceInput(audio) {
 // Context panel
 
 function initContextPanel() {
-  const whereAmIBtn = el('where-am-i-btn');
   const roomSelect = el('room-select');
   const artworkSelect = el('artwork-select');
   const setContextBtn = el('set-context-btn');
-
-  whereAmIBtn?.addEventListener('click', async () => {
-    const box = el('context-box');
-    if (box.hasAttribute('hidden')) {
-      await loadLocations();
-      renderLocationSelects();
-      box.removeAttribute('hidden');
-    } else {
-      box.setAttribute('hidden', '');
-    }
-  });
+  const manualLocationBtn = el('manual-location-btn');
+  const manualLocationPanel = el('manual-location-panel');
 
   renderLocationSelects();
 
@@ -1543,6 +1628,20 @@ function initContextPanel() {
       : '';
 
     applyContext(roomText, artworkText);
+  });
+
+  manualLocationBtn?.addEventListener('click', async () => {
+    const willOpen = manualLocationPanel?.hasAttribute('hidden');
+    if (willOpen) {
+      await loadLocations();
+      renderLocationSelects();
+      closeQRScanner();
+      manualLocationPanel?.removeAttribute('hidden');
+    } else {
+      manualLocationPanel?.setAttribute('hidden', '');
+    }
+
+    manualLocationBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
   });
 
   // ─── Navi Lens Integration ──────────────────────────────────────────────────────────
@@ -1593,22 +1692,25 @@ function initContextPanel() {
     const scanner = el('qr-scanner');
     const openAppBtn = el('open-app-btn');
     const scanQrBtn = el('scan-qr-btn');
+    const manualLocationBtn = el('manual-location-btn');
 
     if (qrScannerActive) {
-      closeQRScanner();
       return;
     }
 
     try {
+      closeManualLocationPanel();
       scanner.removeAttribute('hidden');
       openAppBtn.hidden = true;
-      scanQrBtn.hidden = true;
+      manualLocationBtn.hidden = true;
+      scanQrBtn.disabled = true;
       qrScannerActive = true;
 
       // html5-qrcode will handle camera access internally
       startQRDetection();
     } catch (err) {
       console.error('QR scanner error:', err);
+      closeQRScanner();
       const cameraError = el('camera-error');
       if (cameraError) {
         cameraError.textContent = t('app.cameraError');
@@ -1619,26 +1721,44 @@ function initContextPanel() {
 
   el('close-qr-btn').addEventListener('click', closeQRScanner);
 
-  function closeQRScanner() {
+  function closeManualLocationPanel() {
+    manualLocationPanel?.setAttribute('hidden', '');
+    manualLocationBtn?.setAttribute('aria-expanded', 'false');
+  }
+
+  async function closeQRScanner() {
     const scanner = el('qr-scanner');
     const openAppBtn = el('open-app-btn');
     const scanQrBtn = el('scan-qr-btn');
+    const manualLocationBtn = el('manual-location-btn');
     const cameraError = el('camera-error');
-    const manualHint = el('manual-selection-hint');
-
-    // Stop the html5-qrcode scanner if active
-    if (html5QrCodeScanner) {
-      html5QrCodeScanner.stop().catch(() => {});
-      html5QrCodeScanner = null;
-    }
+    const qrVideo = el('qr-video');
 
     scanner.setAttribute('hidden', '');
     openAppBtn.hidden = false;
-    scanQrBtn.hidden = false;
+    manualLocationBtn.hidden = false;
+    scanQrBtn.disabled = false;
     qrScannerActive = false;
-    manualHint.hidden = false;
-
     if (cameraError) cameraError.hidden = true;
+
+    // Stop the html5-qrcode scanner if active
+    if (html5QrCodeScanner) {
+      const scannerInstance = html5QrCodeScanner;
+      html5QrCodeScanner = null;
+      try {
+        await scannerInstance.stop();
+      } catch (err) {
+        console.warn('QR scanner stop skipped:', err);
+      }
+
+      try {
+        await scannerInstance.clear();
+      } catch (err) {
+        console.warn('QR scanner clear skipped:', err);
+      }
+    }
+
+    if (qrVideo) qrVideo.innerHTML = '';
   }
 
   let html5QrCodeScanner = null;
@@ -1656,8 +1776,6 @@ function initContextPanel() {
     const onScanSuccess = (decodedText) => {
       console.log('QR Code detected:', decodedText);
       handleQRCodeDetected(decodedText);
-      // Stop the scanner after successful scan
-      html5QrCodeScanner.stop().catch(() => {});
       closeQRScanner();
     };
 
@@ -1676,7 +1794,12 @@ function initContextPanel() {
       onScanFailure
     ).catch((err) => {
       console.error('Failed to start QR scanning:', err);
-      el('context-error').textContent = t('app.cameraError', 'Camera error');
+      closeQRScanner();
+      const cameraError = el('camera-error');
+      if (cameraError) {
+        cameraError.textContent = t('app.cameraError', 'Camera error');
+        cameraError.hidden = false;
+      }
     });
   }
 
@@ -2109,7 +2232,8 @@ function applyContext(roomText, artworkText) {
 
   const msg = artworkText ? `${roomText} \u00b7 ${artworkText}` : roomText;
   addBubble('user', msg);
-  el('context-box').setAttribute('hidden', '');
+  el('manual-location-panel')?.setAttribute('hidden', '');
+  el('manual-location-btn')?.setAttribute('aria-expanded', 'false');
 
   fetch(API_ENDPOINTS.context, {
     method: 'POST',

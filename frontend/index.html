@@ -186,10 +186,10 @@
  
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-spoken-audio" />
+                <input type="checkbox" id="opt-spoken-audio" autocomplete="off" />
                 <div class="toggle-content">
                   <span>Explicacions parlades amb veu</span>
-                  <p class="card-subtitle">Això es pot canviar en qualsevol moment.</p>
+                  <p class="card-subtitle">Llegeix en veu alta les respostes de la guia.</p>
                 </div>
               </label>
  
@@ -197,13 +197,16 @@
                 <input type="checkbox" id="opt-more-time" />
                 <div class="toggle-content">
                   <span>Més temps i ritme més lent</span>
-                  <p class="card-subtitle">Això es pot canviar en qualsevol moment.</p>
+                  <p class="card-subtitle">La veu parla més a poc a poc i la conversa dona més temps.</p>
                 </div>
               </label>
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-visual-descriptions" />
-                <span>Descripció visual de les obres</span>
+                <input type="checkbox" id="opt-visual-descriptions" autocomplete="off" />
+                <div class="toggle-content">
+                  <span>Descripció visual de les obres</span>
+                  <p class="card-subtitle">Activa automàticament l'àudio i descriu allò que es veu a les obres.</p>
+                </div>
               </label>
             </div>
           </div>
@@ -385,15 +388,7 @@
 
       <!-- Context column -->
       <aside class="context-column" aria-label="Context d'ubicació">
-        <button
-          id="where-am-i-btn"
-          type="button"
-          class="btn-secondary wide"
-        >
-          On sóc?
-        </button>
-
-        <div id="context-box" class="context-box" hidden>
+        <div id="context-box" class="context-box">
           <h2 class="context-heading" id="choose-location">Tria la teva ubicació</h2>
 
           <div class="context-actions">
@@ -416,6 +411,17 @@
               <span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>
               <span id="scan-qr-text">Scanejar Codi QR</span>
             </button>
+
+            <button
+              id="manual-location-btn"
+              type="button"
+              class="btn-secondary wide"
+              aria-expanded="false"
+              aria-controls="manual-location-panel"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">touch_app</span>
+              <span id="manual-location-text">Tria manual</span>
+            </button>
           </div>
 
           <div id="qr-scanner" class="qr-scanner" hidden>
@@ -431,35 +437,35 @@
           </div>
 
           <p id="camera-error" class="field-error" aria-live="assertive" hidden></p>
-          <p id="manual-selection-hint" class="field-hint" hidden></p>
+          <div id="manual-location-panel" class="manual-location-panel" hidden>
+            <label class="field-label" id="room">Sala</label>
+            <select
+              id="room-select"
+              class="field-select"
+              aria-describedby="room-help"
+            >
+              <option value="">Selecciona una sala</option>
+            </select>
 
-          <label class="field-label" id="room">Sala</label>
-          <select
-            id="room-select"
-            class="field-select"
-            aria-describedby="room-help"
-          >
-            <option value="">Selecciona una sala</option>
-          </select>
+            <label class="field-label" id="artwork">Obra</label>
+            <select
+              id="artwork-select"
+              class="field-select"
+              aria-describedby="artwork-help"
+            >
+              <option value="">Selecciona una obra</option>
+            </select>
 
-          <label class="field-label" id="artwork">Obra</label>
-          <select
-            id="artwork-select"
-            class="field-select"
-            aria-describedby="artwork-help"
-          >
-            <option value="">Selecciona una obra</option>
-          </select>
+            <button
+              id="set-context-btn"
+              type="button"
+              class="btn-primary wide"
+            >
+              <span id="confirm-location-text">Confirmar localització</span>
+            </button>
 
-          <button
-            id="set-context-btn"
-            type="button"
-            class="btn-primary wide"
-          >
-            <span id="confirm-location-text">Confirmar localització</span>
-          </button>
-
-          <p id="context-error" class="field-error" aria-live="assertive"></p>
+            <p id="context-error" class="field-error" aria-live="assertive"></p>
+          </div>
         </div>
       </aside>
     </main>

@@ -174,7 +174,7 @@ select {
 .section-label {
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 1rem;
+  font-size: calc(1rem * var(--scale));
   font-weight: 600;
   margin: 0;
   color: var(--on-surface-variant);
@@ -219,12 +219,12 @@ select {
 
 .card-title {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: calc(1rem * var(--scale));
   margin: 0 0 0.2rem;
 }
 
 .card-subtitle {
-  font-size: 0.8rem;
+  font-size: calc(0.8rem * var(--scale));
   margin: 0;
   color: var(--on-surface-variant);
 }
@@ -232,7 +232,7 @@ select {
 .card-subtitle,
 .hint-muted,
 .helper-text {
-  font-size: 1rem;
+  font-size: calc(1rem * var(--scale));
   line-height: 1.5;
 }
 
@@ -254,7 +254,7 @@ select {
   background: var(--surface-lowest);
   padding: 0.8rem;
   border: none;
-  font-size: 1.1rem;
+  font-size: calc(1.1rem * var(--scale));
   text-align: left;
   font-weight: 500;
   font-family: var(--font-serif);
@@ -315,7 +315,7 @@ select {
 
 .hint-muted {
   font-style: italic;
-  font-size: 0.85rem;
+  font-size: calc(0.85rem * var(--scale));
   color: var(--on-surface-variant);
   margin: 0;
 }
@@ -331,7 +331,7 @@ select {
 }
 
 .step-count {
-  font-size: 0.85rem;
+  font-size: calc(0.85rem * var(--scale));
   color: var(--on-surface-variant);
   margin: 0;
 }
@@ -883,7 +883,7 @@ select {
 .context-box {
   background: var(--surface-lowest);
   padding: 0.9rem 0.9rem 0.8rem;
-  max-height: 50vh;
+  max-height: calc(100dvh - 8.5rem);
   overflow-y: auto;
 }
 
@@ -918,7 +918,7 @@ select {
 }
 
 .field-hint {
-  font-size: 0.8rem;
+  font-size: calc(0.8rem * var(--scale));
   color: var(--on-surface-variant);
   margin: 0.5rem 0;
   font-style: italic;
@@ -940,7 +940,21 @@ select {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: calc(0.9rem * var(--scale));
+}
+
+.context-actions [hidden] {
+  display: none !important;
+}
+
+.manual-location-panel {
+  margin-top: 0.8rem;
+}
+
+.manual-location-panel[hidden],
+.qr-scanner[hidden],
+.field-error[hidden] {
+  display: none !important;
 }
 
 .qr-scanner {
@@ -1394,7 +1408,7 @@ select:focus-visible,
   }
 
   .context-box {
-    max-height: 32dvh;
+    max-height: calc(100dvh - 8.5rem);
     overflow-y: auto;
   }
 
