@@ -131,7 +131,7 @@
               <button type="button" class="card radio-card" data-persona="scholar" role="radio" aria-checked="false">
                 <img class="card-icon" src="assets/scholar-svgrepo-com.svg" alt="" aria-hidden="true" />
                 <h3 class="card-title">Erudit</h3>
-                <p class="card-subtitle">Anàlisi històric i contextual profund de cada obra.</p>
+                <p class="card-subtitle">Anàlisi històrica i contextual profund de cada obra.</p>
               </button>
             </div>
           </div>
@@ -264,7 +264,7 @@
   <!-- Main application -->
   <div class="app-shell" inert>
     <!-- Capcalera: GuIA i audio -->
-    <header class="top-bar" aria-label="Capçalera de l'aplicació">
+    <header class="top-bar" aria-label="CapÃ§alera de l'aplicaciÃ³">
       <div class="top-left">
         <div class="brand-title">GuIA del Museu del Renaixement</div>
         <button
@@ -282,7 +282,7 @@
           id="location-panel-btn"
           type="button"
           class="location-panel-btn"
-          aria-label="Tria la teva ubicació"
+          aria-label="Tria la teva ubicaciÃ³"
           aria-expanded="false"
           aria-controls="context-box"
         >
@@ -295,30 +295,30 @@
           id="audio-settings-btn"
           type="button"
           class="audio-settings-btn"
-          aria-label="Obrir ajustos d'àudio"
+          aria-label="Obrir ajustos d'Audio"
           aria-expanded="false"
           aria-controls="audio-controls-panel"
         >
           <span class="material-symbols-outlined" aria-hidden="true">tune</span>
-          <span>Àudio</span>
+          <span>Audio</span>
         </button>
 
-        <div id="audio-controls-panel" class="audio-group" aria-label="Controls d'àudio">
+        <div id="audio-controls-panel" class="audio-group" aria-label="Controls d'audio">
           <button
             id="mute-btn"
             type="button"
             class="icon-btn"
-            aria-label="Silenciar o activar l'àudio"
+            aria-label="Silenciar o activar l'audio"
             aria-pressed="false"
           >
-            🔈
+            ðŸ”ˆ
           </button>
 
           <button
             id="audio-playback-btn"
             type="button"
             class="icon-btn"
-            aria-label="Pausar l'àudio"
+            aria-label="Pausar l'audio"
             aria-pressed="false"
           >
             <span class="material-symbols-outlined" aria-hidden="true">pause</span>
@@ -548,6 +548,18 @@
 
   <!-- QR Code Detection Library -->
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/dist/html5-qrcode.min.js"></script>
+  <script src="./modules/state.js"></script>
+  <script src="./modules/dom.js"></script>
+  <script src="./modules/i18n.js"></script>
+  <script src="./modules/onboarding.js"></script>
+  <script src="./modules/app-translations.js"></script>
+  <script src="./modules/helpers.js"></script>
+  <script src="./modules/locations.js"></script>
   <script src="./app.js"></script>
+  <script src="./modules/audio.js"></script>
+  <script src="./modules/voice.js"></script>
+  <script src="./modules/context-panel.js"></script>
+  <script src="./modules/chat.js"></script>
+  <script src="./modules/apply-context.js"></script>
 </body>
 </html>
