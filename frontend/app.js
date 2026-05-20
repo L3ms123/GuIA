@@ -1596,23 +1596,15 @@ function initContextPanel() {
     }
 
     try {
-      // Request camera access
-      qrScannerStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-
-      video.srcObject = qrScannerStream;
-      video.play();
-
       scanner.removeAttribute('hidden');
       openAppBtn.hidden = true;
       scanQrBtn.hidden = true;
       qrScannerActive = true;
 
-      // Start QR code detection loop
+      // html5-qrcode will handle camera access internally
       startQRDetection(video);
     } catch (err) {
-      console.error('Camera access denied:', err);
+      console.error('QR scanner error:', err);
       const cameraError = el('camera-error');
       if (cameraError) {
         cameraError.textContent = t('app.cameraError');
@@ -1631,6 +1623,12 @@ function initContextPanel() {
     const cameraError = el('camera-error');
     const manualHint = el('manual-selection-hint');
 
+    // Stop the html5-qrcode scanner if active
+    if (html5QrCodeScanner) {
+      html5QrCodeScanner.stop().catch(() => {});
+      html5QrCodeScanner = null;
+    }
+
     if (qrScannerStream) {
       qrScannerStream.getTracks().forEach(track => track.stop());
       qrScannerStream = null;
@@ -1647,37 +1645,45 @@ function initContextPanel() {
     if (cameraError) cameraError.hidden = true;
   }
 
+  let html5QrCodeScanner = null;
+
   function startQRDetection(video) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    function detectQR() {
-      if (!qrScannerActive) return;
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-      // Try to detect QR code using jsQR if available, otherwise use a simple approach
-      if (window.jsQR) {
-        const code = window.jsQR(imageData.data, canvas.width, canvas.height);
-        if (code) {
-          handleQRCodeDetected(code.data);
-          closeQRScanner();
-          return;
-        }
-      } else {
-        // Fallback: look for simple pattern detection
-        console.warn('jsQR library not loaded. QR code detection limited.');
-      }
-
-      requestAnimationFrame(detectQR);
+    if (!window.Html5Qrcode) {
+      console.error('Html5Qrcode library not loaded');
+      el('context-error').textContent = 'QR code library not loaded';
+      return;
     }
 
-    detectQR();
+    const videoId = video.id;
+
+    // Create a new Html5Qrcode instance
+    html5QrCodeScanner = new Html5Qrcode(videoId);
+
+    const onScanSuccess = (decodedText) => {
+      console.log('QR Code detected:', decodedText);
+      handleQRCodeDetected(decodedText);
+      // Stop the scanner after successful scan
+      html5QrCodeScanner.stop().catch(() => {});
+      closeQRScanner();
+    };
+
+    const onScanFailure = (error) => {
+      // QR code not detected in this frame - this is normal, just continue scanning
+    };
+
+    // Start scanning
+    html5QrCodeScanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      onScanSuccess,
+      onScanFailure
+    ).catch((err) => {
+      console.error('Failed to start QR scanning:', err);
+      el('context-error').textContent = t('app.cameraError', 'Camera error');
+    });
   }
 
   function handleQRCodeDetected(data) {
