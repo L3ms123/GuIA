@@ -585,6 +585,21 @@ select {
   cursor: pointer;
 }
 
+.location-panel-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 3rem;
+  padding: 0 0.95rem;
+  background: var(--surface-low);
+  color: var(--on-surface);
+  border: 1px solid var(--outline-soft);
+  border-radius: 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .volume-wrap {
   display: inline-flex;
   align-items: center;
@@ -1266,7 +1281,7 @@ select:focus-visible,
     position: static;
     flex: 0 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
     gap: 0.5rem;
     padding: 0.55rem var(--gutter);
@@ -1300,7 +1315,7 @@ select:focus-visible,
   }
 
   .audio-settings-btn {
-    grid-column: 2;
+    grid-column: 3;
     justify-self: end;
     display: inline-flex;
     min-height: 2.6rem;
@@ -1312,6 +1327,17 @@ select:focus-visible,
 
   body[data-audio-settings-open] .audio-settings-btn {
     width: auto;
+  }
+
+  .location-panel-btn {
+    grid-column: 2;
+    justify-self: end;
+    display: inline-flex;
+    min-height: 2.6rem;
+    padding: 0 0.7rem;
+    font-size: calc(0.95rem * var(--scale));
+    pointer-events: auto;
+    box-shadow: none;
   }
 
   .audio-group {
@@ -1399,6 +1425,11 @@ select:focus-visible,
     order: -1;
     flex: 0 0 auto;
     overflow: visible;
+    display: none;
+  }
+
+  body[data-location-panel-open] .context-column {
+    display: flex;
   }
 
   .context-column .wide {

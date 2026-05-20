@@ -71,13 +71,24 @@
       "artwork": "Artwork",
       "whereAmI": "Where am I?",
       "chooseLocation": "Choose your location",
+      "locationButton": "Location",
       "roomLabel": "Room",
       "artworkLabel": "Artwork",
+      "roomHelp": "Select the room where you are now.",
+      "artworkHelp": "Optionally select the artwork in front of you.",
+      "qrScannerHelp": "The camera is active to scan a location QR code.",
       "confirmLocation": "Confirm location",
       "contextError": "Please select a room so GuIA can guide you accurately.",
       "cameraError": "Camera access denied. Please enable camera permissions.",
       "orSelectManually": "Or select it manually.",
       "chooseManually": "Choose manually",
+      "manualSelectionOpened": "Manual location selection opened.",
+      "manualSelectionClosed": "Manual location selection closed.",
+      "qrScannerOpened": "QR scanner opened.",
+      "qrScannerClosed": "QR scanner closed.",
+      "qrScanSuccess": "QR code scanned.",
+      "locationPanelOpened": "Location panel opened.",
+      "locationPanelClosed": "Location panel closed.",
       "openNaviLens": "Open NaviLens",
       "scanQRCode": "Scan QR Code",
       "closeScanner": "Close Scanner"
@@ -92,7 +103,9 @@
         "Go slower"
       ],
       "welcome": "Welcome to the Museu del Renaixement. Select where you'd like to start your visit or ask me anything about the museum!",
-      "connectionError": "Sorry, I’m having trouble connecting right now."
+      "connectionError": "Sorry, I’m having trouble connecting right now.",
+      "userMessageLabel": "You",
+      "assistantMessageLabel": "GuIA"
     },
     "audio": {
       "slow": "Slow",
@@ -203,13 +216,24 @@
       "artwork": "Obra",
       "whereAmI": "¿Dónde estoy?",
       "chooseLocation": "Elige tu ubicación",
+      "locationButton": "Ubicación",
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
+      "roomHelp": "Selecciona la sala en la que estás ahora.",
+      "artworkHelp": "Opcionalmente, selecciona la obra que tienes delante.",
+      "qrScannerHelp": "La cámara está activa para escanear un código QR de ubicación.",
       "confirmLocation": "Confirmar ubicación",
       "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
       "cameraError": "Acceso a la cámara denegado. Por favor habilita los permisos de cámara.",
       "orSelectManually": "O selecciona manualmente.",
       "chooseManually": "Elegir manualmente",
+      "manualSelectionOpened": "Selección manual de ubicación abierta.",
+      "manualSelectionClosed": "Selección manual de ubicación cerrada.",
+      "qrScannerOpened": "Escáner QR abierto.",
+      "qrScannerClosed": "Escáner QR cerrado.",
+      "qrScanSuccess": "Código QR escaneado.",
+      "locationPanelOpened": "Panel de ubicación abierto.",
+      "locationPanelClosed": "Panel de ubicación cerrado.",
       "openNaviLens": "Abrir NaviLens",
       "scanQRCode": "Escanear código QR",
       "closeScanner": "Cerrar escáner"
@@ -224,7 +248,9 @@
         "Más lento"
       ],
       "welcome": "Bienvenido al Museu del Renaixement. Selecciona dónde te gustaría comenzar tu visita o pregúntame cualquier cosa sobre el museo.",
-      "connectionError": "Ahora mismo tengo problemas para conectarme."
+      "connectionError": "Ahora mismo tengo problemas para conectarme.",
+      "userMessageLabel": "Tú",
+      "assistantMessageLabel": "GuIA"
     },
     "audio": {
       "slow": "Lento",
@@ -335,13 +361,24 @@
       "artwork": "Obra",
       "whereAmI": "On sóc?",
       "chooseLocation": "Tria la teva ubicació",
+      "locationButton": "Ubicació",
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
+      "roomHelp": "Selecciona la sala on ets ara.",
+      "artworkHelp": "Opcionalment, selecciona l'obra que tens davant.",
+      "qrScannerHelp": "La càmera està activa per escanejar un codi QR de la ubicació.",
       "confirmLocation": "Confirmar ubicació",
       "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
       "cameraError": "Accés a la càmera denegat. Si us plau, habilita els permisos de càmera.",
       "orSelectManually": "O selecciona manualment.",
       "chooseManually": "Tria manual",
+      "manualSelectionOpened": "Selecció manual de la ubicació oberta.",
+      "manualSelectionClosed": "Selecció manual de la ubicació tancada.",
+      "qrScannerOpened": "Escàner QR obert.",
+      "qrScannerClosed": "Escàner QR tancat.",
+      "qrScanSuccess": "Codi QR escanejat.",
+      "locationPanelOpened": "Panell d'ubicació obert.",
+      "locationPanelClosed": "Panell d'ubicació tancat.",
       "openNaviLens": "Obrir NaviLens",
       "scanQRCode": "Escanejar codi QR",
       "closeScanner": "Tancar escàner"
@@ -356,7 +393,9 @@
         "Més lent"
       ],
       "welcome": "Benvingut al Museu del Renaixement. Selecciona on t'agradaria començar la teva visita o pregunta'm qualsevol cosa sobre el museu.",
-      "connectionError": "Ara mateix tinc problemes per connectar-me."
+      "connectionError": "Ara mateix tinc problemes per connectar-me.",
+      "userMessageLabel": "Tu",
+      "assistantMessageLabel": "GuIA"
     },
 "audio": {
     "slow": "Lent",

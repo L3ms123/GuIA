@@ -16,6 +16,7 @@
   <link rel="icon" href="assets/favicon.png" />
 </head>
 <body class="surface" data-mode="regular" data-onboarding-open>
+  <div id="sr-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
  
   <!-- Onboarding full-screen dialog -->
   <div
@@ -246,7 +247,7 @@
   </div><!-- /#onboarding -->
  
   <!-- Main application -->
-  <div class="app-shell">
+  <div class="app-shell" inert>
     <!-- Capcalera: GuIA i audio -->
     <header class="top-bar" aria-label="Capçalera de l'aplicació">
       <div class="top-left">
@@ -257,12 +258,22 @@
           type="button"
           aria-label="Obrir ajustos de la guia"
         >
-          <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-          Ajustos
+          <span class="material-symbols-outlined" aria-hidden="true">settings</span>
         </button>
       </div>
 
       <div class="top-right">
+        <button
+          id="location-panel-btn"
+          type="button"
+          class="location-panel-btn"
+          aria-label="Tria la teva ubicació"
+          aria-expanded="false"
+          aria-controls="context-box"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">place</span>
+          <span id="location-panel-text">Ubicació</span>
+        </button>
 
         <!-- Audio -->
         <button
@@ -407,6 +418,8 @@
               type="button"
               class="btn-secondary wide"
               aria-label="Scan QR code"
+              aria-expanded="false"
+              aria-controls="qr-scanner"
             >
               <span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>
               <span id="scan-qr-text">Scanejar Codi QR</span>
@@ -425,7 +438,15 @@
           </div>
 
           <div id="qr-scanner" class="qr-scanner" hidden>
-            <div id="qr-video" aria-label="Camera feed for QR code scanning"></div>
+            <p id="qr-scanner-help" class="sr-only">
+              La càmera s'ha activat per escanejar un codi QR de la ubicació.
+            </p>
+            <div
+              id="qr-video"
+              role="img"
+              aria-label="Vista de la càmera per escanejar codis QR"
+              aria-describedby="qr-scanner-help"
+            ></div>
             <button
               id="close-qr-btn"
               type="button"
@@ -446,6 +467,7 @@
             >
               <option value="">Selecciona una sala</option>
             </select>
+            <p id="room-help" class="sr-only">Selecciona la sala on ets ara.</p>
 
             <label class="field-label" id="artwork">Obra</label>
             <select
@@ -455,6 +477,7 @@
             >
               <option value="">Selecciona una obra</option>
             </select>
+            <p id="artwork-help" class="sr-only">Opcionalment, selecciona l'obra que tens davant.</p>
 
             <button
               id="set-context-btn"
@@ -498,7 +521,7 @@
           aria-label="Començar entrada de veu"
           aria-pressed="false"
         >
-          <span class="material-symbols-outlined">mic</span>
+          <span class="material-symbols-outlined" aria-hidden="true">mic</span>
         </button>
         <span id="mic-status" class="voice-status" aria-live="polite" hidden></span>
         <button id="send-btn" type="button" class="btn-primary">

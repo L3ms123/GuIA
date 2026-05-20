@@ -12,6 +12,8 @@ const state = {
   onboardingStep: 1,
   totalSteps: 3,
   lastFocusedElement: null,
+  privacyAccepted: false,
+  chatStarted: false,
 
   accessibilityPrefs: {
     largeText: false,
@@ -124,6 +126,23 @@ function setAttribute(node, name, value) {
   if (node) node.setAttribute(name, value);
 }
 
+function announce(message) {
+  const status = el('sr-status');
+  if (!status || !message) return;
+  status.textContent = '';
+  window.setTimeout(() => {
+    status.textContent = message;
+  }, 20);
+}
+
+function focusFirstAvailable(root) {
+  const target = q(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    root
+  );
+  target?.focus?.();
+}
+
 // i18n
 function getNestedTranslation(source, key) {
   return key.split('.').reduce((obj, k) => (obj ? obj[k] : undefined), source);
@@ -164,15 +183,20 @@ function showOnboarding() {
   window.guiaResetSpeechQueue?.();
   syncAccessibilityControls();
   const onboarding = el('onboarding');
+  const appShell = q('.app-shell');
   onboarding.style.display = 'flex';
   onboarding.removeAttribute('aria-hidden');
   // Ensure onboarding is interactive when shown (remove any leftover inert)
   onboarding.removeAttribute('inert');
+  appShell?.setAttribute('inert', '');
   document.body.toggleAttribute('data-onboarding-open', true);
+  showOnboardingStep(1);
+  window.setTimeout(() => focusFirstAvailable(onboarding), 0);
 }
 
 function hideOnboarding() {
   const onboarding = el('onboarding');
+  const appShell = q('.app-shell');
 
   document.activeElement?.blur();
 
@@ -181,12 +205,40 @@ function hideOnboarding() {
   onboarding.setAttribute('inert', '');
   onboarding.setAttribute('aria-hidden', 'true');
   onboarding.style.display = 'none';
+  appShell?.removeAttribute('inert');
   document.body.removeAttribute('data-onboarding-open');
 
   requestAnimationFrame(() => {
     previous?.focus?.();
   });
   
+}
+
+function initOnboardingFocusTrap() {
+  const onboarding = el('onboarding');
+  if (!onboarding) return;
+
+  onboarding.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') return;
+
+    const focusable = qa(
+      'button:not([disabled]):not([hidden]), [href], input:not([disabled]):not([hidden]), select:not([disabled]):not([hidden]), textarea:not([disabled]):not([hidden]), [tabindex]:not([tabindex="-1"])',
+      onboarding
+    ).filter((node) => node.offsetParent !== null);
+
+    if (!focusable.length) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
 }
 
 function initAppTitleButton() {
@@ -202,6 +254,7 @@ function initAppTitleButton() {
 
 function applyOnboardingTranslations() {
   if (!state.translations[state.selectedLang]) return;
+  document.documentElement.lang = state.selectedLang || 'ca';
 
   setText(q('.eyebrow'), t('onboarding.eyebrow'));
   setText(el('onboarding-title'), t('onboarding.title'));
@@ -300,6 +353,7 @@ function applyOnboardingTranslations() {
   setText(consentLabel, t('onboarding.privacyConsent'));
 
   updateOnboardingButtons();
+  syncAccessibilityControls();
 }
 
 function onboardingEls() {
@@ -355,9 +409,16 @@ function showOnboardingStep(step) {
         desc.hidden = false;
       }
     }
+
+    if (desc.hidden) {
+      el('onboarding')?.removeAttribute('aria-describedby');
+    } else {
+      el('onboarding')?.setAttribute('aria-describedby', 'onboarding-desc');
+    }
   }
 
   updateOnboardingButtons();
+  window.setTimeout(() => focusFirstAvailable(steps.find((section) => !section.hidden)), 0);
 }
 
 function updateOnboardingButtons() {
@@ -402,10 +463,6 @@ function updateOnboardingButtons() {
 }
 
 function applyAccessibilityPrefs() {
-  if (state.accessibilityPrefs.visualDescriptions) {
-    state.accessibilityPrefs.spokenAudio = true;
-  }
-
   document.body.toggleAttribute('data-large-text', state.accessibilityPrefs.largeText);
   document.body.toggleAttribute('data-simple-language', state.accessibilityPrefs.simpleLanguage);
   document.body.toggleAttribute('data-spoken-audio', state.accessibilityPrefs.spokenAudio);
@@ -449,14 +506,10 @@ function bindAccessibilityPreference(id, preference) {
 
     state.accessibilityPrefs[preference] = event.target.checked;
 
-    if (preference === 'visualDescriptions' && event.target.checked) {
-      state.accessibilityPrefs.spokenAudio = true;
-    }
-
     syncAccessibilityControls();
     applyAccessibilityPrefs();
 
-    if (preference === 'spokenAudio' || preference === 'visualDescriptions') {
+    if (preference === 'spokenAudio' && state.chatStarted) {
       window.guiaHandleNarrationPreferenceChange?.(wasSpokenAudio, state.accessibilityPrefs.spokenAudio);
     }
   });
@@ -464,6 +517,18 @@ function bindAccessibilityPreference(id, preference) {
 
 function bindOnboardingFlow() {
   const { backBtn, nextBtn, consent } = onboardingEls();
+
+  function finishOnboarding() {
+    state.chatStarted = true;
+    if (state.accessibilityPrefs.visualDescriptions) {
+      state.accessibilityPrefs.spokenAudio = true;
+    }
+    applyAppTranslations();
+    applyAccessibilityPrefs();
+    syncAccessibilityControls();
+    hideOnboarding();
+    window.guiaSpeakInitialWelcome?.();
+  }
 
   qa('.interaction-card').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -490,23 +555,33 @@ function bindOnboardingFlow() {
 
   nextBtn?.addEventListener('click', () => {
     if (state.onboardingStep < state.totalSteps) {
+      if (state.privacyAccepted && state.onboardingStep === 2) {
+        finishOnboarding();
+        return;
+      }
+
       showOnboardingStep(state.onboardingStep + 1);
       return;
     }
 
-    applyAppTranslations();
-    applyAccessibilityPrefs();
-    hideOnboarding();
-    window.guiaSpeakInitialWelcome?.();
+    state.privacyAccepted = true;
+    finishOnboarding();
   });
 
   showOnboardingStep(1);
+}
+
+function initOnboardingKeyboardSupport() {
+  initRadioGroupKeyboard('#language-group', '[data-lang]');
+  initRadioGroupKeyboard('#persona-group', '[data-persona]');
+  initRadioGroupKeyboard('#age-group', '[data-age]');
 }
 
 // App translations
 
 function applyAppTranslations() {
   if (!state.translations[state.selectedLang]) return;
+  document.documentElement.lang = state.selectedLang || 'ca';
 
   qa('.speed-btn').forEach((btn, i) => {
     btn.textContent = t(`audio.${AUDIO_SPEED_KEYS[i]}`);
@@ -545,26 +620,33 @@ function applyAppTranslations() {
 
   const appTitle = el('app-title');
   if (appTitle) {
-    appTitle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">arrow_back</span><span></span>';
-    const label = appTitle.querySelector('span:last-child');
-    if (label) label.textContent = t('app.settings', 'Settings');
+    appTitle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">settings</span>';
     appTitle.setAttribute('aria-label', t('app.openSettings', 'Open guide settings'));
   }
 
   setText(el('choose-location'), t('app.chooseLocation'));
+  setText(el('location-panel-text'), t('app.locationButton', 'Location'));
+  setAttribute(el('location-panel-btn'), 'aria-label', t('app.chooseLocation', 'Choose your location'));
   setText(el('room'), t('app.room'));
   setText(el('artwork'), t('app.artwork'));
+  setText(el('room-help'), t('app.roomHelp', 'Select the room where you are now.'));
+  setText(el('artwork-help'), t('app.artworkHelp', 'Optionally select the artwork in front of you.'));
+  setText(el('qr-scanner-help'), t('app.qrScannerHelp', 'The camera is active to scan a location QR code.'));
   setText(el('set-context-btn'), t('app.confirmLocation', 'Confirm location'));
 
   // NaviLens and QR scanner button labels
   const openNaviLensText = el('open-navilens-text');
   if (openNaviLensText) openNaviLensText.textContent = t('app.openNaviLens');
+  setAttribute(el('open-app-btn'), 'aria-label', t('app.openNaviLens', 'Open NaviLens'));
   const scanQRText = el('scan-qr-text');
   if (scanQRText) scanQRText.textContent = t('app.scanQRCode');
+  setAttribute(el('scan-qr-btn'), 'aria-label', t('app.scanQRCode', 'Scan QR Code'));
   const manualLocationText = el('manual-location-text');
   if (manualLocationText) manualLocationText.textContent = t('app.chooseManually', 'Choose manually');
+  setAttribute(el('manual-location-btn'), 'aria-label', t('app.chooseManually', 'Choose manually'));
   const closeScannerText = el('close-scanner-text');
   if (closeScannerText) closeScannerText.textContent = t('app.closeScanner');
+  setAttribute(el('close-qr-btn'), 'aria-label', t('app.closeScanner', 'Close scanner'));
   const confirmLocationText = el('confirm-location-text');
   if (confirmLocationText) confirmLocationText.textContent = t('app.confirmLocation');
 
@@ -588,6 +670,37 @@ function selectRadio(buttons, clicked) {
   );
 }
 
+function initRadioGroupKeyboard(groupSelector, buttonSelector) {
+  const group = q(groupSelector);
+  if (!group) return;
+
+  group.addEventListener('keydown', (event) => {
+    const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+
+    const buttons = qa(buttonSelector, group).filter((button) => !button.disabled);
+    if (!buttons.length) return;
+
+    event.preventDefault();
+
+    const currentIndex = Math.max(0, buttons.indexOf(document.activeElement));
+    let nextIndex = currentIndex;
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = (currentIndex + 1) % buttons.length;
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = buttons.length - 1;
+    }
+
+    buttons[nextIndex].focus();
+    buttons[nextIndex].click();
+  });
+}
+
 function addBubble(role, text) {
   const chatThread = el('chat-thread');
   const row = document.createElement('div');
@@ -595,10 +708,20 @@ function addBubble(role, text) {
   const bubble = document.createElement('div');
   bubble.className = `msg-bubble ${role === 'user' ? 'user-bubble' : 'assistant-bubble'}`;
   bubble.textContent = text;
+  updateBubbleAccessibilityLabel(bubble, role);
   row.appendChild(bubble);
   chatThread.appendChild(row);
   chatThread.scrollTop = chatThread.scrollHeight;
   return bubble;
+}
+
+function updateBubbleAccessibilityLabel(bubble, role) {
+  if (!bubble) return;
+  const label =
+    role === 'user'
+      ? t('chat.userMessageLabel', 'You')
+      : t('chat.assistantMessageLabel', 'GuIA');
+  bubble.setAttribute('aria-label', `${label}: ${bubble.textContent.trim()}`);
 }
 
 function easyWordAnnotationsEnabled() {
@@ -622,6 +745,7 @@ async function annotateEasyWords(bubble) {
     const data = await res.json();
     if (typeof data.rewritten_text === 'string' && data.rewritten_text.trim()) {
       bubble.textContent = data.rewritten_text.trim();
+      updateBubbleAccessibilityLabel(bubble, 'assistant');
       return;
     }
 
@@ -671,6 +795,7 @@ function renderAnnotatedText(container, text, annotations) {
 
   container.textContent = '';
   container.appendChild(fragment);
+  updateBubbleAccessibilityLabel(container, 'assistant');
 }
 
 function escapeRegExp(value) {
@@ -763,6 +888,8 @@ async function loadTranslations() {
   initLanguageSelector();
   initPersonaButtons();
   initAgeButtons();
+  initOnboardingFocusTrap();
+  initOnboardingKeyboardSupport();
 
   bindOnboardingFlow();
 
@@ -1203,7 +1330,12 @@ function initAudioControls() {
 
   if (audioSettingsBtn) {
     audioSettingsBtn.addEventListener('click', () => {
-      setAudioSettingsOpen(!document.body.hasAttribute('data-audio-settings-open'));
+      const willOpen = !document.body.hasAttribute('data-audio-settings-open');
+      if (willOpen) {
+        document.body.removeAttribute('data-location-panel-open');
+        el('location-panel-btn')?.setAttribute('aria-expanded', 'false');
+      }
+      setAudioSettingsOpen(willOpen);
     });
 
     document.addEventListener('keydown', (event) => {
@@ -1332,6 +1464,7 @@ function initInitialWelcomeSpeech(audio) {
   let welcomeSpoken = false;
 
   function speakInitialWelcome() {
+    if (!state.chatStarted) return;
     if (welcomeSpoken) return;
 
     const firstBubble = q('.assistant-bubble');
@@ -1604,10 +1737,31 @@ function initContextPanel() {
   const roomSelect = el('room-select');
   const artworkSelect = el('artwork-select');
   const setContextBtn = el('set-context-btn');
+  const locationPanelBtn = el('location-panel-btn');
   const manualLocationBtn = el('manual-location-btn');
   const manualLocationPanel = el('manual-location-panel');
 
   renderLocationSelects();
+
+  function setLocationPanelOpen(open) {
+    document.body.toggleAttribute('data-location-panel-open', open);
+    locationPanelBtn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+    if (open) {
+      announce(t('app.locationPanelOpened', 'Location panel opened.'));
+    } else {
+      announce(t('app.locationPanelClosed', 'Location panel closed.'));
+    }
+  }
+
+  locationPanelBtn?.addEventListener('click', () => {
+    const willOpen = !document.body.hasAttribute('data-location-panel-open');
+    if (willOpen) {
+      document.body.removeAttribute('data-audio-settings-open');
+      el('audio-settings-btn')?.setAttribute('aria-expanded', 'false');
+    }
+    setLocationPanelOpen(willOpen);
+  });
 
   roomSelect?.addEventListener('change', () => {
     roomSelect.removeAttribute('aria-invalid');
@@ -1635,10 +1789,13 @@ function initContextPanel() {
     if (willOpen) {
       await loadLocations();
       renderLocationSelects();
-      closeQRScanner();
+      closeQRScanner({ announceClose: false });
       manualLocationPanel?.removeAttribute('hidden');
+      announce(t('app.manualSelectionOpened', 'Manual location selection opened.'));
+      roomSelect?.focus();
     } else {
       manualLocationPanel?.setAttribute('hidden', '');
+      announce(t('app.manualSelectionClosed', 'Manual location selection closed.'));
     }
 
     manualLocationBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
@@ -1704,10 +1861,13 @@ function initContextPanel() {
       openAppBtn.hidden = true;
       manualLocationBtn.hidden = true;
       scanQrBtn.disabled = true;
+      scanQrBtn.setAttribute('aria-expanded', 'true');
       qrScannerActive = true;
+      announce(t('app.qrScannerOpened', 'QR scanner opened.'));
 
       // html5-qrcode will handle camera access internally
       startQRDetection();
+      el('close-qr-btn')?.focus();
     } catch (err) {
       console.error('QR scanner error:', err);
       closeQRScanner();
@@ -1719,14 +1879,14 @@ function initContextPanel() {
     }
   });
 
-  el('close-qr-btn').addEventListener('click', closeQRScanner);
+  el('close-qr-btn').addEventListener('click', () => closeQRScanner({ restoreFocus: true }));
 
   function closeManualLocationPanel() {
     manualLocationPanel?.setAttribute('hidden', '');
     manualLocationBtn?.setAttribute('aria-expanded', 'false');
   }
 
-  async function closeQRScanner() {
+  async function closeQRScanner({ announceClose = true, restoreFocus = false } = {}) {
     const scanner = el('qr-scanner');
     const openAppBtn = el('open-app-btn');
     const scanQrBtn = el('scan-qr-btn');
@@ -1734,12 +1894,17 @@ function initContextPanel() {
     const cameraError = el('camera-error');
     const qrVideo = el('qr-video');
 
+    const wasActive = qrScannerActive || !scanner.hasAttribute('hidden');
     scanner.setAttribute('hidden', '');
     openAppBtn.hidden = false;
     manualLocationBtn.hidden = false;
     scanQrBtn.disabled = false;
+    scanQrBtn.setAttribute('aria-expanded', 'false');
     qrScannerActive = false;
     if (cameraError) cameraError.hidden = true;
+    if (announceClose && wasActive) {
+      announce(t('app.qrScannerClosed', 'QR scanner closed.'));
+    }
 
     // Stop the html5-qrcode scanner if active
     if (html5QrCodeScanner) {
@@ -1759,6 +1924,7 @@ function initContextPanel() {
     }
 
     if (qrVideo) qrVideo.innerHTML = '';
+    if (restoreFocus) scanQrBtn.focus();
   }
 
   let html5QrCodeScanner = null;
@@ -1775,8 +1941,9 @@ function initContextPanel() {
 
     const onScanSuccess = (decodedText) => {
       console.log('QR Code detected:', decodedText);
+      announce(t('app.qrScanSuccess', 'QR code scanned.'));
       handleQRCodeDetected(decodedText);
-      closeQRScanner();
+      closeQRScanner({ announceClose: false });
     };
 
     const onScanFailure = (error) => {
@@ -1794,7 +1961,7 @@ function initContextPanel() {
       onScanFailure
     ).catch((err) => {
       console.error('Failed to start QR scanning:', err);
-      closeQRScanner();
+      closeQRScanner({ announceClose: false });
       const cameraError = el('camera-error');
       if (cameraError) {
         cameraError.textContent = t('app.cameraError', 'Camera error');
@@ -1991,6 +2158,7 @@ function initChat(audio, voice) {
 
   function appendToBubble(bubble, text) {
     bubble.textContent += text;
+    updateBubbleAccessibilityLabel(bubble, 'assistant');
     chatThread.scrollTop = chatThread.scrollHeight;
   }
 
@@ -2089,6 +2257,7 @@ function initChat(audio, voice) {
           }
 
           assistantBubble.textContent = text;
+          updateBubbleAccessibilityLabel(assistantBubble, 'assistant');
           fullAssistantText = text;
           sentenceBuffer = '';
           chatThread.scrollTop = chatThread.scrollHeight;
@@ -2234,6 +2403,8 @@ function applyContext(roomText, artworkText) {
   addBubble('user', msg);
   el('manual-location-panel')?.setAttribute('hidden', '');
   el('manual-location-btn')?.setAttribute('aria-expanded', 'false');
+  document.body.removeAttribute('data-location-panel-open');
+  el('location-panel-btn')?.setAttribute('aria-expanded', 'false');
 
   fetch(API_ENDPOINTS.context, {
     method: 'POST',
