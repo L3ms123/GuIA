@@ -1550,37 +1550,42 @@ function initContextPanel() {
   let qrScannerStream = null;
 
   el('open-app-btn').addEventListener('click', () => {
-    // Open NaviLens using deep linking
-    const isAndroid = /Android/.test(navigator.userAgent);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    
-    let APP_URL;
+    const ua = navigator.userAgent;
+    const isAndroid = /Android/.test(ua);
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+
+    const storeURL = isAndroid
+      ? 'https://play.google.com/store/apps/details?id=com.neosistec.navilensgo'
+      : isIOS
+      ? 'https://apps.apple.com/us/app/navilens-go/id1313878412'
+      : 'https://navilens.com';
+
     if (isAndroid) {
-      // Android: open NaviLens app
-      APP_URL = 'intent://com.navilens.navilens#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end';
+      window.location.href =
+        'intent://com.neosistec.navilensgo#Intent;' +
+        'action=android.intent.action.MAIN;' +
+        'category=android.intent.category.LAUNCHER;' +
+        'package=com.neosistec.navilensgo;' +
+        `S.browser_fallback_url=${encodeURIComponent(storeURL)};` +
+        'end';
+
     } else if (isIOS) {
-      // iOS: open NaviLens app
-      APP_URL = 'navilens://';
+      const fallbackTimer = setTimeout(() => {
+        window.location.href = storeURL;
+      }, 1500);
+
+      const cancelFallback = () => {
+        if (document.hidden) {
+          clearTimeout(fallbackTimer);
+          document.removeEventListener('visibilitychange', cancelFallback);
+        }
+      };
+      document.addEventListener('visibilitychange', cancelFallback);
+
+      window.location.href = 'navilensgo://';
+
     } else {
-      // Web/other: direct to NaviLens store
-      APP_URL = 'https://navilens.com';
-    }
-    
-    try {
-      window.location.href = APP_URL;
-      // Fallback after timeout if app is not installed
-      setTimeout(() => {
-        // Fallback to app store if app is not installed
-        const fallbackURL = isAndroid 
-          ? 'https://play.google.com/store/apps/details?id=com.navilens.navilens'
-          : isIOS
-          ? 'https://apps.apple.com/app/navilens/id1400952156'
-          : 'https://navilens.com';
-        window.location.href = fallbackURL;
-      }, 2000);
-    } catch (err) {
-      console.error('Could not open NaviLens:', err);
-      alert('NaviLens app not installed. Redirecting to app store...');
+      window.location.href = 'https://navilens.com';
     }
   });
 
