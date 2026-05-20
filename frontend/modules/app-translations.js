@@ -83,7 +83,6 @@ function applyAppTranslations() {
   const chatInputEl = el('chat-input');
   if (chatInputEl) chatInputEl.placeholder = t('chat.placeholder');
   setText(el('send-btn'), t('chat.send'));
-  window.guiaSetLastAssistantText?.(t('chat.welcome'));
 }
 
 async function applyLanguageChange() {

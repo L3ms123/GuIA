@@ -1,6 +1,7 @@
 // Onboarding
 function showOnboarding() {
   state.lastFocusedElement = document.activeElement;
+  state.onboardingStep = 1;
   window.guiaResetSpeechQueue?.();
   syncAccessibilityControls();
   const onboarding = el('onboarding');
@@ -12,11 +13,7 @@ function showOnboarding() {
   appShell?.setAttribute('inert', '');
   document.body.toggleAttribute('data-onboarding-open', true);
 
-  const stepToShow = Number.isInteger(state.onboardingStep)
-    ? Math.min(Math.max(state.onboardingStep, 1), state.totalSteps)
-    : 1;
-
-  showOnboardingStep(stepToShow);
+  showOnboardingStep(1);
   window.setTimeout(() => focusFirstAvailable(onboarding), 0);
 }
 
@@ -194,6 +191,7 @@ function showOnboardingStep(step) {
   const { steps, backBtn, nextBtn, stepCount, stepFill } = onboardingEls();
   const onboardingPanel = q('.onboarding-panel');
   const onboardingBody = q('.onboarding-body');
+  const visibleTotalSteps = state.privacyAccepted ? 2 : state.totalSteps;
 
   steps.forEach((section) => {
     section.hidden = Number(section.dataset.step) !== step;
@@ -205,12 +203,12 @@ function showOnboardingStep(step) {
   });
 
   if (stepFill) {
-    const percent = (step / state.totalSteps) * 100;
+    const percent = (Math.min(step, visibleTotalSteps) / visibleTotalSteps) * 100;
     stepFill.style.width = `${percent}%`;
   }
 
   backBtn.hidden = step === 1;
-  nextBtn.textContent = step === state.totalSteps ? 'Start' : 'Continue';
+  nextBtn.textContent = step === state.totalSteps || (state.privacyAccepted && step === 2) ? 'Start' : 'Continue';
 
   const desc = el('onboarding-desc');
   if (desc) {
@@ -256,12 +254,13 @@ function updateOnboardingButtons() {
   const stepCount = el('step-count');
   const consent = el('privacy-consent');
   const useTranslations = translationsLoaded || state.selectedLang !== 'ca';
+  const visibleTotalSteps = state.privacyAccepted ? 2 : state.totalSteps;
 
   if (stepCount && useTranslations) {
     const template = t('onboarding.stepCount', 'Step {current} of {total}');
     stepCount.textContent = template
       .replace('{current}', state.onboardingStep)
-      .replace('{total}', state.totalSteps);
+      .replace('{total}', visibleTotalSteps);
   }
 
   if (backBtn) {
@@ -272,7 +271,7 @@ function updateOnboardingButtons() {
   if (nextBtn) {
     if (useTranslations) {
       nextBtn.textContent =
-        state.onboardingStep === state.totalSteps
+        state.onboardingStep === state.totalSteps || (state.privacyAccepted && state.onboardingStep === 2)
           ? t('onboarding.start', 'Start')
           : t('onboarding.continue', 'Continue');
     }
@@ -397,6 +396,11 @@ function bindOnboardingFlow() {
 
   nextBtn?.addEventListener('click', () => {
     if (state.onboardingStep < state.totalSteps) {
+      if (state.privacyAccepted && state.onboardingStep === 2) {
+        finishOnboarding();
+        return;
+      }
+
       showOnboardingStep(state.onboardingStep + 1);
       return;
     }

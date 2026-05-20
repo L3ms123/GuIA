@@ -94,7 +94,14 @@ function initApp() {
   const audio = initAudioControls();
   const voice = initVoiceInput(audio);
 
+  warmTranscriptionModel();
   initInitialWelcomeSpeech(audio);
   initContextPanel();
   initChat(audio, voice);
+}
+
+function warmTranscriptionModel() {
+  fetch(API_ENDPOINTS.transcribeWarmup, { method: 'POST' }).catch((err) => {
+    console.debug('Transcription warm-up skipped:', err);
+  });
 }

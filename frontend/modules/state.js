@@ -47,6 +47,7 @@ const API_ENDPOINTS = {
   locations: `${API_BASES.llm}/locations`,
   speak: `${API_BASES.audio}/speak`,
   transcribe: `${API_BASES.audio}/transcribe`,
+  transcribeWarmup: `${API_BASES.audio}/transcribe/warmup`,
   translations: 'translations.json'
 };
 

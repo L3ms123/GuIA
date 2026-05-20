@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 from functools import lru_cache
-from threading import Lock
+from threading import Lock, Thread
 
 import edge_tts
 from flask import Flask, after_this_request, jsonify, request, send_file
@@ -15,6 +15,10 @@ CORS(app)
 
 WHISPER_MODEL_LOCK = Lock()
 WHISPER_FFMPEG_CONFIGURED = False
+WHISPER_WARMUP_LOCK = Lock()
+WHISPER_WARMUP_STARTED = False
+WHISPER_WARMUP_LOADED = False
+WHISPER_WARMUP_ERROR = None
 
 VOICE_MAP = {
     "en": "en-US-JennyNeural",
@@ -88,6 +92,55 @@ def get_whisper_model():
         return load_whisper_model(model_name)
 
 
+def warm_whisper_model():
+    global WHISPER_WARMUP_LOADED, WHISPER_WARMUP_ERROR
+
+    try:
+        get_whisper_model()
+        WHISPER_WARMUP_LOADED = True
+        WHISPER_WARMUP_ERROR = None
+    except Exception as exc:
+        WHISPER_WARMUP_ERROR = str(exc)
+        app.logger.exception("Whisper warm-up failed")
+
+
+def start_whisper_warmup():
+    global WHISPER_WARMUP_STARTED
+
+    with WHISPER_WARMUP_LOCK:
+        if WHISPER_WARMUP_STARTED:
+            return
+        WHISPER_WARMUP_STARTED = True
+
+    thread = Thread(target=warm_whisper_model, daemon=True)
+    thread.start()
+
+
+def whisper_transcribe_kwargs(language=None):
+    kwargs = {}
+    if language:
+        kwargs["language"] = language
+
+    try:
+        import torch
+
+        kwargs["fp16"] = torch.cuda.is_available()
+    except ImportError:
+        kwargs["fp16"] = False
+
+    return kwargs
+
+
+@app.route("/transcribe/warmup", methods=["GET", "POST"])
+def warmup_transcription():
+    start_whisper_warmup()
+    return jsonify({
+        "started": WHISPER_WARMUP_STARTED,
+        "loaded": WHISPER_WARMUP_LOADED,
+        "error": WHISPER_WARMUP_ERROR,
+    }), 202
+
+
 async def generate_audio(text, voice, output, speed="normal"):
     communicate = edge_tts.Communicate(
         text=text,
@@ -116,7 +169,7 @@ def transcribe():
 
     try:
         audio.save(filename)
-        kwargs = {"language": whisper_lang} if whisper_lang else {}
+        kwargs = whisper_transcribe_kwargs(whisper_lang)
         result = get_whisper_model().transcribe(filename, **kwargs)
         return jsonify({"text": result["text"]})
     except Exception as exc:
