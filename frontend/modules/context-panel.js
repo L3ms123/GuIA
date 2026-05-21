@@ -239,6 +239,10 @@ function initContextPanel() {
   }
 
   function handleQRCodeDetected(data) {
+    if (applyLocationFromLink(data)) {
+      return;
+    }
+
     try {
       const qrData = JSON.parse(data);
 

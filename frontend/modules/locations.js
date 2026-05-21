@@ -72,8 +72,16 @@ function renderContextSuggestion() {
     : `${prefix} ${roomLabel}? `;
 }
 
-function parseLocationLinkParams() {
-  const hash = window.location.hash.replace(/^#/, '');
+function parseLocationLinkParams(source = window.location.href) {
+  let url;
+
+  try {
+    url = new URL(source, window.location.href);
+  } catch (err) {
+    return null;
+  }
+
+  const hash = url.hash.replace(/^#/, '');
   const hashQuery = hash.startsWith('location?')
     ? hash.slice('location?'.length)
     : hash.startsWith('?')
@@ -81,7 +89,7 @@ function parseLocationLinkParams() {
     : '';
   const params = hashQuery
     ? new URLSearchParams(hashQuery)
-    : new URLSearchParams(window.location.search);
+    : new URLSearchParams(url.search);
 
   const room = params.get('room') || params.get('roomId');
   const artwork = params.get('artwork') || params.get('artworkId');
@@ -152,6 +160,13 @@ function applyLocationPayload(locationPayload) {
 
 function applyLocationFromURL() {
   const locationPayload = parseLocationLinkParams();
+  if (!locationPayload) return false;
+
+  return applyLocationPayload(locationPayload);
+}
+
+function applyLocationFromLink(linkText) {
+  const locationPayload = parseLocationLinkParams(linkText);
   if (!locationPayload) return false;
 
   return applyLocationPayload(locationPayload);
