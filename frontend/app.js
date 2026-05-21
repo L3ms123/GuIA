@@ -37,6 +37,9 @@ async function loadTranslations() {
   });
 
   await locationsPromise;
+  renderLocationSelects();
+  initLocationLinkHandler();
+  applyLocationFromURL();
 }
 
 document.addEventListener('DOMContentLoaded', loadTranslations);

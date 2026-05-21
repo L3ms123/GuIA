@@ -19,6 +19,7 @@ const state = {
   conversationTranslationRequestId: 0,
   chatGenerating: false,
   conversationTranslating: false,
+  lastLocationLinkKey: null,
 
   accessibilityPrefs: {
     largeText: false,

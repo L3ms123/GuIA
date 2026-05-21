@@ -241,55 +241,17 @@ function initContextPanel() {
   function handleQRCodeDetected(data) {
     try {
       const qrData = JSON.parse(data);
-      
-      // Extract room and artwork IDs from QR code
-      const roomId = qrData.roomId || qrData.room;
-      const artworkId = qrData.artworkId || qrData.artwork;
-      
-      if (!roomId) {
+
+      if (!qrData.roomId && !qrData.room) {
         console.warn('No room ID in QR code');
         el('context-error').textContent = t('app.invalidQR', 'Invalid QR code');
         return;
       }
 
-      // Find room in location data by ID
-      const room = (state.locationData.rooms || []).find(r => r.id === roomId);
-      if (!room) {
-        console.warn('Room not found in location data:', roomId);
-        el('context-error').textContent = t('app.roomNotFound', 'Room not found');
-        return;
-      }
-
-      const roomText = room.label || room.id;
-      let artworkText = '';
-
-      // Set room select
-      const roomSelect = el('room-select');
-      if (roomSelect) {
-        roomSelect.value = roomId;
-        roomSelect.removeAttribute('aria-invalid');
-      }
-
-      // Find artwork if specified in QR code
-      if (artworkId) {
-        const artwork = (room.artworks || []).find(a => (a.id || a.title) === artworkId);
-        if (artwork) {
-          artworkText = artwork.title;
-          // Set artwork select
-          const artworkSelect = el('artwork-select');
-          if (artworkSelect) {
-            artworkSelect.value = artworkId;
-          }
-        } else {
-          console.warn('Artwork not found in room:', artworkId);
-        }
-      }
-
-      // Re-render artwork select to ensure it's updated
-      renderArtworkSelect();
-
-      // Apply context which updates state.currentRoom and state.currentArtwork
-      applyContext(roomText, artworkText);
+      applyLocationPayload({
+        room: qrData.roomId || qrData.room,
+        artwork: qrData.artworkId || qrData.artwork
+      });
     } catch (err) {
       console.error('Failed to parse QR code:', err);
       el('context-error').textContent = t('app.invalidQR', 'Invalid QR code format');
