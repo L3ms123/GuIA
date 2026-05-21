@@ -31,8 +31,8 @@
       "visualDescriptions": "Visual description of artworks",
       "visualDescriptionsHelp": "Automatically turns audio on and describes what can be seen in the artworks.",
       "privacy": "AI and privacy notice",
-      "privacyIntro1": "You are talking to an AI museum guide.",
-      "privacyIntro2": "The guide may make mistakes, so important information should be verified with museum staff.",
+      "privacyIntro1": "You are talking to an AI museum audioguide.",
+      "privacyIntro2": "The AI may make mistakes, so important information should be verified with museum staff.",
       "privacyIntro3": "To improve the experience, the system may process your selected language, guide preferences, artwork interactions, and responses.",
       "privacyIntro4": "No personal data is collected or stored.",
       "privacyIntro5": "If you speak to the AI, audio may be processed to understand speech and generate spoken replies.",
@@ -93,6 +93,7 @@
       "orSelectManually": "Or select it manually.",
       "chooseManually": "Choose manually",
       "manualSelectionOpened": "Manual location selection opened.",
+      "restartSession": "Restart session",
       "manualSelectionClosed": "Manual location selection closed.",
       "qrScannerOpened": "QR scanner opened.",
       "qrScannerClosed": "QR scanner closed.",
@@ -207,10 +208,15 @@
           "title": "7. Change settings",
           "body": "Use the gear button to change language, guide style, text size, simpler language, or other accessibility options."
         },
-        {
+                {
           "icon": "visibility",
           "title": "8. Ask for visual descriptions",
-          "body": "If you are blind or want extra support, turn on visual descriptions. GuIA can describe what is visible in the artwork."
+          "body": "Turn on visual descriptions to get a visual description of the elements present in the artworks."
+        },
+        {
+          "icon": "refresh",
+          "title": "9. Restart the session",
+          "body": "Use the Restart session button to start over with a fresh tour and clear the current chat."
         }
       ]
     }
@@ -247,8 +253,8 @@
       "visualDescriptions": "Descripción visual de las obras",
       "visualDescriptionsHelp": "Activa automáticamente el audio y describe lo que se ve en las obras.",
       "privacy": "Aviso de IA y privacidad",
-      "privacyIntro1": "Estás hablando con un guía de museo basado en IA.",
-      "privacyIntro2": "El guía puede cometer errores, por lo que la información importante debe ser verificada con el personal del museo.",
+      "privacyIntro1": "Estás hablando con un audioguía de museo que utiliza IA.",
+      "privacyIntro2": "La IA puede cometer errores, por lo que la información importante debe ser verificada con el personal del museo.",
       "privacyIntro3": "Para mejorar la experiencia, el sistema puede procesar tu idioma seleccionado, preferencias del guía, interacciones con las obras y respuestas.",
       "privacyIntro4": "No se recopila ni almacena información personal.",
       "privacyIntro5": "Si hablas con la IA, el audio puede ser procesado para entender el discurso y generar respuestas habladas.",
@@ -310,6 +316,7 @@
       "chooseManually": "Elegir manualmente",
       "manualSelectionOpened": "Selección manual de ubicación abierta.",
       "manualSelectionClosed": "Selección manual de ubicación cerrada.",
+      "restartSession": "Reiniciar sesión",
       "qrScannerOpened": "Escáner QR abierto.",
       "qrScannerClosed": "Escáner QR cerrado.",
       "qrScanSuccess": "Código QR escaneado.",
@@ -426,7 +433,12 @@
         {
           "icon": "visibility",
           "title": "8. Pide descripciones visuales",
-          "body": "Si eres una persona ciega o quieres más apoyo, activa las descripciones visuales. GuIA puede describir lo que se ve en la obra."
+          "body": "Activa las descripciones visuales para obtener una descripción visual de los elementos presentes en las obras."
+        },
+        {
+          "icon": "refresh",
+          "title": "9. Reinicia la sesión",
+          "body": "Usa Reiniciar sesión para empezar de nuevo con una visita limpia y borrar el chat actual."
         }
       ]
     }
@@ -463,7 +475,7 @@
       "visualDescriptions": "Descripció visual de les obres",
       "visualDescriptionsHelp": "Activa automàticament l'àudio i descriu allò que es veu a les obres.",
       "privacy": "Avís d'IA i privacitat",
-      "privacyIntro1": "Estàs parlant amb un guia de museu que utilitza IA.",
+      "privacyIntro1": "Estàs parlant amb una audioguia de museu que utilitza IA.",
       "privacyIntro2": "La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.",
       "privacyIntro3": "Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.",
       "privacyIntro4": "No es recullen ni emmagatzemen dades personals.",
@@ -526,6 +538,7 @@
       "chooseManually": "Tria manual",
       "manualSelectionOpened": "Selecció manual de la ubicació oberta.",
       "manualSelectionClosed": "Selecció manual de la ubicació tancada.",
+      "restartSession": "Reiniciar sessió",
       "qrScannerOpened": "Escàner QR obert.",
       "qrScannerClosed": "Escàner QR tancat.",
       "qrScanSuccess": "Codi QR escanejat.",
@@ -639,10 +652,15 @@
           "title": "7. Canvia els ajustos",
           "body": "Utilitza el botó d'engranatge per canviar idioma, estil de guia, mida del text, llenguatge simple o altres opcions d'accessibilitat."
         },
-        {
+          {
           "icon": "visibility",
-          "title": "8. Demana descripcions visuals",
-          "body": "Si ets invident o vols més suport, activa les descripcions visuals. GuIA pot descriure què es veu a l'obra."
+          "title": "9. Demana descripcions visuals",
+          "body": "Activa les descripcions visuals per obtenir una descripció visual dels elements presents en les obres."
+        },
+        {
+          "icon": "refresh",
+          "title": "8. Reinicia la sessió",
+          "body": "Utilitza el botó Reinicia sessió per començar de nou amb una visita neta i esborrar el xat actual."
         }
       ]
     }

@@ -1,4 +1,4 @@
-﻿---
+﻿<!-- ---
 title: GuIA Demo
 emoji: 🎧
 colorFrom: blue
@@ -6,34 +6,29 @@ colorTo: green
 sdk: docker
 app_port: 7860
 pinned: false
----
-# GuIA - Adaptive AI Museum Audio Guide 🎧🤖
+--- -->
+# GuIA - Renaixament Museum Interactive AI Audioguide 🎧🤖
 
 ## Overview
-This project proposes an adaptive AI-powered museum audio guide that provides interactive spoken dialogue and personalized explanations using AI designed to improve the traditional museum visiting experience.
+This project proposes an adaptive AI museum audioguide that provides interactive spoken dialogue and personalized explanations to improve the traditional museum visiting experience.
 
-The guide is implemented as a web platform and operates mainly through a chat (spoken or written) interface with audio integrated, allowing natural interaction for visitors of all age groups.
+The guide is implemented as a web platform and operates through a chat (spoken or written) interface with audio integrated.
 
 ## Architecture 🏗️
 
-### Knowledge Representation Graph 🕸️
+### Knowledge Representation Graph 
 
 The system uses a Knowledge Representation (KR) graph built from curated museum data.
 The graph contains:
-- Exhibit information
-- Historical context
+- Exhibit information and description
+- Historical and artistic context
 - Relationships between objects
 - Physical locations in the museum
 
-This ensures:
-- Factual accuracy
-- Institutional reliability
-- Consistent explanations
+### RAG + LLM Architecture 
+The system uses Retrieval-Augmented Generation (RAG) connected to Cohere, a Large Language Model (LLM).
 
-### RAG + LLM Architecture ⚙️🤖
-The system uses Retrieval-Augmented Generation (RAG) connected to a prebuilt Large Language Model (LLM).
-
-Workflow:
+**Workflow:**
 1.  User asks a question
 2.  Relevant data is retrieved from the KR graph
 3.  Retrieved data is sent to the LLM
@@ -44,14 +39,12 @@ Workflow:
 
 ### 1. Contextual adaptation
 
-The system adapts explanations according to the visitor profile. Examples:
-- Children → simpler language, gamification
+The system adapts explanations according to the visitor profile and accessibility options. Examples:
+- Children → simpler language, higher pitch
 - Adults → standard explanations
-- Experts → more in deep explainations
-- Elderly users → slower speech, clearer structure
-- Interests are also taken into account as prompts
+- Elderly users → clearer structure
 
-This transforms the experience from a static guide into a customized educational interaction.
+Visitors also choose their own guide personality, transforming the experience from a static audioguide into a customized interaction.
 
 ### 2. Multilingual Support 🌍
 Supported languages:
@@ -67,12 +60,13 @@ Accessibility features include:
 - Text chat for users with hearing impairments
 - Adjustable speech speed and volume
 - Clear and simplified language modes
+- Visual descriptions of artworks
 - Multilingual support for non-native speakers
 - High-contrast and readable interface design
 
 These features ensure that the museum experience is inclusive and usable for the widest possible audience.
 
-## Run the App
+## How to run the App
 
 From Windows, run:
 
@@ -105,7 +99,7 @@ GuIA sends iDEM a structured payload with `question`, `context`, `graph_context`
 
 This starts the frontend at `http://127.0.0.1:8000`, the audio API at `http://127.0.0.1:5000`, and the LLM API at `http://127.0.0.1:5002`. Press `Ctrl+C` in that same terminal to stop everything.
 
-## Deploy on Hugging Face Spaces
+## How to deploy on Hugging Face 
 
 This repository includes a Docker setup for Hugging Face Spaces. The Space runs one Flask app on port `7860` that serves:
 

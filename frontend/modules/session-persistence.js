@@ -75,6 +75,70 @@ function restoreGuiaSessionUI() {
   }
 }
 
+function restartGuiaSession() {
+  localStorage.removeItem(GUIA_SESSION_STORAGE_KEY);
+
+  state.selectedPersona = null;
+  state.selectedAge = null;
+  state.currentRoom = null;
+  state.currentArtwork = null;
+  state.privacyAccepted = false;
+  state.chatStarted = false;
+  state.showTutorialOnStart = false;
+  state.deferredSpokenAudioChange = null;
+  state.conversationTranslationRequestId = 0;
+  state.chatGenerating = false;
+  state.conversationTranslating = false;
+  state.lastLocationLinkKey = null;
+  state.accessibilityPrefs = {
+    largeText: false,
+    simpleLanguage: false,
+    spokenAudio: false,
+    moreTime: false,
+    visualDescriptions: false
+  };
+
+  const chatThread = el('chat-thread');
+  if (chatThread) {
+    chatThread.innerHTML = '';
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble assistant-bubble';
+    bubble.dataset.role = 'assistant';
+    bubble.dataset.i18nKey = 'chat.welcome';
+    bubble.dataset.originalLang = 'ca';
+    bubble.dataset.messageLang = state.selectedLang || DEFAULT_LANGUAGE;
+    bubble.tabIndex = 0;
+    setBubbleText(bubble, t('chat.welcome'), 'assistant');
+    setBubbleSource(bubble, state.translations.ca?.chat?.welcome || t('chat.welcome'), 'ca');
+    updateBubbleAccessibilityLabel(bubble, 'assistant');
+    row.appendChild(bubble);
+    chatThread.appendChild(row);
+  }
+
+  qa('[data-persona]').forEach((btn) => {
+    btn.setAttribute('aria-checked', 'false');
+  });
+  qa('[data-age]').forEach((btn) => {
+    btn.setAttribute('aria-checked', 'false');
+  });
+
+  const currentRoom = el('current-room');
+  if (currentRoom) currentRoom.textContent = '';
+  const currentArtwork = el('current-artwork');
+  if (currentArtwork) currentArtwork.textContent = '';
+  const consentCheckbox = el('privacy-consent');
+  if (consentCheckbox) consentCheckbox.checked = false;
+
+  syncAccessibilityControls();
+  applyAccessibilityPrefs();
+  applyAppTranslations();
+  showOnboarding();
+  window.saveGuiaSession?.();
+}
+
 window.addEventListener('beforeunload', () => {
   saveGuiaSession();
 });

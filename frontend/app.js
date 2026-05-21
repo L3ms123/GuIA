@@ -16,6 +16,7 @@ async function loadTranslations() {
   bindOnboardingFlow();
 
   initAppTitleButton();
+  initRestartSessionButton();
   initApp();
   restoreGuiaSessionUI();
   applyAppTranslations();
@@ -116,5 +117,15 @@ function initApp() {
 function warmTranscriptionModel() {
   fetch(API_ENDPOINTS.transcribeWarmup, { method: 'POST' }).catch((err) => {
     console.debug('Transcription warm-up skipped:', err);
+  });
+}
+
+function initRestartSessionButton() {
+  const restartBtn = el('restart-session-btn');
+  if (!restartBtn) return;
+  restartBtn.addEventListener('click', () => {
+    if (window.restartGuiaSession) {
+      window.restartGuiaSession();
+    }
   });
 }

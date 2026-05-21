@@ -32,11 +32,25 @@ function applyAppTranslations() {
   setAttribute(el('audio-replay-btn'), 'aria-label', t('audio.replay', 'Replay last answer'));
 
   const firstAssistantBubble = q('.assistant-bubble');
-  if (firstAssistantBubble?.dataset.i18nKey === 'chat.welcome') {
-    setBubbleText(firstAssistantBubble, t('chat.welcome'), 'assistant');
-    firstAssistantBubble.dataset.messageLang = state.selectedLang;
-    setBubbleSource(firstAssistantBubble, state.translations.ca?.chat?.welcome || t('chat.welcome'), 'ca');
-    updateBubbleAccessibilityLabel(firstAssistantBubble, 'assistant');
+  if (firstAssistantBubble) {
+    const welcomeVariants = [
+      state.translations.ca?.chat?.welcome,
+      state.translations.es?.chat?.welcome,
+      state.translations.en?.chat?.welcome,
+      t('chat.welcome')
+    ].filter(Boolean);
+    const currentText = getBubbleText(firstAssistantBubble);
+    const isWelcomeBubble =
+      firstAssistantBubble.dataset.i18nKey === 'chat.welcome' ||
+      welcomeVariants.includes(currentText);
+
+    if (isWelcomeBubble) {
+      firstAssistantBubble.dataset.i18nKey = 'chat.welcome';
+      setBubbleText(firstAssistantBubble, t('chat.welcome'), 'assistant');
+      firstAssistantBubble.dataset.messageLang = state.selectedLang;
+      setBubbleSource(firstAssistantBubble, state.translations.ca?.chat?.welcome || t('chat.welcome'), 'ca');
+      updateBubbleAccessibilityLabel(firstAssistantBubble, 'assistant');
+    }
   }
 
   const suggestions = t('chat.suggestions');
@@ -51,6 +65,13 @@ function applyAppTranslations() {
     appTitle.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">settings</span>';
     appTitle.setAttribute('aria-label', t('app.openSettings', 'Open guide settings'));
     appTitle.setAttribute('title', t('app.openSettings', 'Open guide settings'));
+  }
+
+  const restartBtn = el('restart-session-btn');
+  if (restartBtn) {
+    setText(restartBtn, t('app.restartSession', 'Restart session'));
+    restartBtn.setAttribute('aria-label', t('app.restartSession', 'Restart session'));
+    restartBtn.setAttribute('title', t('app.restartSession', 'Restart session'));
   }
 
   setText(el('choose-location'), t('app.chooseLocation'));

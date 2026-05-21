@@ -43,6 +43,12 @@ function initTutorial() {
     }
 
     requestAnimationFrame(() => lastFocus?.focus?.());
+
+    window.setTimeout(() => {
+      if (!document.body.hasAttribute('data-onboarding-open')) {
+        window.guiaSpeakInitialWelcome?.();
+      }
+    }, 0);
   }
 
   modal.addEventListener('keydown', (event) => {
@@ -92,16 +98,11 @@ function renderTutorial() {
   setAttribute(el('tutorial-close-btn'), 'aria-label', t('tutorial.close', 'Close help'));
 
   const items = t('tutorial.steps', []);
-  const isMobileTutorial = window.matchMedia('(max-width: 1300px)').matches;
   steps.textContent = '';
 
   if (!Array.isArray(items)) return;
 
-  const visibleItems = items.filter((item) => {
-    if (item.device === 'mobile') return isMobileTutorial;
-    if (item.device === 'desktop') return !isMobileTutorial;
-    return true;
-  });
+  const visibleItems = items;
 
   visibleItems.forEach((item, index) => {
     const li = document.createElement('li');

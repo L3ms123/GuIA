@@ -24,12 +24,11 @@
     class="onboarding-overlay"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="onboarding-title"
-    aria-describedby="step-count"
+    aria-labelledby="step-count"
   >
     <section class="onboarding-panel">
       <header class="onboarding-header">
-        <p class="eyebrow" aria-hidden="true">GuIA del Museu del Renaixement</p>
+        <p id="onboarding-eyebrow" class="eyebrow">GuIA del Museu del Renaixement</p>
         <h2 id="onboarding-title" class="headline">Coneix el teu guia.</h2>
  
         <div class="step-meta" aria-live="polite">
@@ -169,42 +168,42 @@
         <section class="onboarding-step" data-step="2" hidden>
           <div class="onb-section">
             <h2 id="label-accessibility" class="section-label">Selecciona les opcions d'accessibilitat <span class="sr-only">(opcional)</span></h2>
-            <div class="toggle-list" role="group" aria-labelledby="label-accessibility">
+            <div class="toggle-list">
               <label class="toggle-row">
                 <input type="checkbox" id="opt-large-text" />
                 <span>Text gran</span>
               </label>
  
               <label class="toggle-row">
-                <input type="checkbox" id="opt-simple-language" />
+                <input type="checkbox" id="opt-simple-language" aria-describedby="opt-simple-language-help" />
                 <div class="toggle-content">
                   <span>Llenguatge més simple</span>
-                  <p class="card-subtitle">Frases curtes, paraules habituals i ajuda del diccionari.</p>
+                  <p id="opt-simple-language-help" class="card-subtitle">Frases curtes, paraules habituals i ajuda del diccionari.</p>
                 </div>
               </label>
  
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-spoken-audio" autocomplete="off" />
+                <input type="checkbox" id="opt-spoken-audio" autocomplete="off" aria-describedby="opt-spoken-audio-help" />
                 <div class="toggle-content">
                   <span>Explicacions parlades amb veu</span>
-                  <p class="card-subtitle">Llegeix en veu alta les respostes de la guia.</p>
+                  <p id="opt-spoken-audio-help" class="card-subtitle">Llegeix en veu alta les respostes de la guia.</p>
                 </div>
               </label>
  
               <label class="toggle-row">
-                <input type="checkbox" id="opt-more-time" />
+                <input type="checkbox" id="opt-more-time" aria-describedby="opt-more-time-help" />
                 <div class="toggle-content">
                   <span>Més temps i ritme més lent</span>
-                  <p class="card-subtitle">La veu parla més a poc a poc i la conversa dona més temps.</p>
+                  <p id="opt-more-time-help" class="card-subtitle">La veu parla més a poc a poc i la conversa dona més temps.</p>
                 </div>
               </label>
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-visual-descriptions" autocomplete="off" />
+                <input type="checkbox" id="opt-visual-descriptions" autocomplete="off" aria-describedby="opt-visual-descriptions-help" />
                 <div class="toggle-content">
                   <span>Descripció visual de les obres</span>
-                  <p class="card-subtitle">Activa automàticament l'àudio i descriu allò que es veu a les obres.</p>
+                  <p id="opt-visual-descriptions-help" class="card-subtitle">Activa automàticament l'àudio i descriu allò que es veu a les obres.</p>
                 </div>
               </label>
             </div>
@@ -212,12 +211,12 @@
 
           <div class="onb-section">
             <h2 id="label-tutorial-choice" class="section-label">Selecciona si vols veure un tutorial</h2>
-            <div class="toggle-list" role="group" aria-labelledby="label-tutorial-choice">
+            <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-start-tutorial" />
+                <input type="checkbox" id="opt-start-tutorial" aria-describedby="opt-start-tutorial-help" />
                 <div class="toggle-content">
                   <span>Vull veure un tutorial abans de començar</span>
-                  <p class="card-subtitle">T'explica l'ordre recomanat i què fa cada botó principal.</p>
+                  <p id="opt-start-tutorial-help" class="card-subtitle">T'explica l'ordre recomanat i què fa cada botó principal.</p>
                 </div>
               </label>
             </div>
@@ -237,9 +236,6 @@
               aria-labelledby="privacy-notice-title"
               aria-describedby="privacy-notice-text"
             >
-              <p id="privacy-notice-summary">
-                Aquest és un avís de privacitat. Llegeix-lo abans de començar.
-              </p>
               <div id="privacy-notice-text">
               <p>Estàs parlant amb una audioguia de museu que utilitza IA.</p>
               <p>La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.</p>
@@ -293,6 +289,17 @@
         >
           <span class="material-symbols-outlined" aria-hidden="true">help</span>
           <span id="tutorial-open-text" class="help-btn-text">Ajuda</span>
+        </button>
+        <button
+          id="restart-session-btn"
+          type="button"
+          class="help-btn"
+          data-i18n-key="app.restartSession"
+          aria-label="Reiniciar sessió"
+          title="Reiniciar sessió"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+          <span class="help-btn-text">Reiniciar</span>
         </button>
       </div>
 

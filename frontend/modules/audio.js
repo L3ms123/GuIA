@@ -165,6 +165,7 @@ function initAudioControls() {
       audio.onended();
     }
   }
+  // todo:  al darle al boton de comenzar visita deberia reproducirse automaticamente y mientras este el tutorial abierto pausarse
 
   function resetSpeechQueue() {
     speechQueueVersion += 1;
@@ -322,7 +323,8 @@ function initAudioControls() {
   }
 
   function replayLastAssistantSpeech() {
-    const text = lastAssistantText.trim();
+    const fallbackText = q('.assistant-bubble')?.textContent?.trim() || '';
+    const text = lastAssistantText.trim() || fallbackText;
     if (!text) return;
 
     isAudioPaused = false;
@@ -504,9 +506,7 @@ function initAudioControls() {
 }
 
 // Initial welcome speech
-
 function initInitialWelcomeSpeech(audio) {
-  const onboarding = el('onboarding');
   let welcomeSpoken = false;
 
   function speakInitialWelcome() {
@@ -518,27 +518,13 @@ function initInitialWelcomeSpeech(audio) {
     const text = firstBubble?.textContent?.trim();
     if (!text) return;
 
-    welcomeSpoken = true;
     audio.lastAssistantText = text;
     audio.resetSpeechQueue();
+    if (!state.accessibilityPrefs.spokenAudio) return;
+
     audio.queueSpeech(text, state.selectedLang);
+    welcomeSpoken = true;
   }
 
   window.guiaSpeakInitialWelcome = speakInitialWelcome;
-
-  if (!onboarding) return;
-
-  const observer = new MutationObserver(() => {
-    const isHidden = onboarding.style.display === 'none';
-
-    if (isHidden) {
-      speakInitialWelcome();
-      observer.disconnect();
-    }
-  });
-
-  observer.observe(onboarding, {
-    attributes: true,
-    attributeFilter: ['style']
-  });
 }

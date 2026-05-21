@@ -372,9 +372,10 @@ function bindOnboardingFlow() {
       state.deferredSpokenAudioChange = null;
       window.guiaHandleNarrationPreferenceChange?.(wasEnabled, isEnabled);
     }
-    window.guiaSpeakInitialWelcome?.();
     if (state.showTutorialOnStart) {
       window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
+    } else {
+      window.guiaSpeakInitialWelcome?.();
     }
   }
 
