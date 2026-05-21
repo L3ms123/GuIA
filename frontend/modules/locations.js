@@ -88,19 +88,7 @@ function parseLocationLinkParams(source = window.location.href) {
     const cleanedQuery = String(queryText || '').replace(/^[?#]/, '');
     if (!cleanedQuery) return null;
 
-    const directParams = paramsFromSearchParams(new URLSearchParams(cleanedQuery));
-    if (directParams?.room && directParams.artwork) return directParams;
-
-    try {
-      const decodedQuery = decodeURIComponent(cleanedQuery);
-      const decodedParams = paramsFromSearchParams(new URLSearchParams(decodedQuery));
-      if (decodedParams) return decodedParams;
-
-      const nestedQuery = decodedQuery.match(/[?#](?:location\?)?([^#]*)$/)?.[1];
-      return nestedQuery ? paramsFromSearchParams(new URLSearchParams(nestedQuery)) : directParams;
-    } catch (err) {
-      return directParams;
-    }
+    return paramsFromSearchParams(new URLSearchParams(cleanedQuery));
   }
 
   try {
@@ -115,7 +103,16 @@ function parseLocationLinkParams(source = window.location.href) {
     : hash.startsWith('?')
     ? hash.slice(1)
     : '';
-  return paramsFromQueryText(hashQuery || url.search);
+  const directPayload = paramsFromQueryText(hashQuery || url.search);
+  if (directPayload) return directPayload;
+
+  try {
+    const decodedText = decodeURIComponent(sourceText);
+    const nestedQuery = decodedText.match(/[?#](?:location\?)?([^#]*)$/)?.[1];
+    return nestedQuery ? paramsFromQueryText(nestedQuery) : null;
+  } catch (err) {
+    return null;
+  }
 }
 
 function normalizeLocationValue(value) {
@@ -160,6 +157,12 @@ function applyLocationPayload(locationPayload) {
   const artworkSelect = el('artwork-select');
   const roomText = room.label || room.id;
   const artwork = findLocationArtwork(room, locationPayload.artwork);
+  if (locationPayload.artwork && !artwork) {
+    if (contextError) {
+      contextError.textContent = t('app.invalidQR', 'Invalid QR code');
+    }
+    return false;
+  }
   const artworkText = artwork ? artwork.title : '';
 
   if (roomSelect) {
@@ -179,7 +182,8 @@ function applyLocationPayload(locationPayload) {
 }
 
 function applyLocationFromURL() {
-  const locationPayload = parseLocationLinkParams();
+  const locationPayload = parseLocationLinkParams(window.location.href) ||
+    parseLocationLinkParams(document.referrer);
   if (!locationPayload) return false;
 
   return applyLocationPayload(locationPayload);

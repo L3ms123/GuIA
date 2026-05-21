@@ -259,6 +259,7 @@ function initContextPanel() {
         const cameraError = el('camera-error');
         if (cameraError) cameraError.hidden = true;
       } else {
+        console.warn('QR location link could not be applied:', linkPayload);
         setQRError(t('app.invalidQR', 'Invalid QR code'));
       }
       return applied;
@@ -286,6 +287,7 @@ function initContextPanel() {
         const cameraError = el('camera-error');
         if (cameraError) cameraError.hidden = true;
       } else {
+        console.warn('QR JSON location could not be applied:', qrData);
         setQRError(t('app.invalidQR', 'Invalid QR code'));
       }
       return applied;
