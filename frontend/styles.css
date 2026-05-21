@@ -496,11 +496,16 @@ select {
 
 .brand-title {
   font-family: var(--font-serif);
-  font-size: calc(1.15rem * var(--scale));
+  font-size: calc(1.25rem * var(--scale));
   line-height: 1.1;
   max-width: none;
   white-space: nowrap;
   order: 2;
+}
+
+.brand-title.eyebrow {
+  font-size: calc(1.25rem * var(--scale));
+  margin: 0;
 }
 
 .app-title {
@@ -513,7 +518,7 @@ select {
   background: var(--surface-lowest);
   padding: 0 0.7rem;
   font-family: var(--font-sans);
-  font-size: calc(0.9rem * var(--scale));
+  font-size: calc(1.25rem * var(--scale));
   font-weight: 700;
   letter-spacing: 0;
   color: inherit;
@@ -545,7 +550,7 @@ select {
 }
 
 .help-btn-text {
-  font-size: calc(0.9rem * var(--scale));
+  font-size: calc(1rem * var(--scale));
 }
 
 .app-title:hover {
@@ -1495,7 +1500,11 @@ select:focus-visible,
 
   .brand-title {
     order: initial;
-    display: none;
+    display: block;
+    grid-column: 1 / -1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .top-right {

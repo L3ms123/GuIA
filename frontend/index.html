@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="assets/favicon.png" />
 </head>
-<body class="surface" data-mode="regular" data-onboarding-open>
+<body class="surface" data-mode="regular" data-onboarding-open">
   <div id="sr-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
  
   <!-- Onboarding full-screen dialog -->
@@ -29,8 +29,8 @@
   >
     <section class="onboarding-panel">
       <header class="onboarding-header">
-        <p class="eyebrow">GuIA del Museu del Renaixement</p>
-        <h1 id="onboarding-title" class="headline">Coneix el teu guia.</h1>
+        <p class="eyebrow" aria-hidden="true">GuIA del Museu del Renaixement</p>
+        <h2 id="onboarding-title" class="headline">Coneix el teu guia.</h2>
  
         <div class="step-meta" aria-live="polite">
           <div class="step-header">
@@ -241,7 +241,7 @@
                 Aquest és un avís de privacitat. Llegeix-lo abans de començar.
               </p>
               <div id="privacy-notice-text">
-              <p>Estàs parlant amb un guia de museu que utilitza IA.</p>
+              <p>Estàs parlant amb una audioguia de museu que utilitza IA.</p>
               <p>La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.</p>
               <p>Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.</p>
               <p>No es recullen ni emmagatzemen dades personals.</p>
@@ -274,7 +274,7 @@
     <!-- Capcalera: GuIA i audio -->
     <header class="top-bar" aria-label="Capçalera de l'aplicació">
       <div class="top-left">
-        <div class="brand-title">GuIA del Museu del Renaixement</div>
+        <h1 class="brand-title eyebrow">GuIA del Museu del Renaixement</h1>
         <button
           class="app-title"
           id="app-title"
