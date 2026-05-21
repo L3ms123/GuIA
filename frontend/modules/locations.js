@@ -150,23 +150,14 @@ function applyLocationPayload(locationPayload) {
   return true;
 }
 
-async function applyLocationFromURL({ preferExistingTab = false } = {}) {
+function applyLocationFromURL() {
   const locationPayload = parseLocationLinkParams();
   if (!locationPayload) return false;
-
-  if (preferExistingTab) {
-    const handledByExistingTab = await requestExistingTabLocationApply(locationPayload);
-    if (handledByExistingTab) {
-      closeThisLocationHandoffTab();
-      return true;
-    }
-  }
 
   return applyLocationPayload(locationPayload);
 }
 
 function initLocationLinkHandler() {
-  initLocationTabCoordinator();
   window.addEventListener('hashchange', () => applyLocationFromURL());
   window.addEventListener('popstate', () => applyLocationFromURL());
 }

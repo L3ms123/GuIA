@@ -40,7 +40,7 @@ async function loadTranslations() {
   await locationsPromise;
   renderLocationSelects();
   initLocationLinkHandler();
-  await applyLocationFromURL({ preferExistingTab: true });
+  applyLocationFromURL();
 }
 
 document.addEventListener('DOMContentLoaded', loadTranslations);
