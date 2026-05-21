@@ -43,6 +43,25 @@ document.addEventListener('DOMContentLoaded', loadTranslations);
 
 // Small initializers
 
+function announceOnboardingSelection(button) {
+  const group = button.closest('[role="radiogroup"]');
+  if (!group) return;
+
+  const radios = qa('[role="radio"]', group).filter((node) => !node.disabled);
+  const index = radios.indexOf(button);
+  if (index < 0) return;
+
+  const labelId = group.getAttribute('aria-labelledby');
+  const groupLabel = labelId ? el(labelId)?.textContent?.trim() : '';
+  const titleElement = button.querySelector('.card-title, .age-title');
+  const optionLabel = titleElement?.textContent?.trim() || button.textContent.trim();
+  const total = radios.length;
+
+  if (!groupLabel || !optionLabel) return;
+
+  announce(`${optionLabel}. ${groupLabel}. Opció ${index + 1} de ${total}.`);
+}
+
 function initLanguageSelector() {
   const btns = qa('#language-group [data-lang]');
 
@@ -61,6 +80,7 @@ function initLanguageSelector() {
       const previousLang = state.selectedLang;
       state.selectedLang = btn.dataset.lang;
       selectRadio(btns, btn);
+      announceOnboardingSelection(btn);
       await applyLanguageChange(previousLang);
     });
   });
@@ -72,6 +92,7 @@ function initPersonaButtons() {
     btn.addEventListener('click', () => {
       state.selectedPersona = btn.dataset.persona;
       selectRadio(btns, btn);
+      announceOnboardingSelection(btn);
       updateOnboardingButtons();
     });
   });
@@ -87,6 +108,7 @@ function initAgeButtons() {
       } else {
         state.selectedAge = btn.dataset.age;
         selectRadio(btns, btn);
+        announceOnboardingSelection(btn);
       }
       updateOnboardingButtons();
     });

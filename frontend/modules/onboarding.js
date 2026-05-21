@@ -14,7 +14,10 @@ function showOnboarding() {
   document.body.toggleAttribute('data-onboarding-open', true);
 
   showOnboardingStep(1);
-  window.setTimeout(() => focusFirstAvailable(onboarding), 0);
+  window.setTimeout(() => {
+    focusFirstAvailable(onboarding);
+    announceStepCount();
+  }, 0);
 }
 
 function hideOnboarding() {
@@ -200,6 +203,14 @@ function onboardingEls() {
   };
 }
 
+function announceStepCount() {
+  const stepCount = el('step-count');
+  if (!stepCount) return;
+  const message = stepCount.textContent?.trim();
+  if (!message) return;
+  announce(message);
+}
+
 function showOnboardingStep(step) {
   state.onboardingStep = step;
   const { steps, backBtn, nextBtn, stepCount, stepFill } = onboardingEls();
@@ -223,8 +234,6 @@ function showOnboardingStep(step) {
 
   updateBackButtonState(backBtn, step === 1);
   nextBtn.textContent = step === state.totalSteps || (state.privacyAccepted && step === 2) ? 'Start' : 'Continue';
-
-  el('onboarding')?.setAttribute('aria-describedby', 'step-count');
 
   updateOnboardingButtons();
   window.setTimeout(() => {
