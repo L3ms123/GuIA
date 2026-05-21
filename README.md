@@ -1,4 +1,4 @@
-﻿<!-- ---
+﻿---
 title: GuIA Demo
 emoji: 🎧
 colorFrom: blue
@@ -6,7 +6,8 @@ colorTo: green
 sdk: docker
 app_port: 7860
 pinned: false
---- -->
+---
+
 # GuIA - Renaixament Museum Interactive AI Audioguide 🎧🤖
 
 ## Overview
