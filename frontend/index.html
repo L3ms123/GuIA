@@ -25,7 +25,7 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="onboarding-title"
-    aria-describedby="onboarding-desc"
+    aria-describedby="step-count"
   >
     <section class="onboarding-panel">
       <header class="onboarding-header">
@@ -34,17 +34,12 @@
  
         <div class="step-meta" aria-live="polite">
           <div class="step-header">
-            <p id="step-count">Pas 1 de 3</p>
+            <p id="step-count">Pas 1 de 3 - Selecciona l'idioma, la personalitat i la franja d'edat.</p>
           </div>
 
           <div class="step-bar">
             <div class="step-bar-fill" style="width: 33%"></div>
           </div>
-
-          <p id="onboarding-desc" class="body-lg muted">
-            Tria com vols que sigui la teva GuIA per guiar-te pel Museu del Renaixement.
-          </p>
-
           
         </div>
       </header>
@@ -56,7 +51,7 @@
  
           <!-- Llengua -->
           <div class="onb-section">
-            <h2 id="label-language" class="section-label">Llengua</h2>
+            <h2 id="label-language" class="section-label">Selecciona l'idioma</h2>
             <div
               id="language-group"
               class="onb-grid-lang"
@@ -103,7 +98,7 @@
  
           <!-- Personalitat del guia -->
           <div class="onb-section">
-            <h2 id="label-personality" class="section-label">Personalitat del guia</h2>
+            <h2 id="label-personality" class="section-label">Selecciona la personalitat del guia</h2>
             <div
               id="persona-group"
               class="onb-grid"
@@ -138,7 +133,7 @@
  
           <!-- Franja d'edat -->
           <div class="onb-section">
-            <h2 id="label-visitor" class="section-label">Franja d'edat</h2>
+            <h2 id="label-visitor" class="section-label">Selecciona la franja d'edat <span class="sr-only">(opcional)</span></h2>
             <div
               id="age-group"
               class="onb-grid age-grid"
@@ -173,7 +168,7 @@
         <!-- Pas 2: accessibilitat -->
         <section class="onboarding-step" data-step="2" hidden>
           <div class="onb-section">
-            <h2 id="label-accessibility" class="section-label">Accessibilitat</h2>
+            <h2 id="label-accessibility" class="section-label">Selecciona les opcions d'accessibilitat <span class="sr-only">(opcional)</span></h2>
             <div class="toggle-list" role="group" aria-labelledby="label-accessibility">
               <label class="toggle-row">
                 <input type="checkbox" id="opt-large-text" />
@@ -216,7 +211,7 @@
           </div>
 
           <div class="onb-section">
-            <h2 id="label-tutorial-choice" class="section-label">Tutorial</h2>
+            <h2 id="label-tutorial-choice" class="section-label">Selecciona si vols veure un tutorial</h2>
             <div class="toggle-list" role="group" aria-labelledby="label-tutorial-choice">
               <label class="toggle-row">
                 <input type="checkbox" id="opt-start-tutorial" />

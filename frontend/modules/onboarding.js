@@ -79,12 +79,21 @@ function applyOnboardingTranslations() {
   if (!state.translations[state.selectedLang]) return;
   document.documentElement.lang = state.selectedLang || 'ca';
 
+  function setOptionalHeading(node, text) {
+    if (!node) return;
+
+    node.textContent = text;
+    const optional = document.createElement('span');
+    optional.className = 'sr-only';
+    optional.textContent = ` ${t('onboarding.optional', '(optional)')}`;
+    node.append(optional);
+  }
+
   setText(q('.eyebrow'), t('onboarding.eyebrow'));
   setText(el('onboarding-title'), t('onboarding.title'));
-  setText(el('onboarding-desc'), t('onboarding.description'));
   setText(el('label-language'), t('onboarding.language'));
   setText(el('label-personality'), t('onboarding.personality'));
-  setText(el('label-visitor'), t('onboarding.visitor'));
+  setOptionalHeading(el('label-visitor'), t('onboarding.visitor'));
 
   PERSONA_KEYS.forEach((key) => {
     const btn = q(`[data-persona="${key}"]`);
@@ -123,7 +132,7 @@ function applyOnboardingTranslations() {
   });
 
   setText(el('age-hint'), t('ageHint'));
-  setText(el('label-accessibility'), t('onboarding.accessibility'));
+  setOptionalHeading(el('label-accessibility'), t('onboarding.accessibility'));
   setText(el('accessibility-help'), t('onboarding.accessibilityHelp'));
 
   const optLargeTextLabel =
@@ -165,7 +174,6 @@ function applyOnboardingTranslations() {
 
   const privacyHeading = el('privacy-notice-title') || q('.onboarding-step[data-step="3"] .section-label');
   setText(privacyHeading, t('onboarding.privacy'));
-  setText(el('privacy-notice-summary'), t('onboarding.privacyNoticeSummary'));
 
   const privacyParagraphs = qa('#privacy-notice-text p');
   setText(privacyParagraphs[0], t('onboarding.privacyIntro1'));
@@ -213,35 +221,10 @@ function showOnboardingStep(step) {
     stepFill.style.width = `${percent}%`;
   }
 
-  backBtn.hidden = step === 1;
+  updateBackButtonState(backBtn, step === 1);
   nextBtn.textContent = step === state.totalSteps || (state.privacyAccepted && step === 2) ? 'Start' : 'Continue';
 
-  const desc = el('onboarding-desc');
-  if (desc) {
-    if (translationsLoaded || state.selectedLang !== 'ca') {
-      if (step === 1) {
-        desc.textContent = t('onboarding.description');
-        desc.hidden = false;
-      } else if (step === 2) {
-        desc.textContent = t('onboarding.accessibilityHelp');
-        desc.hidden = false;
-      } else {
-        desc.hidden = true;
-      }
-    } else {
-      if (step === 3) {
-        desc.hidden = true;
-      } else {
-        desc.hidden = false;
-      }
-    }
-
-    if (desc.hidden) {
-      el('onboarding')?.removeAttribute('aria-describedby');
-    } else {
-      el('onboarding')?.setAttribute('aria-describedby', 'onboarding-desc');
-    }
-  }
+  el('onboarding')?.setAttribute('aria-describedby', 'step-count');
 
   updateOnboardingButtons();
   window.setTimeout(() => {
@@ -254,6 +237,15 @@ function showOnboardingStep(step) {
   }, 0);
 }
 
+function updateBackButtonState(backBtn, isFirstStep) {
+  if (!backBtn) return;
+
+  backBtn.hidden = isFirstStep;
+  backBtn.disabled = isFirstStep;
+  backBtn.setAttribute('aria-hidden', isFirstStep ? 'true' : 'false');
+  backBtn.setAttribute('tabindex', isFirstStep ? '-1' : '0');
+}
+
 function updateOnboardingButtons() {
   const backBtn = el('onboarding-back');
   const nextBtn = el('onboarding-next');
@@ -264,14 +256,16 @@ function updateOnboardingButtons() {
 
   if (stepCount && useTranslations) {
     const template = t('onboarding.stepCount', 'Step {current} of {total}');
-    stepCount.textContent = template
+    const stepDescription = t(`onboarding.stepDescriptions.${state.onboardingStep}`, '');
+    const stepLabel = template
       .replace('{current}', state.onboardingStep)
       .replace('{total}', visibleTotalSteps);
+    stepCount.textContent = stepDescription ? `${stepLabel} - ${stepDescription}` : stepLabel;
   }
 
   if (backBtn) {
     if (useTranslations) backBtn.textContent = t('onboarding.back', 'Back');
-    backBtn.hidden = state.onboardingStep === 1;
+    updateBackButtonState(backBtn, state.onboardingStep === 1);
   }
 
   if (nextBtn) {
