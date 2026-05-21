@@ -73,29 +73,30 @@ function initContextPanel() {
   // ─── Navi Lens Integration ──────────────────────────────────────────────────────────
   let qrScannerActive = false;
 
-  el('open-app-btn').addEventListener('click', () => {
+  el('open-app-btn')?.addEventListener('click', () => {
     const ua = navigator.userAgent;
-    const isAndroid = /Android/.test(ua);
-    const isIOS = /iPad|iPhone|iPod/.test(ua);
+    const platform = navigator.platform || '';
+    const isAndroid = /Android/i.test(ua);
+    const isIOS =
+      /iPad|iPhone|iPod/i.test(ua) ||
+      (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    const storeURL = isAndroid
-      ? 'https://play.google.com/store/apps/details?id=com.neosistec.navilensgo'
-      : isIOS
-      ? 'https://apps.apple.com/us/app/navilens-go/id1313878412'
-      : 'https://navilens.com';
+    const navilensWebsiteURL = 'https://www.navilens.com/';
+    const androidStoreURL = 'https://play.google.com/store/apps/details?id=com.neosistec.NaviLens';
+    const iosStoreURL = 'https://apps.apple.com/us/app/navilens/id1273704914';
 
     if (isAndroid) {
       window.location.href =
-        'intent://com.neosistec.navilensgo#Intent;' +
+        'intent://open#Intent;' +
         'action=android.intent.action.MAIN;' +
         'category=android.intent.category.LAUNCHER;' +
-        'package=com.neosistec.navilensgo;' +
-        `S.browser_fallback_url=${encodeURIComponent(storeURL)};` +
+        'package=com.neosistec.NaviLens;' +
+        `S.browser_fallback_url=${encodeURIComponent(androidStoreURL)};` +
         'end';
 
     } else if (isIOS) {
       const fallbackTimer = setTimeout(() => {
-        window.location.href = storeURL;
+        window.location.href = iosStoreURL;
       }, 1500);
 
       const cancelFallback = () => {
@@ -106,10 +107,10 @@ function initContextPanel() {
       };
       document.addEventListener('visibilitychange', cancelFallback);
 
-      window.location.href = 'navilensgo://';
+      window.location.href = 'navilens://';
 
     } else {
-      window.location.href = 'https://navilens.com';
+      window.open(navilensWebsiteURL, '_blank', 'noopener,noreferrer');
     }
   });
 
