@@ -510,6 +510,7 @@ function initInitialWelcomeSpeech(audio) {
   let welcomeSpoken = false;
 
   function speakInitialWelcome() {
+    if (storedGuiaSession?.chatStarted) return;
     if (!state.chatStarted) return;
     if (welcomeSpoken) return;
 

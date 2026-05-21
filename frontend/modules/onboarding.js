@@ -339,6 +339,7 @@ function bindAccessibilityPreference(id, preference) {
 
     syncAccessibilityControls();
     applyAccessibilityPrefs();
+    window.saveGuiaSession?.();
 
     if (preference === 'spokenAudio' && state.chatStarted) {
       if (document.body.hasAttribute('data-onboarding-open')) {
@@ -365,6 +366,7 @@ function bindOnboardingFlow() {
     applyAccessibilityPrefs();
     syncAccessibilityControls();
     hideOnboarding();
+    window.saveGuiaSession?.();
     if (state.deferredSpokenAudioChange) {
       const { wasEnabled, isEnabled } = state.deferredSpokenAudioChange;
       state.deferredSpokenAudioChange = null;
@@ -384,6 +386,7 @@ function bindOnboardingFlow() {
   el('opt-start-tutorial')?.addEventListener('change', (event) => {
     state.showTutorialOnStart = event.target.checked;
     syncAccessibilityControls();
+    window.saveGuiaSession?.();
   });
   initEnterToggleCheckboxes();
   syncAccessibilityControls();
@@ -406,6 +409,7 @@ function bindOnboardingFlow() {
     }
 
     state.privacyAccepted = true;
+    window.saveGuiaSession?.();
     finishOnboarding();
   });
 

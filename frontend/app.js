@@ -4,7 +4,7 @@ async function loadTranslations() {
   const translationsPromise = preloadTranslations();
   const locationsPromise = loadLocations();
 
-  state.selectedLang = DEFAULT_LANGUAGE;
+  state.selectedLang = state.selectedLang || DEFAULT_LANGUAGE;
   selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
 
   initLanguageSelector();
@@ -17,6 +17,7 @@ async function loadTranslations() {
 
   initAppTitleButton();
   initApp();
+  restoreGuiaSessionUI();
   applyAppTranslations();
 
   if (state.selectedLang !== 'ca') {
@@ -39,7 +40,7 @@ async function loadTranslations() {
   await locationsPromise;
   renderLocationSelects();
   initLocationLinkHandler();
-  applyLocationFromURL();
+  await applyLocationFromURL({ preferExistingTab: true });
 }
 
 document.addEventListener('DOMContentLoaded', loadTranslations);
@@ -65,6 +66,7 @@ function initLanguageSelector() {
       state.selectedLang = btn.dataset.lang;
       selectRadio(btns, btn);
       await applyLanguageChange(previousLang);
+      window.saveGuiaSession?.();
     });
   });
 }
@@ -76,6 +78,7 @@ function initPersonaButtons() {
       state.selectedPersona = btn.dataset.persona;
       selectRadio(btns, btn);
       updateOnboardingButtons();
+      window.saveGuiaSession?.();
     });
   });
 }
@@ -92,6 +95,7 @@ function initAgeButtons() {
         selectRadio(btns, btn);
       }
       updateOnboardingButtons();
+      window.saveGuiaSession?.();
     });
   });
 }

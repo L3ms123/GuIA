@@ -1,10 +1,23 @@
 // State
+const GUIA_SESSION_STORAGE_KEY = 'guia.session.v1';
+
+function readStoredGuiaSession() {
+  try {
+    return JSON.parse(localStorage.getItem(GUIA_SESSION_STORAGE_KEY) || 'null');
+  } catch (err) {
+    console.warn('Could not read stored GuIA session:', err);
+    return null;
+  }
+}
+
+const storedGuiaSession = readStoredGuiaSession();
+
 const state = {
-  selectedPersona: null,
-  selectedAge: null,
-  selectedLang: null,
-  currentRoom: null,
-  currentArtwork: null,
+  selectedPersona: storedGuiaSession?.selectedPersona || null,
+  selectedAge: storedGuiaSession?.selectedAge || null,
+  selectedLang: storedGuiaSession?.selectedLang || null,
+  currentRoom: storedGuiaSession?.currentRoom || null,
+  currentArtwork: storedGuiaSession?.currentArtwork || null,
 
   translations: {},
   locationData: { rooms: [] },
@@ -12,9 +25,9 @@ const state = {
   onboardingStep: 1,
   totalSteps: 3,
   lastFocusedElement: null,
-  privacyAccepted: false,
-  chatStarted: false,
-  showTutorialOnStart: false,
+  privacyAccepted: !!storedGuiaSession?.privacyAccepted,
+  chatStarted: !!storedGuiaSession?.chatStarted,
+  showTutorialOnStart: !!storedGuiaSession?.showTutorialOnStart,
   deferredSpokenAudioChange: null,
   conversationTranslationRequestId: 0,
   chatGenerating: false,
@@ -22,16 +35,16 @@ const state = {
   lastLocationLinkKey: null,
 
   accessibilityPrefs: {
-    largeText: false,
-    simpleLanguage: false,
-    spokenAudio: false,
-    moreTime: false,
-    visualDescriptions: false
+    largeText: !!storedGuiaSession?.accessibilityPrefs?.largeText,
+    simpleLanguage: !!storedGuiaSession?.accessibilityPrefs?.simpleLanguage,
+    spokenAudio: !!storedGuiaSession?.accessibilityPrefs?.spokenAudio,
+    moreTime: !!storedGuiaSession?.accessibilityPrefs?.moreTime,
+    visualDescriptions: !!storedGuiaSession?.accessibilityPrefs?.visualDescriptions
 
   }
 };
 
-const sessionId = crypto.randomUUID();
+const sessionId = storedGuiaSession?.sessionId || crypto.randomUUID();
 
 
 const API_BASES = (() => {

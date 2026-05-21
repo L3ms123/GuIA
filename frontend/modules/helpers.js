@@ -116,6 +116,7 @@ function addBubble(role, text, options = {}) {
   row.appendChild(bubble);
   chatThread.appendChild(row);
   chatThread.scrollTop = chatThread.scrollHeight;
+  window.saveGuiaSession?.();
   return bubble;
 }
 

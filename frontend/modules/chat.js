@@ -149,6 +149,7 @@ function initChat(audio, voice) {
         if (assistantBubble) {
           setBubbleSource(assistantBubble, fullAssistantText.trim(), state.selectedLang);
           assistantBubble.dataset.messageLang = state.selectedLang;
+          window.saveGuiaSession?.();
         }
         if (payload.simple_language) {
           audio.resetSpeechQueue();
@@ -225,6 +226,7 @@ function initChat(audio, voice) {
       state.chatGenerating = false;
       sendBtn.disabled = false;
       setThinkingIndicator(false);
+      window.saveGuiaSession?.();
     }
   }
 
@@ -264,6 +266,7 @@ function initChat(audio, voice) {
       state.chatGenerating = false;
       sendBtn.disabled = false;
       setThinkingIndicator(false);
+      window.saveGuiaSession?.();
     }
   }
 

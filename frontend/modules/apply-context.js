@@ -10,6 +10,7 @@ function applyContext(roomText, artworkText) {
 
   state.currentRoom = roomText;
   state.currentArtwork = artworkText;
+  window.saveGuiaSession?.();
 
   const roomEl = el('current-room');
   const artworkEl = el('current-artwork');
@@ -38,6 +39,7 @@ function applyContext(roomText, artworkText) {
     .then((res) => {
       if (!res.ok) throw new Error('Could not send context to backend');
       addBubble('user', msg, { sourceText: msg, sourceLang: state.selectedLang });
+      window.saveGuiaSession?.();
       return window.guiaSendContextMessage?.(msg);
     })
     .catch((e) => {

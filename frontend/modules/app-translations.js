@@ -162,7 +162,10 @@ function updateReplayFromLastAssistantBubble(bubbles = qa('#chat-thread .msg-bub
 }
 
 async function translateExistingConversation(previousLang) {
-  if (!state.chatStarted || !previousLang || previousLang === state.selectedLang) return;
+  if (!state.chatStarted || !previousLang || previousLang === state.selectedLang) {
+    window.saveGuiaSession?.();
+    return;
+  }
 
   const requestId = state.conversationTranslationRequestId + 1;
   state.conversationTranslationRequestId = requestId;
@@ -229,6 +232,7 @@ async function translateExistingConversation(previousLang) {
       bubbles.forEach((bubble) => bubble.removeAttribute('aria-busy'));
       state.conversationTranslating = false;
       setLanguageOptionsDisabled(false);
+      window.saveGuiaSession?.();
     }
   }
 }
