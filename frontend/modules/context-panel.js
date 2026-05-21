@@ -155,6 +155,13 @@ function initContextPanel() {
     manualLocationBtn?.setAttribute('aria-expanded', 'false');
   }
 
+  function setQRError(message) {
+    const cameraError = el('camera-error');
+    if (!cameraError) return;
+    cameraError.textContent = message;
+    cameraError.hidden = false;
+  }
+
   async function closeQRScanner({ announceClose = true, restoreFocus = false } = {}) {
     const scanner = el('qr-scanner');
     const openAppBtn = el('open-app-btn');
@@ -209,9 +216,12 @@ function initContextPanel() {
     html5QrCodeScanner = new Html5Qrcode('qr-video');
 
     const onScanSuccess = (decodedText) => {
+      console.info('QR decoded text:', decodedText);
       announce(t('app.qrScanSuccess', 'QR code scanned.'));
-      handleQRCodeDetected(decodedText);
-      closeQRScanner({ announceClose: false });
+      const handled = handleQRCodeDetected(decodedText);
+      if (handled) {
+        closeQRScanner({ announceClose: false });
+      }
     };
 
     const onScanFailure = (error) => {
@@ -239,26 +249,50 @@ function initContextPanel() {
   }
 
   function handleQRCodeDetected(data) {
-    if (applyLocationFromLink(data)) {
-      return;
+    const decodedText = String(data || '').trim();
+    const linkPayload = parseLocationLinkParams(decodedText);
+    const isURL = /^[a-z][a-z0-9+.-]*:\/\//i.test(decodedText);
+
+    if (linkPayload) {
+      const applied = applyLocationPayload(linkPayload);
+      if (applied) {
+        const cameraError = el('camera-error');
+        if (cameraError) cameraError.hidden = true;
+      } else {
+        setQRError(t('app.invalidQR', 'Invalid QR code'));
+      }
+      return applied;
+    }
+
+    if (isURL) {
+      setQRError(t('app.invalidQR', 'Invalid QR code'));
+      return false;
     }
 
     try {
-      const qrData = JSON.parse(data);
+      const qrData = JSON.parse(decodedText);
 
       if (!qrData.roomId && !qrData.room) {
         console.warn('No room ID in QR code');
-        el('context-error').textContent = t('app.invalidQR', 'Invalid QR code');
-        return;
+        setQRError(t('app.invalidQR', 'Invalid QR code'));
+        return false;
       }
 
-      applyLocationPayload({
+      const applied = applyLocationPayload({
         room: qrData.roomId || qrData.room,
         artwork: qrData.artworkId || qrData.artwork
       });
+      if (applied) {
+        const cameraError = el('camera-error');
+        if (cameraError) cameraError.hidden = true;
+      } else {
+        setQRError(t('app.invalidQR', 'Invalid QR code'));
+      }
+      return applied;
     } catch (err) {
       console.error('Failed to parse QR code:', err);
-      el('context-error').textContent = t('app.invalidQR', 'Invalid QR code format');
+      setQRError(t('app.invalidQR', 'Invalid QR code format'));
+      return false;
     }
   }
 

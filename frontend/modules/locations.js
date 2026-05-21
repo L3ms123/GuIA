@@ -74,11 +74,39 @@ function renderContextSuggestion() {
 
 function parseLocationLinkParams(source = window.location.href) {
   let url;
+  const sourceText = String(source || '').trim().replaceAll('&amp;', '&');
+
+  function paramsFromSearchParams(params) {
+    const room = params.get('room') || params.get('roomId');
+    const artwork = params.get('artwork') || params.get('artworkId');
+
+    if (!room && !artwork) return null;
+    return { room, artwork };
+  }
+
+  function paramsFromQueryText(queryText) {
+    const cleanedQuery = String(queryText || '').replace(/^[?#]/, '');
+    if (!cleanedQuery) return null;
+
+    const directParams = paramsFromSearchParams(new URLSearchParams(cleanedQuery));
+    if (directParams?.room && directParams.artwork) return directParams;
+
+    try {
+      const decodedQuery = decodeURIComponent(cleanedQuery);
+      const decodedParams = paramsFromSearchParams(new URLSearchParams(decodedQuery));
+      if (decodedParams) return decodedParams;
+
+      const nestedQuery = decodedQuery.match(/[?#](?:location\?)?([^#]*)$/)?.[1];
+      return nestedQuery ? paramsFromSearchParams(new URLSearchParams(nestedQuery)) : directParams;
+    } catch (err) {
+      return directParams;
+    }
+  }
 
   try {
-    url = new URL(source, window.location.href);
+    url = new URL(sourceText, window.location.href);
   } catch (err) {
-    return null;
+    return paramsFromQueryText(sourceText);
   }
 
   const hash = url.hash.replace(/^#/, '');
@@ -87,15 +115,7 @@ function parseLocationLinkParams(source = window.location.href) {
     : hash.startsWith('?')
     ? hash.slice(1)
     : '';
-  const params = hashQuery
-    ? new URLSearchParams(hashQuery)
-    : new URLSearchParams(url.search);
-
-  const room = params.get('room') || params.get('roomId');
-  const artwork = params.get('artwork') || params.get('artworkId');
-
-  if (!room && !artwork) return null;
-  return { room, artwork };
+  return paramsFromQueryText(hashQuery || url.search);
 }
 
 function normalizeLocationValue(value) {
