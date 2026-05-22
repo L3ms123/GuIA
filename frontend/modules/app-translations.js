@@ -70,8 +70,6 @@ function applyAppTranslations() {
   const restartBtn = el('restart-session-btn');
   if (restartBtn) {
     const restartLabel = t('app.restartSession', 'Restart session');
-    const restartText = restartBtn.querySelector('.restart-session-text');
-    if (restartText) restartText.textContent = restartLabel;
     restartBtn.setAttribute('aria-label', restartLabel);
     restartBtn.setAttribute('title', restartLabel);
   }
@@ -111,7 +109,17 @@ function applyAppTranslations() {
   setText(q('.helper-text'), t('chat.helper'));
   const chatInputEl = el('chat-input');
   if (chatInputEl) chatInputEl.placeholder = t('chat.placeholder');
-  setText(el('send-btn'), t('chat.send'));
+  const sendBtn = el('send-btn');
+  if (sendBtn) {
+    sendBtn.innerHTML = `
+      <span class="material-symbols-outlined" aria-hidden="true">
+        send
+      </span>
+    `;
+
+    sendBtn.setAttribute('aria-label', t('chat.send'));
+    sendBtn.setAttribute('title', t('chat.send'));
+  }
   window.guiaApplyTutorialTranslations?.();
 }
 
