@@ -69,9 +69,11 @@ function applyAppTranslations() {
 
   const restartBtn = el('restart-session-btn');
   if (restartBtn) {
-    setText(restartBtn, t('app.restartSession', 'Restart session'));
-    restartBtn.setAttribute('aria-label', t('app.restartSession', 'Restart session'));
-    restartBtn.setAttribute('title', t('app.restartSession', 'Restart session'));
+    const restartLabel = t('app.restartSession', 'Restart session');
+    const restartText = restartBtn.querySelector('.restart-session-text');
+    if (restartText) restartText.textContent = restartLabel;
+    restartBtn.setAttribute('aria-label', restartLabel);
+    restartBtn.setAttribute('title', restartLabel);
   }
 
   setText(el('choose-location'), t('app.chooseLocation'));

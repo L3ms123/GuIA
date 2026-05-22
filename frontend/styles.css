@@ -540,6 +540,16 @@ select {
   font-weight: 700;
 }
 
+.help-btn .material-symbols-outlined {
+  flex: 0 0 auto;
+}
+
+.restart-session-btn {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .help-btn:hover {
   background: var(--surface-low);
 }
@@ -1187,6 +1197,7 @@ select {
   gap: 0.4rem;
   background: var(--surface-lowest);
   padding: 0.4rem 0.5rem 0.4rem 0.8rem;
+  min-width: 0;
 }
 
 .chat-input {
@@ -1247,6 +1258,7 @@ select {
 .voice-status[hidden] {
   display: none;
 }
+
 
 /* Focus outlines */
 button:focus-visible,
@@ -1455,7 +1467,7 @@ select:focus-visible,
     position: static;
     flex: 0 0 auto;
     display: grid;
-    grid-template-columns: 2.75rem 2.75rem minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 2.75rem 2.75rem 2.75rem minmax(0, 1fr) minmax(0, 1fr);
     align-items: center;
     gap: 0.4rem;
     padding: 0.55rem var(--gutter);
@@ -1485,13 +1497,20 @@ select:focus-visible,
 
   .help-btn {
     order: initial;
-    grid-column: 2;
     justify-self: stretch;
     width: 100%;
     min-width: 0;
     min-height: 2.6rem;
     padding: 0;
     justify-content: center;
+  }
+
+  #tutorial-open-btn {
+    grid-column: 2;
+  }
+
+  #restart-session-btn {
+    grid-column: 3;
   }
 
   .help-btn-text {
@@ -1512,7 +1531,7 @@ select:focus-visible,
   }
 
   .audio-settings-btn {
-    grid-column: 4;
+    grid-column: 5;
     justify-self: stretch;
     display: inline-flex;
     width: 100%;
@@ -1552,7 +1571,7 @@ select:focus-visible,
   }
 
   .location-panel-btn {
-    grid-column: 3;
+    grid-column: 4;
     justify-self: stretch;
     display: inline-flex;
     width: 100%;
@@ -1639,7 +1658,7 @@ select:focus-visible,
 
   @media (max-width: 430px) {
     .top-bar {
-      grid-template-columns: 2.55rem 2.55rem minmax(4.9rem, 1fr) minmax(4.9rem, 1fr);
+      grid-template-columns: 2.5rem 2.5rem 2.5rem minmax(0, 1fr) minmax(0, 1fr);
       gap: 0.3rem;
     }
 
@@ -1700,7 +1719,7 @@ select:focus-visible,
   .btn-secondary,
   .field-select {
     min-height: 3rem;
-    font-size: calc(1rem * var(--scale));
+    font-size: calc(0.65rem * var(--scale));
   }
 
   .context-heading {
