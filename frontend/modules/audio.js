@@ -165,7 +165,6 @@ function initAudioControls() {
       audio.onended();
     }
   }
-  // todo:  al darle al boton de comenzar visita deberia reproducirse automaticamente y mientras este el tutorial abierto pausarse
 
   function resetSpeechQueue() {
     speechQueueVersion += 1;
@@ -510,7 +509,6 @@ function initInitialWelcomeSpeech(audio) {
   let welcomeSpoken = false;
 
   function speakInitialWelcome() {
-    if (storedGuiaSession?.chatStarted) return;
     if (!state.chatStarted) return;
     if (welcomeSpoken) return;
 
@@ -520,6 +518,8 @@ function initInitialWelcomeSpeech(audio) {
 
     audio.lastAssistantText = text;
     audio.resetSpeechQueue();
+    audio.resumeAudioOutput();
+    
     if (!state.accessibilityPrefs.spokenAudio) return;
 
     audio.queueSpeech(text, state.selectedLang);

@@ -83,6 +83,17 @@ function applyAppTranslations() {
   setText(el('artwork-help'), t('app.artworkHelp', 'Optionally select the artwork in front of you.'));
   setText(el('qr-scanner-help'), t('app.qrScannerHelp', 'The camera is active to scan a location QR code.'));
   setText(el('set-context-btn'), t('app.confirmLocation', 'Confirm location'));
+  
+  // Translate sr-only elements with data-i18n-key
+  qa('[data-i18n-key]').forEach((el) => {
+    const key = el.dataset.i18nKey;
+    if (key) {
+      const translation = t(key);
+      if (translation) {
+        el.textContent = translation;
+      }
+    }
+  });
 
   // NaviLens and QR scanner button labels
   const openNaviLensText = el('open-navilens-text');

@@ -105,6 +105,7 @@
       "closeScanner": "Close scanner"
     },
     "chat": {
+      "inputLabel": "Type your message",
       "placeholder": "Ask GuIA about the room, the artwork, or the museum...",
       "helper": "You can type or tap the microphone to speak.",
       "send": "Send",
@@ -327,6 +328,7 @@
       "closeScanner": "Cerrar escáner"
     },
     "chat": {
+      "inputLabel": "Escribe tu mensaje",
       "placeholder": "Pregunta a GuIA sobre la sala, la obra o el museo...",
       "helper": "Puedes escribir o pulsar el micrófono para hablar.",
       "send": "Enviar",
@@ -549,6 +551,7 @@
       "closeScanner": "Tancar escàner"
     },
     "chat": {
+      "inputLabel": "Escriu el teu missatge",
       "placeholder": "Pregunta a GuIA sobre la sala, l'obra o el museu...",
       "helper": "Pots escriure o prémer el micròfon per parlar.",
       "send": "Enviar",

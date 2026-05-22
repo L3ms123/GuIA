@@ -372,10 +372,10 @@ function bindOnboardingFlow() {
       state.deferredSpokenAudioChange = null;
       window.guiaHandleNarrationPreferenceChange?.(wasEnabled, isEnabled);
     }
+    // Always speak welcome message if audio is enabled (with delay to ensure DOM is updated)
+    window.setTimeout(() => window.guiaSpeakInitialWelcome?.(), 300);
     if (state.showTutorialOnStart) {
       window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
-    } else {
-      window.guiaSpeakInitialWelcome?.();
     }
   }
 

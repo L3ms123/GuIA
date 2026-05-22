@@ -1722,6 +1722,10 @@ select:focus-visible,
     font-size: calc(0.65rem * var(--scale));
   }
 
+  .tutorial-footer .btn-primary {
+    font-size: 1rem;
+  }
+
   .context-heading {
     font-size: calc(1.15rem * var(--scale));
     margin-bottom: 0.7rem;

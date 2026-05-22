@@ -132,7 +132,7 @@
  
           <!-- Franja d'edat -->
           <div class="onb-section">
-            <h2 id="label-visitor" class="section-label">Selecciona la franja d'edat <span class="sr-only">(opcional)</span></h2>
+            <h2 id="label-visitor" class="section-label">Selecciona la franja d'edat <span class="sr-only" data-i18n-key="onboarding.optional">(opcional)</span></h2>
             <div
               id="age-group"
               class="onb-grid age-grid"
@@ -167,7 +167,7 @@
         <!-- Pas 2: accessibilitat -->
         <section class="onboarding-step" data-step="2" hidden>
           <div class="onb-section">
-            <h2 id="label-accessibility" class="section-label">Selecciona les opcions d'accessibilitat <span class="sr-only">(opcional)</span></h2>
+            <h2 id="label-accessibility" class="section-label">Selecciona les opcions d'accessibilitat <span class="sr-only" data-i18n-key="onboarding.optional">(opcional)</span></h2>
             <div class="toggle-list">
               <label class="toggle-row">
                 <input type="checkbox" id="opt-large-text" />
@@ -494,7 +494,7 @@
             aria-describedby="qr-scanner-help"
             hidden
           >
-            <p id="qr-scanner-help" class="sr-only">
+            <p id="qr-scanner-help" class="sr-only" data-i18n-key="app.qrScannerHelp">
               La càmera s'ha activat per escanejar un codi QR de la ubicació.
             </p>
             <div
@@ -513,7 +513,7 @@
 
           <p id="camera-error" class="field-error" aria-live="assertive" hidden></p>
           <div id="manual-location-panel" class="manual-location-panel" hidden>
-            <label class="field-label" id="room">Sala</label>
+            <label class="field-label" id="room" for="room-select">Sala</label>
             <select
               id="room-select"
               class="field-select"
@@ -521,9 +521,9 @@
             >
               <option value="">Selecciona una sala</option>
             </select>
-            <p id="room-help" class="sr-only">Selecciona la sala on ets ara.</p>
+            <p id="room-help" class="sr-only" data-i18n-key="app.roomHelp">Selecciona la sala on ets ara.</p>
 
-            <label class="field-label" id="artwork">Obra</label>
+            <label class="field-label" id="artwork" for="artwork-select">Obra</label>
             <select
               id="artwork-select"
               class="field-select"
@@ -531,7 +531,7 @@
             >
               <option value="">Selecciona una obra</option>
             </select>
-            <p id="artwork-help" class="sr-only">Opcionalment, selecciona l'obra que tens davant.</p>
+            <p id="artwork-help" class="sr-only" data-i18n-key="app.artworkHelp">Opcionalment, selecciona l'obra que tens davant.</p>
 
             <button
               id="set-context-btn"
@@ -550,7 +550,7 @@
     <!-- Bottom input -->
     <footer class="bottom-bar" aria-label="Entrada de missatge">
       <div class="input-shell">
-        <label class="sr-only" for="chat-input">Escriu el teu missatge</label>
+        <label class="sr-only" for="chat-input" data-i18n-key="chat.inputLabel">Escriu el teu missatge</label>
         <input
           id="chat-input"
           class="chat-input"
