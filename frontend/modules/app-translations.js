@@ -84,10 +84,10 @@ function applyAppTranslations() {
   setText(el('qr-scanner-help'), t('app.qrScannerHelp', 'The camera is active to scan a location QR code.'));
   setText(el('set-context-btn'), t('app.confirmLocation', 'Confirm location'));
   
-  // Translate sr-only elements with data-i18n-key
+  // Translate sr-only elements with data-i18n-key (exclude buttons that have icons)
   qa('[data-i18n-key]').forEach((el) => {
     const key = el.dataset.i18nKey;
-    if (key) {
+    if (key && el.id !== 'restart-session-btn') {
       const translation = t(key);
       if (translation) {
         el.textContent = translation;

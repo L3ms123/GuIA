@@ -26,6 +26,13 @@ function initTutorial() {
     modal.removeAttribute('aria-hidden');
     appShell?.setAttribute('inert', '');
     document.body.toggleAttribute('data-tutorial-open', true);
+    
+    // Pause audio when tutorial opens
+    const playbackBtn = el('audio-playback-btn');
+    if (playbackBtn && playbackBtn.getAttribute('aria-pressed') === 'false') {
+      playbackBtn.click();
+    }
+    
     window.setTimeout(() => {
       const focusables = focusableTutorialNodes();
       (focusables[0] || modal).focus?.();
@@ -37,6 +44,12 @@ function initTutorial() {
     modal.setAttribute('hidden', '');
     modal.hidden = true;
     document.body.removeAttribute('data-tutorial-open');
+    
+    // Resume audio when tutorial closes
+    const playbackBtn = el('audio-playback-btn');
+    if (playbackBtn && playbackBtn.getAttribute('aria-pressed') === 'true') {
+      playbackBtn.click();
+    }
 
     if (!document.body.hasAttribute('data-onboarding-open')) {
       appShell?.removeAttribute('inert');
