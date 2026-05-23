@@ -70,6 +70,15 @@ function initTutorial() {
     if (btn && btn.getAttribute('aria-expanded') !== 'true') btn.click();
   }
 
+  function closeAudioPanelIfOpen() {
+    document.body.removeAttribute('data-audio-settings-open');
+
+    const audioBtn = el('audio-settings-btn');
+    if (audioBtn) {
+      audioBtn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
   function showLocationPanelIfNeeded(item) {
     if (item.openPanel !== 'location' && item.openPanel !== 'manualLocation') return;
     const btn = el('location-panel-btn');
@@ -164,13 +173,13 @@ function initTutorial() {
 
       const item = tutorialItems()[currentStep] || {};
 
-      // Pas QR: amaga l'ajuda mentre escaneges
+      // Pas QR: obre l'escàner i amaga l'ajuda, però NO avança al pas 4
       if (isQrStep() && event.target.closest?.('#scan-qr-btn')) {
         startActionMode();
         return;
       }
 
-      // Si tanques l'escàner QR, continua cap al pas manual
+      // Si tanques l'escàner QR, llavors sí que continua
       if (isQrStep() && event.target.closest?.('#close-qr-btn')) {
         endActionMode();
         goNext();
@@ -189,13 +198,13 @@ function initTutorial() {
         return;
       }
 
-      // Pas del micròfon: no avancis fins que hi hagi text
+      // Pas del micròfon: espera que el micro acabi posant text a l'input
       if (item.waitForVoice && event.target.closest?.('#mic-btn')) {
         startActionMode();
         return;
       }
 
-      // Pas d'enviar: només avança si hi ha pregunta
+      // Pas d'enviar: només permet avançar si ja hi ha una pregunta
       if (item.waitForSend && event.target.closest?.('#send-btn')) {
         if (!questionIsReady()) {
           const qIndex = questionStepIndex();
@@ -208,11 +217,13 @@ function initTutorial() {
         return;
       }
 
+      // Resta de passos interactius normals
       if (currentStepMatches([
         '#location-panel-btn',
         '#open-app-btn',
         '#manual-location-btn',
         '#chat-thread',
+        '.chat-panel',
         '#audio-settings-btn',
         '#audio-controls-panel',
         '#app-title'
@@ -222,42 +233,6 @@ function initTutorial() {
           return;
         }
 
-        advanceFromAction();
-      }
-    }, true);
-
-    document.addEventListener('click', (event) => {
-      if (!document.body.hasAttribute('data-tutorial-open')) return;
-      if (event.target.closest?.('#tutorial-modal')) return;
-
-      if (event.target.closest?.('#set-context-btn')) {
-        const item = tutorialItems()[currentStep] || {};
-        const roomSelect = el('room-select');
-
-        if (item.requireLocation && roomSelect?.value) {
-          endActionMode();
-          goToStep(firstStepAfterLocationGroup());
-        }
-
-        return;
-      }
-
-      if (currentStepMatches([
-        '#location-panel-btn',
-        '#open-app-btn',
-        '#scan-qr-btn',
-        '#manual-location-btn',
-        '#chat-thread',
-        '#mic-btn',
-        '#audio-settings-btn',
-        '#audio-controls-panel',
-        '#send-btn',
-        '#app-title'
-      ], event.target)) {
-        if (currentStep >= tutorialItems().length - 1) {
-          window.setTimeout(closeTutorial, 250);
-          return;
-        }
         advanceFromAction();
       }
     }, true);
@@ -271,12 +246,6 @@ function initTutorial() {
         endActionMode();
         goToStep(firstStepAfterLocationGroup());
       }
-    });
-
-    el('chat-input')?.addEventListener('input', (event) => {
-      if (!document.body.hasAttribute('data-tutorial-open')) return;
-      if (!currentStepMatches(['.input-shell'], event.target)) return;
-      if (event.target.value.trim()) advanceFromAction();
     });
 
     el('chat-input')?.addEventListener('input', (event) => {
@@ -298,8 +267,21 @@ function initTutorial() {
 
     const items = tutorialItems();
     const item = items[currentStep] || {};
-    if (currentStep <= 4) {
-      modal.setAttribute('data-placement', 'left');
+    const isMobile = window.matchMedia('(max-width: 880px)').matches;
+    const target = item.target || '';
+
+    const shouldPlaceTop =
+      target === '.input-shell' ||
+      target === '#mic-btn' ||
+      target === '#send-btn' ||
+      item.waitForQuestion ||
+      item.waitForVoice ||
+      item.waitForSend;
+
+    if (shouldPlaceTop) {
+      modal.setAttribute('data-placement', 'top');
+    } else if (item.requireLocation) {
+      modal.setAttribute('data-placement', isMobile ? 'top' : 'left');
     } else if (currentStep >= 5) {
       modal.setAttribute('data-placement', 'right');
     } else {
@@ -356,33 +338,44 @@ function initTutorial() {
     if (doneBtn) doneBtn.hidden = currentStep < total - 1;
 
     highlightStepTarget(item);
+    window.setTimeout(() => {
+      const selector = item.target || (Array.isArray(item.targets) ? item.targets[0] : item.targets);
+      const target = selector ? document.querySelector(selector) : null;
+
+      if (!target) return;
+
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: window.matchMedia('(max-width: 880px)').matches ? 'center' : 'nearest',
+        inline: 'nearest'
+      });
+    }, 120);
   }
 
   function openTutorial() {
     lastFocus = document.activeElement;
     currentStep = 0;
-    endActionMode();
+
+    clearTutorialTarget();
+    modal.removeAttribute('data-placement');
+    modal.removeAttribute('data-waiting-action');
+
     modal.hidden = false;
     modal.removeAttribute('hidden');
-    modal.removeAttribute('aria-hidden');
-    document.body.toggleAttribute('data-tutorial-open', true);
-
-    const playbackBtn = el('audio-playback-btn');
-    if (playbackBtn && playbackBtn.getAttribute('aria-pressed') === 'false') {
-      playbackBtn.click();
-    }
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.setAttribute('data-tutorial-open', '');
 
     renderCurrentStep();
-
-    window.setTimeout(() => {
-      const focusables = focusableTutorialNodes();
-      (focusables[0] || modal).focus?.();
-    }, 0);
   }
 
   function closeTutorial() {
     clearTutorialTarget();
     endActionMode();
+    closeAudioPanelIfOpen();
+
+    modal.removeAttribute('data-placement');
+    modal.removeAttribute('data-waiting-action');
+
     modal.setAttribute('aria-hidden', 'true');
     modal.setAttribute('hidden', '');
     modal.hidden = true;
@@ -451,6 +444,10 @@ function initTutorial() {
     if (item.waitForAction || item.requireLocation) {
       startActionMode();
       return;
+    }
+
+    if (item.openPanel === 'audio' || item.target === '#audio-controls-panel') {
+      closeAudioPanelIfOpen();
     }
 
     goNext();

@@ -167,7 +167,7 @@ select {
   display: flex;
   align-items: stretch;
   justify-content: stretch;
-  z-index: 50;
+  z-index: 2000;
   overflow: hidden;
 }
 
@@ -483,7 +483,7 @@ select {
 .settings-overlay {
   position: fixed;
   inset: 0;
-  z-index: 110;
+  z-index: 2000;
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
@@ -1230,7 +1230,7 @@ select {
 .tutorial-overlay {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 1000;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1245,42 +1245,21 @@ select {
 
 .tutorial-panel {
   position: relative;
-  z-index: 100;
+  z-index: 1100;
   width: min(44rem, 100%);
   max-height: min(28rem, calc(100dvh - 2rem));
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--surface-lowest);
   border: 2px solid var(--outline-variant);
   box-shadow: var(--shadow-panel);
   padding: 1.1rem;
   pointer-events: auto;
-}
-
-@media (min-width: 881px) {
-  .tutorial-overlay[data-placement="left"] {
-    align-items: center;
-    justify-content: flex-start;
-    padding: 1rem 1rem 1rem 2rem;
-  }
-
-  .tutorial-overlay[data-placement="left"] .tutorial-panel {
-    width: min(44rem, 48vw);
-    max-height: calc(100dvh - 2rem);
-  }
-
-  .tutorial-overlay[data-placement="right"] {
-    align-items: center;
-    justify-content: flex-end;
-    padding: 1rem 2rem 1rem 1rem;
-  }
-
-  .tutorial-overlay[data-placement="right"] .tutorial-panel {
-    width: min(34rem, 42vw);
-    max-height: calc(100dvh - 2rem);
-  }
+  display: flex;
+  flex-direction: column;
 }
 
 .tutorial-header {
+  flex: 0 0 auto;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1302,12 +1281,16 @@ select {
 }
 
 .tutorial-intro {
+  flex: 0 0 auto;
   margin: 0.85rem 0;
   font-size: calc(1rem * var(--scale));
   line-height: 1.5;
 }
 
 .tutorial-steps {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -1357,18 +1340,20 @@ select {
 }
 
 .tutorial-footer {
-  margin-top: 1rem;
+  flex: 0 0 auto;
+  margin-top: 0.85rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.85rem;
+  background: var(--surface-lowest);
 }
 
 .tutorial-footer .btn-primary,
 .tutorial-footer .btn-secondary {
   width: 100%;
-  min-height: 3.75rem;
+  min-height: 3.5rem;
   height: auto;
-  padding: 0.75rem 1rem;
+  padding: 0.7rem 1rem;
   font-size: calc(1rem * var(--scale));
   line-height: 1.2;
   letter-spacing: 0;
@@ -1381,7 +1366,7 @@ select {
   display: none;
 }
 
-.tutorial-target {
+body[data-tutorial-open] .tutorial-target {
   position: relative;
   z-index: 900;
   outline: 4px solid var(--primary);
@@ -1389,46 +1374,113 @@ select {
   box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.95);
 }
 
-#context-box.tutorial-target,
-#chat-thread.tutorial-target,
-.input-shell.tutorial-target {
+body[data-tutorial-open] #context-box.tutorial-target,
+body[data-tutorial-open] .chat-panel.tutorial-target,
+body[data-tutorial-open] .input-shell.tutorial-target {
   outline: none;
   outline-offset: 0;
   box-shadow: inset 0 0 0 4px var(--primary);
 }
 
-.tutorial-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: flex-end;
+.tutorial-overlay[data-placement="top"] {
+  align-items: flex-start;
   justify-content: center;
-  padding: 1rem;
-  background: transparent;
-  pointer-events: none;
+  padding: calc(0.75rem + env(safe-area-inset-top)) 1rem 1rem;
 }
 
-.tutorial-panel {
-  position: relative;
-  z-index: 1100;
+.tutorial-overlay[data-placement="top"] .tutorial-panel {
   width: min(44rem, 100%);
-  max-height: min(28rem, calc(100dvh - 2rem));
-  overflow-y: auto;
-  background: var(--surface-lowest);
-  border: 2px solid var(--outline-variant);
-  box-shadow: var(--shadow-panel);
-  padding: 1.1rem;
-  pointer-events: auto;
 }
 
-.link-btn {
-  border: none;
-  background: none;
-  color: var(--primary);
-  font-size: calc(0.8rem * var(--scale));
-  cursor: pointer;
-  text-decoration: underline;
+@media (min-width: 881px) {
+  .tutorial-overlay[data-placement="left"] {
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1rem 1rem 1rem 2rem;
+  }
+
+  .tutorial-overlay[data-placement="left"] .tutorial-panel {
+    width: min(44rem, 48vw);
+    max-height: calc(100dvh - 2rem);
+  }
+
+  .tutorial-overlay[data-placement="right"] {
+    align-items: center;
+    justify-content: flex-end;
+    padding: 1rem 2rem 1rem 1rem;
+  }
+
+  .tutorial-overlay[data-placement="right"] .tutorial-panel {
+    width: min(34rem, 42vw);
+    max-height: calc(100dvh - 2rem);
+  }
+}
+
+@media (max-width: 880px) {
+  .tutorial-overlay {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .tutorial-panel {
+    width: 100%;
+    max-height: 48dvh;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    padding: 0.75rem;
+  }
+
+  .tutorial-header {
+    padding-bottom: 0.5rem;
+  }
+
+  .tutorial-title {
+    font-size: clamp(1.4rem, 7vw, 1.75rem);
+  }
+
+  .tutorial-intro {
+    margin: 0.6rem 0;
+    font-size: calc(0.95rem * var(--scale));
+  }
+
+  .tutorial-step {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.7rem;
+    padding: 0.7rem;
+  }
+
+  .tutorial-step-icon {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+  }
+
+  .tutorial-step-content h3 {
+    font-size: calc(1.15rem * var(--scale));
+  }
+
+  .tutorial-step-content p {
+    font-size: calc(0.95rem * var(--scale));
+    line-height: 1.35;
+  }
+
+  .tutorial-footer {
+    margin-top: 0.65rem;
+    gap: 0.55rem;
+  }
+
+  .tutorial-footer .btn-primary,
+  .tutorial-footer .btn-secondary {
+    min-height: 3.1rem;
+    padding: 0.55rem 0.75rem;
+    font-size: calc(0.95rem * var(--scale));
+  }
+
+  .tutorial-target {
+    scroll-margin-top: 5rem;
+    scroll-margin-bottom: 55dvh;
+  }
 }
 
 /* bottom bar */
@@ -1564,39 +1616,6 @@ select:focus-visible,
 }
 
 /* responsiveness */
-@media (max-width: 880px) {
-  .onboarding-panel {
-    border-radius: 18px;
-    box-shadow: var(--shadow-panel);
-  }
-
-  .onb-actions {
-    flex-direction: column;
-  }
-
-  .main-layout {
-    grid-template-columns: minmax(0, 1fr);
-    padding-bottom: 6rem;
-  }
-
-  .context-column {
-    order: -1;
-  }
-
-  .top-bar {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  .top-right {
-    align-self: flex-end;
-  }
-
-  .chat-panel {
-    max-height: calc(100vh - 240px);
-  }
-}
 
 @media (min-width: 1301px) {
   body.surface {
@@ -1726,15 +1745,16 @@ select:focus-visible,
   }
 
   .top-bar {
-    position: static;
-    flex: 0 0 auto;
-    display: grid;
-    grid-template-columns: 2.75rem 2.75rem minmax(0, 1fr) minmax(0, 1fr);
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.55rem var(--gutter);
-    border-bottom: 1px solid var(--outline-soft);
-  }
+  position: static;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 2.75rem 2.75rem minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+  padding: calc(0.75rem + env(safe-area-inset-top)) var(--gutter) 0.55rem;
+  border-bottom: 1px solid var(--outline-soft);
+  background: var(--surface);
+}
 
   .top-left {
     display: contents;
@@ -1794,19 +1814,6 @@ select:focus-visible,
     font-size: calc(0.95rem * var(--scale));
     pointer-events: auto;
     box-shadow: none;
-  }
-
-  .tutorial-overlay {
-    align-items: flex-end;
-    padding: 0;
-  }
-
-  .tutorial-panel {
-    width: 100%;
-    max-height: 62dvh;
-    height: auto;
-    border: 2px solid var(--outline-variant);
-    padding: calc(1rem + env(safe-area-inset-top)) 1rem calc(1rem + env(safe-area-inset-bottom));
   }
 
   .tutorial-step {
@@ -1972,10 +1979,14 @@ select:focus-visible,
   }
 
   .btn-primary,
-  .btn-secondary,
+  .btn-secondary {
+    min-height: 3rem;
+    font-size: calc(0.9rem * var(--scale));
+  }
+
   .field-select {
     min-height: 3rem;
-    font-size: calc(0.65rem * var(--scale));
+    font-size: calc(1rem * var(--scale));
   }
 
   .tutorial-footer .btn-primary {
@@ -2240,3 +2251,183 @@ select:focus-visible,
   }
 }
 
+@media (max-width: 880px) {
+  .settings-overlay {
+    z-index: 2000;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .settings-panel {
+    width: 100%;
+    height: 100dvh;
+    border-left: none;
+  }
+
+  .settings-header {
+    padding: calc(1rem + env(safe-area-inset-top)) 1rem 1rem;
+    gap: 0.8rem;
+  }
+
+  .settings-title {
+    font-size: clamp(1.65rem, 7vw, 2.2rem);
+    line-height: 1.15;
+  }
+
+  .settings-help {
+    font-size: calc(1rem * var(--scale));
+    line-height: 1.4;
+  }
+
+  .settings-close-btn {
+    width: 3.2rem;
+    height: 3.2rem;
+    min-width: 3.2rem;
+  }
+
+  .settings-body {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .settings-grid,
+  .settings-grid.age-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-footer {
+    grid-template-columns: 1fr;
+    padding: 0.8rem 1rem calc(0.8rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 880px) {
+  .tutorial-overlay {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .tutorial-panel {
+    width: 100%;
+    max-height: 38dvh;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom));
+  }
+
+  .tutorial-header {
+    padding-bottom: 0.35rem;
+    gap: 0.5rem;
+  }
+
+  .tutorial-header .eyebrow {
+    display: none;
+  }
+
+  .tutorial-title {
+    font-size: clamp(1.25rem, 6vw, 1.5rem);
+    line-height: 1.1;
+  }
+
+  .tutorial-close-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+  }
+
+  .tutorial-intro {
+    display: none;
+  }
+
+  .tutorial-steps {
+    min-height: 0;
+    overflow-y: hidden;
+  }
+
+  .tutorial-step {
+    grid-template-columns: 2.2rem minmax(0, 1fr);
+    gap: 0.55rem;
+    padding: 0.55rem;
+  }
+
+  .tutorial-step-icon {
+    inline-size: 2.2rem;
+    block-size: 2.2rem;
+  }
+
+  .tutorial-step-content .tutorial-progress {
+    font-size: 0.8rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .tutorial-step-content h3 {
+    font-size: calc(1rem * var(--scale));
+    margin-bottom: 0.15rem;
+  }
+
+  .tutorial-step-content p {
+    font-size: calc(0.85rem * var(--scale));
+    line-height: 1.25;
+  }
+
+  .tutorial-footer {
+    margin-top: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .tutorial-footer .btn-primary,
+  .tutorial-footer .btn-secondary {
+    min-height: 2.85rem;
+    padding: 0.45rem 0.65rem;
+    font-size: calc(0.9rem * var(--scale));
+  }
+
+  .tutorial-target {
+    scroll-margin-top: 4.5rem;
+    scroll-margin-bottom: 42dvh;
+  }
+}
+
+/* Allow main app scrolling on mobile while the tutorial is open */
+@media (max-width: 880px) {
+  body[data-tutorial-open] {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  body[data-tutorial-open] .app-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  body[data-tutorial-open] .main-layout {
+    flex: 0 0 auto;
+    min-height: auto;
+    overflow: visible;
+    padding-bottom: calc(42dvh + 1.5rem + env(safe-area-inset-bottom));
+  }
+
+  body[data-tutorial-open] .context-column {
+    overflow: visible;
+  }
+
+  body[data-tutorial-open] .context-box {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .tutorial-overlay[data-placement="top"] {
+    align-items: flex-start;
+    justify-content: center;
+    padding: calc(0.5rem + env(safe-area-inset-top)) 0.75rem 0;
+  }
+
+  .tutorial-overlay[data-placement="top"] .tutorial-panel {
+    width: calc(100% - 1.5rem);
+    max-height: 38dvh;
+    border: 2px solid var(--outline-variant);
+  }
+}
