@@ -78,13 +78,13 @@ function restoreGuiaSessionUI() {
 function restartGuiaSession() {
   localStorage.removeItem(GUIA_SESSION_STORAGE_KEY);
 
-  state.selectedPersona = null;
+  state.selectedPersona = DEFAULT_PERSONA;
   state.selectedAge = null;
   state.currentRoom = null;
   state.currentArtwork = null;
   state.privacyAccepted = false;
   state.chatStarted = false;
-  state.showTutorialOnStart = false;
+  state.showTutorialOnStart = true;
   state.deferredSpokenAudioChange = null;
   state.conversationTranslationRequestId = 0;
   state.chatGenerating = false;
@@ -92,8 +92,9 @@ function restartGuiaSession() {
   state.lastLocationLinkKey = null;
   state.accessibilityPrefs = {
     largeText: false,
+    uppercaseText: false,
     simpleLanguage: false,
-    spokenAudio: false,
+    spokenAudio: true,
     moreTime: false,
     visualDescriptions: false
   };
@@ -119,7 +120,7 @@ function restartGuiaSession() {
   }
 
   qa('[data-persona]').forEach((btn) => {
-    btn.setAttribute('aria-checked', 'false');
+    btn.setAttribute('aria-checked', btn.dataset.persona === DEFAULT_PERSONA ? 'true' : 'false');
   });
   qa('[data-age]').forEach((btn) => {
     btn.setAttribute('aria-checked', 'false');

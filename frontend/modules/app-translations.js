@@ -9,6 +9,7 @@ function applyAppTranslations() {
   });
 
   setText(q('.audio-label'), t('audio.volume', 'Volume'));
+  setText(el('speech-speed-label'), t('audio.speechSpeed', 'Speech speed'));
   setText(el('audio-settings-text'), t('audio.panelButton', 'Audio'));
 
   const spokenAudioBtn = el('spoken-audio-btn');
@@ -67,9 +68,10 @@ function applyAppTranslations() {
     appTitle.setAttribute('title', t('app.openSettings', 'Open guide settings'));
   }
 
-  const restartBtn = el('restart-session-btn');
+  const restartBtn = el('settings-reset-btn');
   if (restartBtn) {
     const restartLabel = t('app.restartSession', 'Restart session');
+    restartBtn.textContent = restartLabel;
     restartBtn.setAttribute('aria-label', restartLabel);
     restartBtn.setAttribute('title', restartLabel);
   }
@@ -87,7 +89,7 @@ function applyAppTranslations() {
   // Translate sr-only elements with data-i18n-key (exclude buttons that have icons)
   qa('[data-i18n-key]').forEach((el) => {
     const key = el.dataset.i18nKey;
-    if (key && el.id !== 'restart-session-btn') {
+    if (key) {
       const translation = t(key);
       if (translation) {
         el.textContent = translation;

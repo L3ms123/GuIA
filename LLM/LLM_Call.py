@@ -44,6 +44,12 @@ LANGUAGE_RULES = {
     "spanish": "Answer strictly in Spanish.",
     "english": "Answer strictly in English.",
 }
+PERSONA_RULES = {
+    "artist": "explain how the artwork was made, using simple words for colors, materials, and techniques",
+    "storyteller": "explain the visit like a clear, simple story",
+    "explorer": "act as a normal museum guide and explain the most important information first",
+    "scholar": "give more historical detail and context, while staying clear and understandable",
+}
 EASY_WORD_SOURCE_LABELS = {
     "es": "Diccionario Facil",
     "en": "Simple Wiktionary",
@@ -103,10 +109,38 @@ IDEM_LANGUAGE_NAMES = {
     "ca": "Catalan",
 }
 
+IDEM_MAX_CONTEXT_ROWS = 3
+IDEM_MAX_CONTEXT_VALUE_CHARS = 240
+IDEM_MAX_QUESTION_CHARS = 500
+
+
+def compact_idem_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep iDEM prompts small enough to be usable on free CPU Spaces."""
+    compact_rows = []
+    for row in (rows or [])[:IDEM_MAX_CONTEXT_ROWS]:
+        compact_row = {}
+        for key, value in row.items():
+            if value is None:
+                continue
+            text = str(value).strip()
+            if not text:
+                continue
+            if len(text) > IDEM_MAX_CONTEXT_VALUE_CHARS:
+                text = text[:IDEM_MAX_CONTEXT_VALUE_CHARS].rsplit(" ", 1)[0].strip() + "..."
+            compact_row[key] = text
+        if compact_row:
+            compact_rows.append(compact_row)
+    return compact_rows
+
 
 def get_language_rule(language: str) -> str:
     key = (language or "en").strip().lower()
     return LANGUAGE_RULES.get(key, "Answer strictly in English.")
+
+
+def get_persona_rule(personality: str) -> str:
+    key = (personality or "explorer").strip().lower()
+    return PERSONA_RULES.get(key, personality or PERSONA_RULES["explorer"])
 
 
 def normalize_easy_word(value: str) -> str:
@@ -405,7 +439,7 @@ def build_idem_guide_payload(
     visual_descriptions: bool,
     more_time: bool,
 ) -> dict[str, Any]:
-    rows = graph_context.get("rows") if graph_context else []
+    rows = compact_idem_rows(graph_context.get("rows") if graph_context else [])
     cypher = graph_context.get("cypher") if graph_context else ""
     lang = language_code(language)
     language_name = IDEM_LANGUAGE_NAMES.get(lang, "English")
@@ -413,29 +447,26 @@ def build_idem_guide_payload(
         "task": "answer_with_context",
         "mode": "lectura_facil",
         "language": lang,
-        "question": message,
+        "question": message[:IDEM_MAX_QUESTION_CHARS],
         "context": rows,
         "rows": rows,
-        "graph_context": {
-            "cypher": cypher,
-            "rows": rows,
-        },
+        "graph_context": {"cypher": cypher},
         "museum": "Museu del Renaixement in Molins de Rei",
         "room": room,
         "artwork": artwork,
         "visitor_profile": age_range,
         "personality": personality,
+        "max_new_tokens": 96,
         "options": {
             "visual_descriptions": visual_descriptions,
             "more_time": more_time,
         },
         "instructions": (
-            f"Answer only in {language_name}. Do not mix languages. "
-            f"If the visitor uses another language, still answer in {language_name} unless they explicitly ask to change language. "
-            "Answer the visitor question directly using only the provided context. "
-            "Use Lectura Facil / Easy Read language, but keep enough useful detail for a museum guide. "
-            "Prefer clear short paragraphs with 2 or 3 sentences each. Explain necessary difficult terms with simple words. "
-            "Do not rewrite a previous answer. Do not invent facts. Return only the final answer. "
+            f"Answer only in {language_name}. "
+            "Use only the provided context. "
+            "Use Lectura Facil / Easy Read language with short, clear sentences. "
+            "Give 3 to 5 useful sentences for a museum guide. "
+            "Do not invent facts. Return only the final answer. "
             + (VISUAL_DESCRIPTION_GUIDELINES if visual_descriptions else "")
         ),
     }
@@ -1012,13 +1043,8 @@ def load_locations_from_excel() -> dict[str, Any]:
 # Conversation storage (simple in-memory for now)
 SESSION_CONTEXTS = {}
 
-# Personality/ age descriptions to add to the prompt
-PERSONALITY_DESCRIPTIONS = {
-    "Artist": "You have a creative and expressive style, using emotional language. Focus on technique, materials, the act of making. ",
-    "Explorer": "Efficient. Lead with the most surprising fact. Do not over-explain.",
-    "Storyteller": "Narrative, first-person connection. Start with a human moment. Weave facts into compelling stories.",
-    "Sholar": "Analytical. Include provenance, dates, historical context, comparative references. Formal register. You have a clear and informative style, breaking down complex concepts into easy-to-understand explanations.",
-}
+# Guide style descriptions to add to the prompt.
+PERSONALITY_DESCRIPTIONS = PERSONA_RULES
 AGE_DESCRIPTIONS = {
     "Young 10-18 years old": "You use a engaging, relatable and energetic style suitable for younger visitors.",
     "Adult 19-60 years old": "You use a mature and informative style. Full depth as defined by persona",
@@ -1105,7 +1131,7 @@ def record_session_turn(
 def build_system_prompt(
     language: str = "en",
     age_range: str = "Adult 20-60 years old",
-    personality: str = "Artist",
+    personality: str = "explorer",
     room: Optional[str] = None,
     artwork: Optional[str] = None,
     graph_context: Optional[dict[str, Any]] = None,
@@ -1116,6 +1142,7 @@ def build_system_prompt(
     """Build a dynamic system prompt based on user preferences and context."""
 
     language_rule = get_language_rule(language)
+    persona_rule = get_persona_rule(personality)
 
     detail_requested = user_requested_detail(graph_context.get("message", "") if graph_context else "")
 
@@ -1141,7 +1168,7 @@ def build_system_prompt(
         "Do not answer in any other language unless the user explicitly asks you to change language (only english, spanish or catalan) in the current message."
         "\n\n"
         f"VISITOR PROFILE: The user can be described as {age_range}. " # This can be undefined
-        f"Guide them with the personality/style of {personality}."
+        f"GUIDE STYLE: {persona_rule}."
         # Consider adding artworks seen so far
     )
 
@@ -1862,7 +1889,7 @@ def call_llm(
     session_id: str,
     language: str = "English",
     age_range: str = "Adult 20-60 years old",
-    personality: str = "Artist",
+    personality: str = "explorer",
     room: Optional[str] = None,
     artwork: Optional[str] = None,
     graph_context: Optional[dict[str, Any]] = None,
@@ -1910,7 +1937,7 @@ def call_cohere_guide(
     session_id: str,
     language: str = "English",
     age_range: str = "Adult 20-60 years old",
-    personality: str = "Artist",
+    personality: str = "explorer",
     room: Optional[str] = None,
     artwork: Optional[str] = None,
     graph_context: Optional[dict[str, Any]] = None,
@@ -1946,7 +1973,7 @@ def stream_llm(
     session_id: str,
     language: str = "English",
     age_range: str = "Adult 20-60 years old",
-    personality: str = "Artist",
+    personality: str = "explorer",
     room: Optional[str] = None,
     artwork: Optional[str] = None,
     graph_context: Optional[dict[str, Any]] = None,
@@ -2142,7 +2169,7 @@ def chat_endpoint():
         message = data.get("message", "").strip()
         language = data.get("language", "English")
         age_range = data.get("age_range", "Adult 20-60 years old")
-        personality = data.get("personality", "Artist")
+        personality = data.get("personality", "explorer")
         simple_language = bool(data.get("simple_language", False))
         visual_descriptions = bool(data.get("visual_descriptions", False))
         more_time = bool(data.get("more_time", False))
@@ -2185,7 +2212,7 @@ def chat_stream_endpoint():
     message = data.get("message", "").strip()
     language = data.get("language", "English")
     age_range = data.get("age_range", "Adult 20-60 years old")
-    personality = data.get("personality", "Artist")
+    personality = data.get("personality", "explorer")
     simple_language = bool(data.get("simple_language", False))
     visual_descriptions = bool(data.get("visual_descriptions", False))
     more_time = bool(data.get("more_time", False))

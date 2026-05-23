@@ -10,6 +10,9 @@ function applyContext(roomText, artworkText) {
 
   state.currentRoom = roomText;
   state.currentArtwork = artworkText;
+  document.dispatchEvent(new CustomEvent('guia:location-selected', {
+    detail: { room: roomText, artwork: artworkText }
+  }));
   window.saveGuiaSession?.();
 
   const roomEl = el('current-room');

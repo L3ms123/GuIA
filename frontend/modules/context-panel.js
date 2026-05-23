@@ -51,6 +51,14 @@ function initContextPanel() {
       : '';
 
     applyContext(roomText, artworkText);
+
+    document.dispatchEvent(new CustomEvent('guia:location-selected', {
+      detail: {
+        source: 'manual',
+        room: roomSelect.value,
+        artwork: artworkSelect.value || ''
+      }
+    }));
   });
 
   manualLocationBtn?.addEventListener('click', async () => {
@@ -215,12 +223,21 @@ function initContextPanel() {
     // Create a new Html5Qrcode instance with the div element ID
     html5QrCodeScanner = new Html5Qrcode('qr-video');
 
-    const onScanSuccess = (decodedText) => {
+    const onScanSuccess = async (decodedText) => {
       console.info('QR decoded text:', decodedText);
       announce(t('app.qrScanSuccess', 'QR code scanned.'));
+
       const handled = handleQRCodeDetected(decodedText);
+
       if (handled) {
-        closeQRScanner({ announceClose: false });
+        document.dispatchEvent(new CustomEvent('guia:location-selected', {
+          detail: {
+            source: 'qr',
+            value: decodedText
+          }
+        }));
+
+        await closeQRScanner({ announceClose: false });
       }
     };
 

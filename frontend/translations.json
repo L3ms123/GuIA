@@ -2,15 +2,15 @@
   "en": {
     "onboarding": {
       "eyebrow": "GuIA Museu del Renaixamen Guide",
-      "title": "Meet your guide.",
-      "description": "Choose how would you like your GuIA to guide you through the Museu del Renaixement.",
+      "title": "Choose your guide.",
+      "description": "Choose how GuIA should help you in the museum.",
       "language": "Select language",
-      "personality": "Select guide personality",
+      "personality": "How do you want the guide to help you?",
       "visitor": "Select age range",
       "start": "Start visit",
       "stepCount": "Step {current} of {total}",
       "stepDescriptions": {
-        "1": "Select the language, guide personality, and age range.",
+        "1": "Select the language, how the guide helps, and age range.",
         "2": "Select any accessibility options you want to use.",
         "3": "Read the AI and privacy notice before starting."
       },
@@ -19,17 +19,20 @@
     "optional": "(optional)",
       "accessibility": "Accessibility options",
       "tutorial": "Tutorial",
-      "startTutorial": "Show me a tutorial before I start",
-      "startTutorialHelp": "Explains the recommended order and what each main button does.",
+      "startTutorial": "Show help before I start",
+      "startTutorialHelp": "GuIA explains the main buttons before the visit starts. This option is already on.",
       "largeText": "Large text",
+      "largeTextHelp": "Makes the letters bigger.",
+      "uppercaseText": "Capital letters",
+      "uppercaseTextHelp": "Writes letters like this: TEXT.",
       "simpleLanguage": "Simpler language",
-      "simpleLanguageHelp": "Short sentences, common words, and dictionary help.",
-      "spokenExplanations": "Spoken explanations with voice",
-      "spokenExplanationsHelp": "Reads the guide's answers aloud.",
-      "moreTime": "More time and slower pace",
-      "moreTimeHelp": "The voice speaks more slowly and the conversation gives you more time.",
+      "simpleLanguageHelp": "GuIA uses short sentences and easier words.",
+      "spokenExplanations": "Listen to the guide",
+      "spokenExplanationsHelp": "GuIA reads the answers aloud. This option is already on.",
+      "moreTime": "Slower voice",
+      "moreTimeHelp": "The voice speaks more slowly.",
       "visualDescriptions": "Visual description of artworks",
-      "visualDescriptionsHelp": "Automatically turns audio on and describes what can be seen in the artworks.",
+      "visualDescriptionsHelp": "GuIA says what can be seen in the artwork.",
       "privacy": "AI and privacy notice",
       "privacyIntro1": "You are talking to an AI museum audioguide.",
       "privacyIntro2": "The AI may make mistakes, so important information should be verified with museum staff.",
@@ -40,20 +43,20 @@
     },
     "personas": {
       "artist": {
-        "title": "Artist",
-        "subtitle": "Focus on technique, medium, and the act of creation."
+        "title": "How was it made?",
+        "subtitle": "Explains colors, materials, and how the artist worked."
       },
       "storyteller": {
-        "title": "Storyteller",
-        "subtitle": "Uncover the myths, histories, and hidden narratives."
+        "title": "Tell me a story",
+        "subtitle": "Explains the visit like a simple story."
       },
       "explorer": {
-        "title": "Explorer",
-        "subtitle": "A path through the most significant highlights."
+        "title": "Normal guide",
+        "subtitle": "Explains the most important things. This option is already selected."
       },
       "scholar": {
-        "title": "Scholar",
-        "subtitle": "In-depth historical and contextual analysis of each work."
+        "title": "I want more details",
+        "subtitle": "Gives more facts about history and context."
       }
     },
     "ages": {
@@ -104,6 +107,14 @@
       "scanQRCode": "Scan QR Code",
       "closeScanner": "Close scanner"
     },
+    "settings": {
+      "kicker": "Settings",
+      "title": "Change settings",
+      "help": "Change one option at a time. Changes are saved automatically.",
+      "accessibility": "Help options",
+      "done": "Done",
+      "close": "Close settings"
+    },
     "chat": {
       "inputLabel": "Type your message",
       "placeholder": "Ask GuIA about the room, the artwork, or the museum...",
@@ -129,6 +140,7 @@
       "normal": "Normal",
       "fast": "Fast",
       "volume": "Volume",
+      "speechSpeed": "Speech speed",
       "panelButton": "Audio",
       "mute": "Mute audio",
       "unmute": "Unmute audio",
@@ -168,56 +180,101 @@
       "openLabel": "Help: how to use GuIA",
       "kicker": "Help",
       "title": "How to use GuIA",
-      "intro": "Follow these steps: first choose an artwork, then read the basic information, and then ask for more details.",
+      "intro": "We will do this one step at a time.",
       "close": "Close help",
+      "previous": "Back",
+      "next": "Next",
       "done": "Got it",
+      "progress": "Step {current} of {total}",
       "steps": [
         {
           "icon": "place",
-          "title": "1. Choose the artwork",
-          "body": "Start with Location. Scan a QR code, open NaviLens, or choose the room and artwork manually."
+          "title": "Choose where you are",
+          "body": "This area is for choosing the room or artwork. The options are open now.",
+          "target": "#context-box",
+          "targets": "#context-box",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": false
+        },
+        {
+          "icon": "open_in_new",
+          "title": "Use NaviLens",
+          "body": "Press this button if you want to open NaviLens and scan a NaviLens code.",
+          "target": "#open-app-btn",
+          "openPanel": "location",
+          "group": "location", 
+          "waitForAction": false
+        },
+        {
+          "icon": "qr_code_2",
+          "title": "Scan a QR code",
+          "body": "Press this button to open the camera. Point it at a QR code in the museum.",
+          "target": "#scan-qr-btn",
+          "openPanel": "location",
+          "group": "location",
+          "qrAction": true
+        },
+        {
+          "icon": "touch_app",
+          "title": "Choose manually",
+          "body": "Press this button if you want to choose the room from a list.",
+          "target": "#manual-location-btn",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": true
+        },
+        {
+          "icon": "task_alt",
+          "title": "Select a place",
+          "body": "Choose a room, then press Confirm location. The tutorial will continue after you choose a place.",
+          "target": "#manual-location-panel",
+          "targets": ["#manual-location-panel", "#set-context-btn"],
+          "openPanel": "manualLocation",
+          "group": "location",
+          "waitForAction": true,
+          "requireLocation": true
         },
         {
           "icon": "info",
-          "title": "2. Read the first explanation",
-          "body": "After you choose an artwork, GuIA gives you the basic information so you know what you are looking at."
+          "title": "Read the answer here",
+          "body": "GuIA writes the answer in this area.",
+          "target": ".chat-panel"
         },
         {
           "icon": "chat",
-          "title": "3. Ask for details",
-          "body": "Then ask specific questions, such as who the artist was, what year it was made, what it represents, or why it matters."
+          "title": "Write a question",
+          "body": "Use this box to write one question.",
+          "target": ".input-shell",
+          "waitForQuestion": true
         },
         {
           "icon": "keyboard_voice",
-          "title": "4. Write or use the microphone",
-          "body": "You can type in the text box or press the microphone button and speak. If you dictate, check the text before sending it."
+          "title": "Or speak your question",
+          "body": "Press the microphone. Say one short question.",
+          "target": "#mic-btn",
+          "waitForVoice": true
         },
         {
           "icon": "volume_up",
-          "device": "desktop",
-          "title": "5. Listen on desktop",
-          "body": "Use the speaker button to unmute spoken answers. You can also pause, replay, change volume, or change speed."
+          "title": "Listen to GuIA",
+          "body": "GuIA can read the answer aloud.",
+          "target": "#audio-controls-panel",
+          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
+          "openPanel": "audio"
         },
         {
-          "icon": "tune",
-          "device": "mobile",
-          "title": "6. Listen on mobile",
-          "body": "First press Audio. Then press the unmute button. The same panel also has pause, replay, volume, and speed controls."
+          "icon": "send",
+          "title": "Send the question",
+          "body": "Press Send when the question is ready.",
+          "target": "#send-btn",
+          "waitForSend": true
         },
         {
           "icon": "settings",
-          "title": "7. Change settings",
-          "body": "Use the gear button to change language, guide style, text size, simpler language, or other accessibility options."
-        },
-                {
-          "icon": "visibility",
-          "title": "8. Ask for visual descriptions",
-          "body": "Turn on visual descriptions to get a visual description of the elements present in the artworks."
-        },
-        {
-          "icon": "refresh",
-          "title": "9. Restart the session",
-          "body": "Use the Restart session button to start over with a fresh tour and clear the current chat."
+          "title": "Change help options",
+          "body": "Use this button to change language, text size, voice, or simple words.",
+          "target": "#app-title"
         }
       ]
     }
@@ -225,15 +282,15 @@
   "es": {
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
-      "title": "Conoce a tu guía.",
-      "description": "Elige cómo quieres sea la GuIA del Museu del Renaixement.",
+      "title": "Elige tu guia.",
+      "description": "Elige como quieres que GuIA te ayude en el museo.",
       "language": "Selecciona el idioma",
-      "personality": "Selecciona la personalidad del guía",
+      "personality": "Como quieres que te ayude el guia?",
       "visitor": "Selecciona el rango de edad",
       "start": "Comenzar visita",
       "stepCount": "Paso {current} de {total}",
       "stepDescriptions": {
-        "1": "Selecciona el idioma, la personalidad y la franja de edad.",
+        "1": "Selecciona el idioma, como ayuda el guia y la franja de edad.",
         "2": "Selecciona las opciones de accesibilidad que quieras usar.",
         "3": "Lee el aviso de IA y privacidad antes de empezar."
       },
@@ -242,17 +299,20 @@
       "optional": "(opcional)",
       "accessibility": "Opciones de accesibilidad",
       "tutorial": "Tutorial",
-      "startTutorial": "Quiero ver un tutorial antes de empezar",
-      "startTutorialHelp": "Explica el orden recomendado y qué hace cada botón principal.",
+      "startTutorial": "Ver ayuda antes de empezar",
+      "startTutorialHelp": "GuIA explica los botones principales antes de empezar. Esta opcion ya esta activada.",
       "largeText": "Texto grande",
+      "largeTextHelp": "Hace las letras mas grandes.",
+      "uppercaseText": "Texto en mayusculas",
+      "uppercaseTextHelp": "Escribe las letras asi: TEXTO.",
       "simpleLanguage": "Texto fácil",
-      "simpleLanguageHelp": "Frases cortas, palabras habituales y ayuda del diccionario.",
-      "spokenExplanations": "Explicaciones habladas con voz",
-      "spokenExplanationsHelp": "Lee en voz alta las respuestas de la guía.",
-      "moreTime": "Más tiempo y ritmo más lento",
-      "moreTimeHelp": "La voz habla más despacio y la conversación da más tiempo.",
+      "simpleLanguageHelp": "GuIA usa frases cortas y palabras mas faciles.",
+      "spokenExplanations": "Escuchar la guia",
+      "spokenExplanationsHelp": "GuIA lee las respuestas en voz alta. Esta opcion ya esta activada.",
+      "moreTime": "Voz mas lenta",
+      "moreTimeHelp": "La voz habla mas despacio.",
       "visualDescriptions": "Descripción visual de las obras",
-      "visualDescriptionsHelp": "Activa automáticamente el audio y describe lo que se ve en las obras.",
+      "visualDescriptionsHelp": "GuIA dice lo que se ve en la obra.",
       "privacy": "Aviso de IA y privacidad",
       "privacyIntro1": "Estás hablando con un audioguía de museo que utiliza IA.",
       "privacyIntro2": "La IA puede cometer errores, por lo que la información importante debe ser verificada con el personal del museo.",
@@ -263,20 +323,20 @@
     },
     "personas": {
       "artist": {
-        "title": "Artista",
-        "subtitle": "Enfocado en técnica, medio y acto de creación."
+        "title": "Como se hizo?",
+        "subtitle": "Explica colores, materiales y como trabajo el artista."
       },
       "storyteller": {
-        "title": "Narrador",
-        "subtitle": "Descubre mitos, historias y narrativas ocultas."
+        "title": "Cuentame una historia",
+        "subtitle": "Explica la visita como una historia sencilla."
       },
       "explorer": {
-        "title": "Explorador",
-        "subtitle": "Un camino por los puntos más destacados."
+        "title": "Guia normal",
+        "subtitle": "Explica lo mas importante. Esta opcion ya esta elegida."
       },
       "scholar": {
-        "title": "Erudito",
-        "subtitle": "Análisis histórico y contextual profundo de cada obra."
+        "title": "Quiero mas detalles",
+        "subtitle": "Da mas datos sobre la historia y el contexto."
       }
     },
     "ages": {
@@ -327,6 +387,14 @@
       "scanQRCode": "Escanear código QR",
       "closeScanner": "Cerrar escáner"
     },
+    "settings": {
+      "kicker": "Ajustes",
+      "title": "Cambiar ajustes",
+      "help": "Cambia una opcion cada vez. Los cambios se guardan solos.",
+      "accessibility": "Ayudas",
+      "done": "Hecho",
+      "close": "Cerrar ajustes"
+    },
     "chat": {
       "inputLabel": "Escribe tu mensaje",
       "placeholder": "Pregunta a GuIA sobre la sala, la obra o el museo...",
@@ -352,6 +420,7 @@
       "normal": "Normal",
       "fast": "Rápido",
       "volume": "Volumen",
+      "speechSpeed": "Velocidad de habla",
       "panelButton": "Audio",
       "mute": "Silenciar audio",
       "unmute": "Activar audio",
@@ -391,56 +460,101 @@
       "openLabel": "Ayuda: cómo usar GuIA",
       "kicker": "Ayuda",
       "title": "Cómo usar GuIA",
-      "intro": "Sigue estos pasos: primero elige una obra, después lee la información básica y luego pregunta más detalles.",
+      "intro": "Lo veremos paso a paso.",
       "close": "Cerrar ayuda",
+      "previous": "Atrás",
+      "next": "Siguiente",
       "done": "Entendido",
+      "progress": "Paso {current} de {total}",
       "steps": [
         {
           "icon": "place",
-          "title": "1. Elige la obra",
-          "body": "Empieza con Ubicación. Escanea un QR, abre NaviLens o elige la sala y la obra manualmente."
+          "title": "Elige donde estas",
+          "body": "Esta zona sirve para elegir la sala o la obra. Las opciones ya estan abiertas.",
+          "target": "#context-box",
+          "targets": "#context-box",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": false
+        },
+        {
+          "icon": "open_in_new",
+          "title": "Usa NaviLens",
+          "body": "Pulsa este boton si quieres abrir NaviLens y escanear un codigo NaviLens.",
+          "target": "#open-app-btn",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": false
+        },
+        {
+          "icon": "qr_code_2",
+          "title": "Escanea un codigo QR",
+          "body": "Pulsa este boton para abrir la camara. Apunta al codigo QR del museo.",
+          "target": "#scan-qr-btn",
+          "openPanel": "location",
+          "group": "location",
+          "qrAction": true
+        },
+        {
+          "icon": "touch_app",
+          "title": "Elige manualmente",
+          "body": "Pulsa este boton si quieres elegir la sala desde una lista.",
+          "target": "#manual-location-btn",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": true
+        },
+        {
+          "icon": "task_alt",
+          "title": "Selecciona un lugar",
+          "body": "Elige una sala y pulsa Confirmar ubicacion. El tutorial continuara cuando elijas un lugar.",
+          "target": "#manual-location-panel",
+          "targets": ["#manual-location-panel", "#set-context-btn"],
+          "openPanel": "manualLocation",
+          "group": "location",
+          "waitForAction": true,
+          "requireLocation": true
         },
         {
           "icon": "info",
-          "title": "2. Lee la primera explicación",
-          "body": "Cuando elijas una obra, GuIA te dará la información básica para entender qué estás mirando."
+          "title": "Lee la respuesta aqui",
+          "body": "GuIA escribe la respuesta en esta zona.",
+          "target": ".chat-panel"
         },
         {
           "icon": "chat",
-          "title": "3. Pregunta detalles",
-          "body": "Después pregunta cosas concretas, como quién era el artista, en qué año se hizo, qué representa o por qué es importante."
+          "title": "Escribe una pregunta",
+          "body": "Usa este cuadro para escribir una pregunta.",
+          "target": ".input-shell",
+          "waitForQuestion": true
         },
         {
           "icon": "keyboard_voice",
-          "title": "4. Escribe o usa el micrófono",
-          "body": "Puedes escribir en el cuadro de texto o pulsar el botón del micrófono y hablar. Si dictas, revisa el texto antes de enviarlo."
+          "title": "O di tu pregunta",
+          "body": "Pulsa el microfono. Di una pregunta corta.",
+          "target": "#mic-btn",
+          "waitForVoice": true
         },
         {
           "icon": "volume_up",
-          "device": "desktop",
-          "title": "5. Escucha en ordenador",
-          "body": "Usa el botón del altavoz para activar las respuestas habladas. También puedes pausar, repetir, cambiar el volumen o la velocidad."
+          "title": "Escucha a GuIA",
+          "body": "GuIA puede leer la respuesta en voz alta.",
+          "target": "#audio-controls-panel",
+          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
+          "openPanel": "audio"
         },
         {
-          "icon": "tune",
-          "device": "mobile",
-          "title": "6. Escucha en móvil",
-          "body": "Primero pulsa Audio. Después pulsa el botón de desmutear. En ese mismo panel también están pausar, repetir, volumen y velocidad."
+          "icon": "send",
+          "title": "Envia la pregunta",
+          "body": "Pulsa Enviar cuando la pregunta este lista.",
+          "target": "#send-btn",
+          "waitForSend": true
         },
         {
           "icon": "settings",
-          "title": "7. Cambia los ajustes",
-          "body": "Usa el botón de engranaje para cambiar idioma, estilo de guía, tamaño del texto, lenguaje simple u otras opciones de accesibilidad."
-        },
-        {
-          "icon": "visibility",
-          "title": "8. Pide descripciones visuales",
-          "body": "Activa las descripciones visuales para obtener una descripción visual de los elementos presentes en las obras."
-        },
-        {
-          "icon": "refresh",
-          "title": "9. Reinicia la sesión",
-          "body": "Usa Reiniciar sesión para empezar de nuevo con una visita limpia y borrar el chat actual."
+          "title": "Cambia las ayudas",
+          "body": "Usa este boton para cambiar idioma, tamano del texto, voz o palabras faciles.",
+          "target": "#app-title"
         }
       ]
     }
@@ -448,15 +562,15 @@
   "ca": {
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
-      "title": "Coneix el teu guia.",
-      "description": "Tria com vols que sigui la teva GuIA per guiar-te pel Museu del Renaixement.",
+      "title": "Tria el teu guia.",
+      "description": "Tria com vols que GuIA t'ajudi al museu.",
       "language": "Selecciona l’idioma ",
-      "personality": "Selecciona la personalitat del guia",
+      "personality": "Com vols que t'ajudi el guia?",
       "visitor": "Selecciona la franja d'edat",
       "start": "Començar visita",
       "stepCount": "Pas {current} de {total}",
       "stepDescriptions": {
-        "1": "Selecciona l'idioma, la personalitat i la franja d'edat.",
+        "1": "Selecciona l'idioma, com ajuda el guia i la franja d'edat.",
         "2": "Selecciona les opcions d'accessibilitat que vulguis utilitzar.",
         "3": "Llegeix l'avís d'IA i privacitat abans de començar."
       },
@@ -465,17 +579,20 @@
       "optional": "(opcional)",
       "accessibility": "Opcions d'accessibilitat",
       "tutorial": "Tutorial",
-      "startTutorial": "Vull veure un tutorial abans de començar",
-      "startTutorialHelp": "Explica l'ordre recomanat i què fa cada botó principal.",
+      "startTutorial": "Veure ajuda abans de començar",
+      "startTutorialHelp": "GuIA explica els botons principals abans de començar. Aquesta opció ja està activada.",
       "largeText": "Text gran",
+      "largeTextHelp": "Fa les lletres més grans.",
+      "uppercaseText": "Text en majúscules",
+      "uppercaseTextHelp": "Escriu les lletres així: TEXT.",
       "simpleLanguage": "Llenguatge més simple",
-      "simpleLanguageHelp": "Frases curtes, paraules habituals i ajuda del diccionari.",
-      "spokenExplanations": "Explicacions parlades amb veu",
-      "spokenExplanationsHelp": "Llegeix en veu alta les respostes de la guia.",
-      "moreTime": "Més temps i ritme més lent",
-      "moreTimeHelp": "La veu parla més a poc a poc i la conversa dona més temps.",
+      "simpleLanguageHelp": "GuIA fa frases curtes i usa paraules més fàcils.",
+      "spokenExplanations": "Escoltar la guia",
+      "spokenExplanationsHelp": "GuIA llegeix les respostes en veu alta. Aquesta opció ja està activada.",
+      "moreTime": "Veu més lenta",
+      "moreTimeHelp": "La veu parla més a poc a poc.",
       "visualDescriptions": "Descripció visual de les obres",
-      "visualDescriptionsHelp": "Activa automàticament l'àudio i descriu allò que es veu a les obres.",
+      "visualDescriptionsHelp": "GuIA explica què es veu a l'obra.",
       "privacy": "Avís d'IA i privacitat",
       "privacyIntro1": "Estàs parlant amb una audioguia de museu que utilitza IA.",
       "privacyIntro2": "La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.",
@@ -486,20 +603,20 @@
     },
     "personas": {
       "artist": {
-        "title": "Artista",
-        "subtitle": "Centrat en tècnica, medi i acte de creació."
+        "title": "Com es va fer?",
+        "subtitle": "Explica colors, materials i com treballava l'artista."
       },
       "storyteller": {
-        "title": "Contacontes",
-        "subtitle": "Descobreix mites, històries i narratives amagades."
+        "title": "Explica'm una història",
+        "subtitle": "Explica la visita com una història senzilla."
       },
       "explorer": {
-        "title": "Explorador",
-        "subtitle": "Un camí pels punts més destacats."
+        "title": "Guia normal",
+        "subtitle": "Explica el més important. Aquesta opció ja està triada."
       },
       "scholar": {
-        "title": "Erudit",
-        "subtitle": "Anàlisi històric i contextual profund de cada obra."
+        "title": "Vull més detalls",
+        "subtitle": "Dona més dades sobre la història i el context."
       }
     },
     "ages": {
@@ -550,6 +667,14 @@
       "scanQRCode": "Escanejar codi QR",
       "closeScanner": "Tancar escàner"
     },
+    "settings": {
+      "kicker": "Ajustos",
+      "title": "Canviar ajustos",
+      "help": "Canvia una opció cada vegada. Els canvis es guarden sols.",
+      "accessibility": "Ajudes",
+      "done": "Fet",
+      "close": "Tancar ajustos"
+    },
     "chat": {
       "inputLabel": "Escriu el teu missatge",
       "placeholder": "Pregunta a GuIA sobre la sala, l'obra o el museu...",
@@ -575,6 +700,7 @@
     "normal": "Normal",
     "fast": "Ràpid",
     "volume": "Volum",
+    "speechSpeed": "Velocitat de parla",
     "panelButton": "Àudio",
     "mute": "Silencia l'audio",
     "unmute": "Activa l'audio",
@@ -614,56 +740,101 @@
       "openLabel": "Ajuda: com utilitzar GuIA",
       "kicker": "Ajuda",
       "title": "Com utilitzar GuIA",
-      "intro": "Segueix aquests passos: primer tria una obra, després llegeix la informació bàsica i després pregunta més detalls.",
+      "intro": "Ho veurem pas a pas.",
       "close": "Tancar ajuda",
+      "previous": "Enrere",
+      "next": "Seguent",
       "done": "Entesos",
+      "progress": "Pas {current} de {total}",
       "steps": [
         {
           "icon": "place",
-          "title": "1. Tria l'obra",
-          "body": "Comença amb Ubicació. Escaneja un QR, obre NaviLens o tria la sala i l'obra manualment."
+          "title": "Tria on ets",
+          "body": "Aquesta zona serveix per triar la sala o l'obra. Les opcions ja estan obertes.",
+          "target": "#context-box",
+          "targets": "#context-box",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": false
+        },
+        {
+          "icon": "open_in_new",
+          "title": "Fes servir NaviLens",
+          "body": "Prem aquest botó si vols obrir NaviLens i escanejar un codi NaviLens.",
+          "target": "#open-app-btn",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": false
+        },
+        {
+          "icon": "qr_code_2",
+          "title": "Escaneja un codi QR",
+          "body": "Prem aquest botó per obrir la càmera. Apunta al codi QR del museu.",
+          "target": "#scan-qr-btn",
+          "openPanel": "location",
+          "group": "location",
+          "waitForAction": false
+        },
+        {
+          "icon": "touch_app",
+          "title": "Tria manualment",
+          "body": "Prem aquest botó si vols triar la sala des d'una llista.",
+          "target": "#manual-location-btn",
+          "openPanel": "location",
+          "group": "location", 
+          "waitForAction": true
+        },
+        {
+          "icon": "task_alt",
+          "title": "Selecciona un lloc",
+          "body": "Tria una sala i prem Confirmar ubicació. El tutorial continuarà quan triïs un lloc.",
+          "target": "#manual-location-panel",
+          "targets": ["#manual-location-panel", "#set-context-btn"],
+          "openPanel": "manualLocation",
+          "group": "location",
+          "waitForAction": true,
+          "requireLocation": true
         },
         {
           "icon": "info",
-          "title": "2. Llegeix la primera explicació",
-          "body": "Quan triïs una obra, GuIA et donarà la informació bàsica per entendre què estàs mirant."
+          "title": "Llegeix la resposta aqui",
+          "body": "GuIA escriu la resposta en aquesta zona.",
+          "target": ".chat-panel"
         },
         {
           "icon": "chat",
-          "title": "3. Pregunta detalls",
-          "body": "Després pregunta coses concretes, com qui era l'artista, en quin any es va fer, què representa o per què és important."
+          "title": "Escriu una pregunta",
+          "body": "Fes servir aquest quadre per escriure una pregunta.",
+          "target": ".input-shell",
+          "waitForQuestion": true
         },
         {
           "icon": "keyboard_voice",
-          "title": "4. Escriu o utilitza el micròfon",
-          "body": "Pots escriure al quadre de text o prémer el botó del micròfon i parlar. Si dictes, revisa el text abans d'enviar-lo."
+          "title": "O digues la pregunta",
+          "body": "Prem el micròfon. Digues una pregunta curta.",
+          "target": "#mic-btn",
+          "waitForVoice": true
         },
         {
           "icon": "volume_up",
-          "device": "desktop",
-          "title": "5. Escolta a l'ordinador",
-          "body": "Utilitza el botó de l'altaveu per activar les respostes parlades. També pots pausar, repetir, canviar el volum o la velocitat."
+          "title": "Escolta GuIA",
+          "body": "GuIA pot llegir la resposta en veu alta.",
+          "target": "#audio-controls-panel",
+          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
+          "openPanel": "audio"
         },
         {
-          "icon": "tune",
-          "device": "mobile",
-          "title": "6. Escolta al mòbil",
-          "body": "Primer prem Àudio. Després prem el botó de desmutejar. En aquest mateix panell també hi ha pausa, repetició, volum i velocitat."
+          "icon": "send",
+          "title": "Envia la pregunta",
+          "body": "Prem Enviar quan la pregunta estigui preparada.",
+          "target": "#send-btn",
+          "waitForSend": true
         },
         {
           "icon": "settings",
-          "title": "7. Canvia els ajustos",
-          "body": "Utilitza el botó d'engranatge per canviar idioma, estil de guia, mida del text, llenguatge simple o altres opcions d'accessibilitat."
-        },
-          {
-          "icon": "visibility",
-          "title": "9. Demana descripcions visuals",
-          "body": "Activa les descripcions visuals per obtenir una descripció visual dels elements presents en les obres."
-        },
-        {
-          "icon": "refresh",
-          "title": "8. Reinicia la sessió",
-          "body": "Utilitza el botó Reinicia sessió per començar de nou amb una visita neta i esborrar el xat actual."
+          "title": "Canvia les ajudes",
+          "body": "Fes servir aquest botó per canviar idioma, mida del text, veu o paraules fàcils.",
+          "target": "#app-title"
         }
       ]
     }

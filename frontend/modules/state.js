@@ -11,9 +11,10 @@ function readStoredGuiaSession() {
 }
 
 const storedGuiaSession = readStoredGuiaSession();
+const DEFAULT_PERSONA = 'explorer';
 
 const state = {
-  selectedPersona: storedGuiaSession?.selectedPersona || null,
+  selectedPersona: storedGuiaSession?.selectedPersona || DEFAULT_PERSONA,
   selectedAge: storedGuiaSession?.selectedAge || null,
   selectedLang: storedGuiaSession?.selectedLang || null,
   currentRoom: storedGuiaSession?.currentRoom || null,
@@ -27,7 +28,7 @@ const state = {
   lastFocusedElement: null,
   privacyAccepted: !!storedGuiaSession?.privacyAccepted,
   chatStarted: !!storedGuiaSession?.chatStarted,
-  showTutorialOnStart: !!storedGuiaSession?.showTutorialOnStart,
+  showTutorialOnStart: storedGuiaSession?.showTutorialOnStart ?? true,
   deferredSpokenAudioChange: null,
   conversationTranslationRequestId: 0,
   chatGenerating: false,
@@ -36,8 +37,9 @@ const state = {
 
   accessibilityPrefs: {
     largeText: !!storedGuiaSession?.accessibilityPrefs?.largeText,
+    uppercaseText: !!storedGuiaSession?.accessibilityPrefs?.uppercaseText,
     simpleLanguage: !!storedGuiaSession?.accessibilityPrefs?.simpleLanguage,
-    spokenAudio: !!storedGuiaSession?.accessibilityPrefs?.spokenAudio,
+    spokenAudio: storedGuiaSession?.accessibilityPrefs?.spokenAudio ?? true,
     moreTime: !!storedGuiaSession?.accessibilityPrefs?.moreTime,
     visualDescriptions: !!storedGuiaSession?.accessibilityPrefs?.visualDescriptions
 
@@ -70,7 +72,7 @@ const API_ENDPOINTS = {
   translations: 'translations.json'
 };
 
-const PERSONA_KEYS = ['artist', 'storyteller', 'explorer', 'scholar'];
+const PERSONA_KEYS = ['explorer', 'artist', 'storyteller', 'scholar'];
 const AGE_KEYS = ['young', 'adult', 'senior'];
 const AUDIO_SPEED_KEYS = ['slow', 'normal', 'fast'];
 const DEFAULT_LANGUAGE = 'ca';

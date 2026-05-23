@@ -5,7 +5,9 @@ async function loadTranslations() {
   const locationsPromise = loadLocations();
 
   state.selectedLang = state.selectedLang || DEFAULT_LANGUAGE;
+  state.selectedPersona = state.selectedPersona || DEFAULT_PERSONA;
   selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
+  selectRadio(qa('[data-persona]'), q(`[data-persona="${state.selectedPersona}"]`));
 
   initLanguageSelector();
   initPersonaButtons();
@@ -16,7 +18,6 @@ async function loadTranslations() {
   bindOnboardingFlow();
 
   initAppTitleButton();
-  initRestartSessionButton();
   initApp();
   restoreGuiaSessionUI();
   applyAppTranslations();
@@ -120,12 +121,3 @@ function warmTranscriptionModel() {
   });
 }
 
-function initRestartSessionButton() {
-  const restartBtn = el('restart-session-btn');
-  if (!restartBtn) return;
-  restartBtn.addEventListener('click', () => {
-    if (window.restartGuiaSession) {
-      window.restartGuiaSession();
-    }
-  });
-}

@@ -33,7 +33,7 @@
  
         <div class="step-meta" aria-live="polite">
           <div class="step-header">
-            <p id="step-count">Pas 1 de 3 - Selecciona l'idioma, la personalitat i la franja d'edat.</p>
+            <p id="step-count">Pas 1 de 3 - Selecciona l'idioma, com ajuda el guia i la franja d'edat.</p>
           </div>
 
           <div class="step-bar">
@@ -97,35 +97,35 @@
  
           <!-- Personalitat del guia -->
           <div class="onb-section">
-            <h2 id="label-personality" class="section-label">Selecciona la personalitat del guia</h2>
+            <h2 id="label-personality" class="section-label">Com vols que t'ajudi el guia?</h2>
             <div
               id="persona-group"
               class="onb-grid"
               role="radiogroup"
               aria-labelledby="label-personality"
             >
+              <button type="button" class="card radio-card" data-persona="explorer" role="radio" aria-checked="true">
+                <span class="material-symbols-outlined card-pictogram" aria-hidden="true">tour</span>
+                <h3 class="card-title">Guia normal</h3>
+                <p class="card-subtitle">Explica el més important. Aquesta opció ja està triada.</p>
+              </button>
+
               <button type="button" class="card radio-card" data-persona="artist" role="radio" aria-checked="false">
-                <img class="card-icon" src="assets/artist-palette-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Artista</h3>
-                <p class="card-subtitle">Centrat en tècnica, medi i acte de creació.</p>
+                <span class="material-symbols-outlined card-pictogram" aria-hidden="true">palette</span>
+                <h3 class="card-title">Com es va fer?</h3>
+                <p class="card-subtitle">Explica colors, materials i com treballava l'artista.</p>
               </button>
  
               <button type="button" class="card radio-card" data-persona="storyteller" role="radio" aria-checked="false">
-                <img class="card-icon" src="assets/storyteller-fairy-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Contacontes</h3>
-                <p class="card-subtitle">Descobreix mites, històries i narratives amagades.</p>
-              </button>
- 
-              <button type="button" class="card radio-card" data-persona="explorer" role="radio" aria-checked="false">
-                <img class="card-icon" src="assets/explorer-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Explorador</h3>
-                <p class="card-subtitle">Un camí pels punts més destacats.</p>
+                <span class="material-symbols-outlined card-pictogram" aria-hidden="true">auto_stories</span>
+                <h3 class="card-title">Explica'm una història</h3>
+                <p class="card-subtitle">Explica la visita com una història senzilla.</p>
               </button>
  
               <button type="button" class="card radio-card" data-persona="scholar" role="radio" aria-checked="false">
-                <img class="card-icon" src="assets/scholar-svgrepo-com.svg" alt="" aria-hidden="true" />
-                <h3 class="card-title">Erudit</h3>
-                <p class="card-subtitle">Anàlisi històrica i contextual profund de cada obra.</p>
+                <span class="material-symbols-outlined card-pictogram" aria-hidden="true">school</span>
+                <h3 class="card-title">Vull més detalls</h3>
+                <p class="card-subtitle">Dona més dades sobre la història i el context.</p>
               </button>
             </div>
           </div>
@@ -140,19 +140,19 @@
               aria-labelledby="label-visitor"
             >
               <button type="button" class="chip radio-chip" data-age="young" role="radio" aria-checked="false">
-                <img class="chip-icon" src="assets/teenager-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <span class="material-symbols-outlined card-pictogram" aria-hidden="true">face</span>
                 <span class="age-title">Jove</span>
                 <p class="card-subtitle">(10-19 anys)</p>
               </button>
  
               <button type="button" class="chip radio-chip" data-age="adult" role="radio" aria-checked="false">
-                <img class="chip-icon" src="assets/adult-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <span class="material-symbols-outlined card-pictogram" aria-hidden="true">person</span>
                 <span class="age-title">Adult</span>
                 <p class="card-subtitle">(20-60 anys)</p>
               </button>
  
               <button type="button" class="chip radio-chip" data-age="senior" role="radio" aria-checked="false">
-                <img class="chip-icon" src="assets/senior-svgrepo-com.svg" alt="" aria-hidden="true" />
+                <span class="material-symbols-outlined card-pictogram" aria-hidden="true">elderly</span>
                 <span class="age-title">Sènior</span>
                 <p class="card-subtitle">(60+ anys)</p>
               </button>
@@ -170,53 +170,71 @@
             <h2 id="label-accessibility" class="section-label">Selecciona les opcions d'accessibilitat <span class="sr-only" data-i18n-key="onboarding.optional">(opcional)</span></h2>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-large-text" />
-                <span>Text gran</span>
+                <input type="checkbox" id="opt-large-text" aria-describedby="opt-large-text-help" />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">format_size</span>
+                <div class="toggle-content">
+                  <span>Text gran</span>
+                  <p id="opt-large-text-help" class="card-subtitle">Fa les lletres més grans.</p>
+                </div>
+              </label>
+
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-uppercase-text" aria-describedby="opt-uppercase-text-help" />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">text_fields</span>
+                <div class="toggle-content">
+                  <span>Text en majúscules</span>
+                  <p id="opt-uppercase-text-help" class="card-subtitle">Escriu les lletres així: TEXT.</p>
+                </div>
               </label>
  
               <label class="toggle-row">
                 <input type="checkbox" id="opt-simple-language" aria-describedby="opt-simple-language-help" />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">short_text</span>
                 <div class="toggle-content">
                   <span>Llenguatge més simple</span>
-                  <p id="opt-simple-language-help" class="card-subtitle">Frases curtes, paraules habituals i ajuda del diccionari.</p>
+                  <p id="opt-simple-language-help" class="card-subtitle">GuIA fa frases curtes i usa paraules més fàcils.</p>
                 </div>
               </label>
  
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-spoken-audio" autocomplete="off" aria-describedby="opt-spoken-audio-help" />
+                <input type="checkbox" id="opt-spoken-audio" autocomplete="off" aria-describedby="opt-spoken-audio-help" checked />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
                 <div class="toggle-content">
-                  <span>Explicacions parlades amb veu</span>
-                  <p id="opt-spoken-audio-help" class="card-subtitle">Llegeix en veu alta les respostes de la guia.</p>
+                  <span>Escoltar la guia</span>
+                  <p id="opt-spoken-audio-help" class="card-subtitle">GuIA llegeix les respostes en veu alta. Aquesta opció ja està activada.</p>
                 </div>
               </label>
  
               <label class="toggle-row">
                 <input type="checkbox" id="opt-more-time" aria-describedby="opt-more-time-help" />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">slow_motion_video</span>
                 <div class="toggle-content">
-                  <span>Més temps i ritme més lent</span>
-                  <p id="opt-more-time-help" class="card-subtitle">La veu parla més a poc a poc i la conversa dona més temps.</p>
+                  <span>Veu més lenta</span>
+                  <p id="opt-more-time-help" class="card-subtitle">La veu parla més a poc a poc.</p>
                 </div>
               </label>
 
               <label class="toggle-row">
                 <input type="checkbox" id="opt-visual-descriptions" autocomplete="off" aria-describedby="opt-visual-descriptions-help" />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">visibility</span>
                 <div class="toggle-content">
                   <span>Descripció visual de les obres</span>
-                  <p id="opt-visual-descriptions-help" class="card-subtitle">Activa automàticament l'àudio i descriu allò que es veu a les obres.</p>
+                  <p id="opt-visual-descriptions-help" class="card-subtitle">GuIA explica què es veu a l'obra.</p>
                 </div>
               </label>
             </div>
           </div>
 
           <div class="onb-section">
-            <h2 id="label-tutorial-choice" class="section-label">Selecciona si vols veure un tutorial</h2>
+            <h2 id="label-tutorial-choice" class="section-label">Ajuda inicial</h2>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-start-tutorial" aria-describedby="opt-start-tutorial-help" />
+                <input type="checkbox" id="opt-start-tutorial" aria-describedby="opt-start-tutorial-help" checked />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
                 <div class="toggle-content">
-                  <span>Vull veure un tutorial abans de començar</span>
-                  <p id="opt-start-tutorial-help" class="card-subtitle">T'explica l'ordre recomanat i què fa cada botó principal.</p>
+                  <span>Veure ajuda abans de començar</span>
+                  <p id="opt-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals abans de començar. Aquesta opció ja està activada.</p>
                 </div>
               </label>
             </div>
@@ -264,6 +282,171 @@
  
     </section>
   </div><!-- /#onboarding -->
+
+  <div
+    id="settings-modal"
+    class="settings-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="settings-title"
+    aria-describedby="settings-help"
+    aria-hidden="true"
+    hidden
+  >
+    <section class="settings-panel">
+      <header class="settings-header">
+        <div>
+          <p id="settings-kicker" class="eyebrow">Ajustos</p>
+          <h2 id="settings-title" class="settings-title">Canvia els ajustos</h2>
+          <p id="settings-help" class="settings-help">Canvia una opció cada vegada. Els canvis es guarden sols.</p>
+        </div>
+        <button id="settings-close-btn" type="button" class="icon-btn settings-close-btn" aria-label="Tancar ajustos">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </header>
+
+      <div class="settings-body">
+        <section class="settings-section">
+          <h3 id="settings-language-title" class="section-label">Idioma</h3>
+          <div class="settings-grid" role="radiogroup" aria-labelledby="settings-language-title">
+            <button type="button" class="card radio-card" data-settings-lang="ca" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">language</span>
+              <h4 class="card-title">Català</h4>
+              <p class="card-subtitle">ca</p>
+            </button>
+            <button type="button" class="card radio-card" data-settings-lang="es" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">language</span>
+              <h4 class="card-title">Español</h4>
+              <p class="card-subtitle">es</p>
+            </button>
+            <button type="button" class="card radio-card" data-settings-lang="en" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">language</span>
+              <h4 class="card-title">English</h4>
+              <p class="card-subtitle">en</p>
+            </button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3 id="settings-guide-title" class="section-label">Com ajuda el guia?</h3>
+          <div class="settings-grid" role="radiogroup" aria-labelledby="settings-guide-title">
+            <button type="button" class="card radio-card" data-settings-persona="explorer" role="radio" aria-checked="true">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">tour</span>
+              <h4 class="card-title">Guia normal</h4>
+              <p class="card-subtitle">Explica el més important. Aquesta opció ja està triada.</p>
+            </button>
+            <button type="button" class="card radio-card" data-settings-persona="artist" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">palette</span>
+              <h4 class="card-title">Com es va fer?</h4>
+              <p class="card-subtitle">Explica colors, materials i com treballava l'artista.</p>
+            </button>
+            <button type="button" class="card radio-card" data-settings-persona="storyteller" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">auto_stories</span>
+              <h4 class="card-title">Explica'm una història</h4>
+              <p class="card-subtitle">Explica la visita com una història senzilla.</p>
+            </button>
+            <button type="button" class="card radio-card" data-settings-persona="scholar" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">school</span>
+              <h4 class="card-title">Vull més detalls</h4>
+              <p class="card-subtitle">Dona més dades sobre la història i el context.</p>
+            </button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3 id="settings-age-title" class="section-label">Edat</h3>
+          <div class="settings-grid age-grid" role="radiogroup" aria-labelledby="settings-age-title">
+            <button type="button" class="chip radio-chip" data-settings-age="young" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">face</span>
+              <span class="age-title">Jove</span>
+              <p class="card-subtitle">(10-19 anys)</p>
+            </button>
+            <button type="button" class="chip radio-chip" data-settings-age="adult" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">person</span>
+              <span class="age-title">Adult</span>
+              <p class="card-subtitle">(20-60 anys)</p>
+            </button>
+            <button type="button" class="chip radio-chip" data-settings-age="senior" role="radio" aria-checked="false">
+              <span class="material-symbols-outlined card-pictogram" aria-hidden="true">elderly</span>
+              <span class="age-title">Senior</span>
+              <p class="card-subtitle">(60+ anys)</p>
+            </button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3 id="settings-accessibility-title" class="section-label">Ajudes</h3>
+          <div class="toggle-list">
+            <label class="toggle-row">
+              <input type="checkbox" data-settings-pref="largeText" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">format_size</span>
+              <div class="toggle-content">
+                <span data-settings-label="largeText">Text gran</span>
+                <p class="card-subtitle" data-settings-help="largeText">Fa les lletres més grans.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" data-settings-pref="uppercaseText" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">text_fields</span>
+              <div class="toggle-content">
+                <span data-settings-label="uppercaseText">Text en majúscules</span>
+                <p class="card-subtitle" data-settings-help="uppercaseText">Escriu les lletres així: TEXT.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" data-settings-pref="simpleLanguage" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">short_text</span>
+              <div class="toggle-content">
+                <span data-settings-label="simpleLanguage">Llenguatge més simple</span>
+                <p class="card-subtitle" data-settings-help="simpleLanguage">GuIA fa frases curtes i usa paraules més fàcils.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" data-settings-pref="spokenAudio" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
+              <div class="toggle-content">
+                <span data-settings-label="spokenAudio">Escoltar la guia</span>
+                <p class="card-subtitle" data-settings-help="spokenAudio">GuIA llegeix les respostes en veu alta.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" data-settings-pref="moreTime" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">slow_motion_video</span>
+              <div class="toggle-content">
+                <span data-settings-label="moreTime">Veu més lenta</span>
+                <p class="card-subtitle" data-settings-help="moreTime">La veu parla més a poc a poc.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" data-settings-pref="visualDescriptions" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">visibility</span>
+              <div class="toggle-content">
+                <span data-settings-label="visualDescriptions">Descripció visual de les obres</span>
+                <p class="card-subtitle" data-settings-help="visualDescriptions">GuIA explica què es veu a l'obra.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" id="settings-start-tutorial" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
+              <div class="toggle-content">
+                <span id="settings-start-tutorial-label">Veure ajuda abans de començar</span>
+                <p id="settings-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals abans de començar.</p>
+              </div>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <footer class="settings-footer">
+        <button id="settings-reset-btn" type="button" class="btn-secondary">
+          Reiniciar visita
+        </button>
+        <button id="settings-done-btn" type="button" class="btn-primary">
+          Fet
+        </button>
+      </footer>
+    </section>
+  </div>
  
   <!-- Main application -->
   <div class="app-shell" inert>
@@ -289,16 +472,6 @@
         >
           <span class="material-symbols-outlined" aria-hidden="true">help</span>
           <span id="tutorial-open-text" class="help-btn-text">Ajuda</span>
-        </button>
-        <button
-          id="restart-session-btn"
-          type="button"
-          class="help-btn restart-session-btn"
-          data-i18n-key="app.restartSession"
-          aria-label="Reiniciar sessió"
-          title="Reiniciar sessió"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
         </button>
       </div>
 
@@ -374,38 +547,41 @@
 
           
 
-          <div
-            class="speed-group"
-            role="radiogroup"
-            aria-label="Velocitat de la veu"
-          >
-            <button
-              type="button"
-              class="speed-btn"
-              data-speed="slow"
-              role="radio"
-              aria-checked="false"
+          <div class="speed-wrap">
+            <span id="speech-speed-label" class="audio-label">Velocitat de parla</span>
+            <div
+              class="speed-group"
+              role="radiogroup"
+              aria-labelledby="speech-speed-label"
             >
-              Lent
-            </button>
-            <button
-              type="button"
-              class="speed-btn active"
-              data-speed="normal"
-              role="radio"
-              aria-checked="true"
-            >
-              Normal
-            </button>
-            <button
-              type="button"
-              class="speed-btn"
-              data-speed="fast"
-              role="radio"
-              aria-checked="false"
-            >
-              Ràpid
-            </button>
+              <button
+                type="button"
+                class="speed-btn"
+                data-speed="slow"
+                role="radio"
+                aria-checked="false"
+              >
+                Lent
+              </button>
+              <button
+                type="button"
+                class="speed-btn active"
+                data-speed="normal"
+                role="radio"
+                aria-checked="true"
+              >
+                Normal
+              </button>
+              <button
+                type="button"
+                class="speed-btn"
+                data-speed="fast"
+                role="radio"
+                aria-checked="false"
+              >
+                Ràpid
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -615,10 +791,16 @@
         Aquesta guia explica els botons principals. Pots llegir-la i tancar-la quan vulguis.
       </p>
 
-      <ol id="tutorial-steps" class="tutorial-steps"></ol>
+      <div id="tutorial-steps" class="tutorial-steps"></div>
 
       <footer class="tutorial-footer">
-        <button id="tutorial-done-btn" type="button" class="btn-primary">
+        <button id="tutorial-prev-btn" type="button" class="btn-secondary">
+          Enrere
+        </button>
+        <button id="tutorial-next-btn" type="button" class="btn-primary">
+          Seguent
+        </button>
+        <button id="tutorial-done-btn" type="button" class="btn-primary" hidden>
           Entesos
         </button>
       </footer>
