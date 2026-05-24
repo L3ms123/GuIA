@@ -90,6 +90,7 @@
       "qrScannerHelp": "The camera is active to scan a location QR code.",
       "confirmLocation": "Confirm location",
       "contextError": "Please select a room so GuIA can guide you accurately.",
+      "artworkRequired": "Choose an artwork before continuing.",
       "contextSendError": "Could not update your location. Please try again.",
       "contextBusy": "Wait until the current response finishes before changing location.",
       "cameraError": "Camera access denied. Please enable camera permissions.",
@@ -223,7 +224,7 @@
         {
           "icon": "task_alt",
           "title": "Select a place",
-          "body": "Choose a room, then press Confirm location. The tutorial will continue after you choose a place.",
+          "body": "Choose a room and an artwork. Then press Confirm location.",
           "target": "#manual-location-panel",
           "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
@@ -246,9 +247,8 @@
         {
           "icon": "keyboard_voice",
           "title": "Or speak your question",
-          "body": "Press the microphone. Say one short question.",
-          "target": "#mic-btn",
-          "waitForVoice": true
+          "body": "You can also press the microphone and say one short question.",
+          "target": "#mic-btn"
         },
         {
           "icon": "send",
@@ -365,6 +365,7 @@
       "qrScannerHelp": "La cámara está activa para escanear un código QR de ubicación.",
       "confirmLocation": "Confirmar ubicación",
       "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
+      "artworkRequired": "Elige una obra antes de continuar.",
       "contextSendError": "No se ha podido actualizar tu ubicación. Inténtalo de nuevo.",
       "contextBusy": "Espera a que termine la respuesta actual antes de cambiar de ubicación.",
       "cameraError": "Acceso a la cámara denegado. Por favor habilita los permisos de cámara.",
@@ -498,7 +499,7 @@
         {
           "icon": "task_alt",
           "title": "Selecciona un lugar",
-          "body": "Elige una sala y pulsa Confirmar ubicacion. El tutorial continuara cuando elijas un lugar.",
+          "body": "Elige una sala y una obra. Despues pulsa Confirmar ubicacion.",
           "target": "#manual-location-panel",
           "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
@@ -521,9 +522,8 @@
         {
           "icon": "keyboard_voice",
           "title": "O di tu pregunta",
-          "body": "Pulsa el microfono. Di una pregunta corta.",
-          "target": "#mic-btn",
-          "waitForVoice": true
+          "body": "Tambien puedes pulsar el microfono y decir una pregunta corta.",
+          "target": "#mic-btn"
         },
         {
           "icon": "send",
@@ -640,6 +640,7 @@
       "qrScannerHelp": "La càmera està activa per escanejar un codi QR de la ubicació.",
       "confirmLocation": "Confirmar ubicació",
       "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
+      "artworkRequired": "Tria una obra abans de continuar.",
       "contextSendError": "No s'ha pogut actualitzar la ubicació. Torna-ho a provar.",
       "contextBusy": "Espera que acabi la resposta actual abans de canviar d'ubicació.",
       "cameraError": "Accés a la càmera denegat. Si us plau, habilita els permisos de càmera.",
@@ -773,7 +774,7 @@
         {
           "icon": "task_alt",
           "title": "Selecciona un lloc",
-          "body": "Tria una sala i prem Confirmar ubicació. El tutorial continuarà quan triïs un lloc.",
+          "body": "Tria una sala i una obra. Després prem Confirmar ubicació.",
           "target": "#manual-location-panel",
           "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
@@ -796,9 +797,8 @@
         {
           "icon": "keyboard_voice",
           "title": "O digues la pregunta",
-          "body": "Prem el micròfon. Digues una pregunta curta.",
-          "target": "#mic-btn",
-          "waitForVoice": true
+          "body": "També pots prémer el micròfon i dir una pregunta curta.",
+          "target": "#mic-btn"
         },
         {
           "icon": "send",

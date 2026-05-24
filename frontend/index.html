@@ -12,7 +12,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=20260524-tutorial-location" />
   <link rel="icon" href="assets/favicon.png" />
 </head>
 <body class="surface" data-mode="regular" data-onboarding-open">
@@ -625,7 +625,10 @@
       <!-- Context column -->
       <aside class="context-column" aria-label="Context d'ubicació">
         <div id="context-box" class="context-box">
-          <h2 class="context-heading" id="choose-location">Tria la teva ubicació</h2>
+          <h2 class="context-heading" id="choose-location">
+            <span class="material-symbols-outlined tutorial-step-icon context-heading-icon" aria-hidden="true">place</span>
+            <span id="choose-location-text">Tria la teva ubicació</span>
+          </h2>
 
           <div class="context-actions">
             <button
@@ -812,13 +815,13 @@
   <script src="./modules/state.js"></script>
   <script src="./modules/dom.js"></script>
   <script src="./modules/i18n.js"></script>
-  <script src="./modules/onboarding.js"></script>
-  <script src="./modules/app-translations.js"></script>
+  <script src="./modules/onboarding.js?v=20260524-tutorial-location"></script>
+  <script src="./modules/app-translations.js?v=20260524-tutorial-location"></script>
   <script src="./modules/helpers.js"></script>
   <script src="./modules/session-persistence.js"></script>
   <script src="./modules/locations.js"></script>
   <script src="./app.js"></script>
-  <script src="./modules/tutorial.js"></script>
+  <script src="./modules/tutorial.js?v=20260524-tutorial-location"></script>
   <script src="./modules/audio.js"></script>
   <script src="./modules/voice.js"></script>
   <script src="./modules/context-panel.js"></script>

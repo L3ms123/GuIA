@@ -51,11 +51,15 @@ function initTutorial() {
 
   function actionRequired(item = itemAt()) {
     return !!(
-      (item.requireLocation && !state.currentRoom) ||
-      item.waitForQuestion ||
+      (item.requireLocation && !locationReadyForTutorial()) ||
+      (item.waitForQuestion && !questionReady()) ||
       item.waitForVoice ||
       item.waitForSend
     );
+  }
+
+  function locationReadyForTutorial() {
+    return !!el('artwork-select')?.value;
   }
 
   function questionReady() {
@@ -359,16 +363,27 @@ function initTutorial() {
     if (!waitingForAction) return;
 
     if (item.waitForQuestion && event.target.closest?.('.input-shell')) {
-      advanceAfterAction();
       el('chat-input')?.focus();
+      if (questionReady()) advanceAfterAction();
       return;
     }
 
     if (item.requireLocation && event.target.closest?.('#set-context-btn')) {
       const roomSelected = !!el('room-select')?.value;
+      const artworkSelected = !!el('artwork-select')?.value;
+      if (!artworkSelected) {
+        event.preventDefault();
+        event.stopPropagation();
+        const error = el('context-error');
+        if (error) error.textContent = t('app.artworkRequired', 'Choose an artwork before continuing.');
+        el('artwork-select')?.focus();
+        return;
+      }
       if (roomSelected) advanceAfterAction(() => goToStep(firstStepAfterLocationGroup()));
       return;
     }
+
+    if (item.requireLocation) return;
 
     if (item.waitForVoice && event.target.closest?.('#mic-btn')) return;
 
@@ -392,7 +407,7 @@ function initTutorial() {
     if (!isOpen()) return;
 
     const item = itemAt();
-    if (item.requireLocation) {
+    if (item.requireLocation && locationReadyForTutorial() && state.currentArtwork) {
       advanceAfterAction(() => goToStep(firstStepAfterLocationGroup()));
     }
   }
@@ -401,8 +416,9 @@ function initTutorial() {
     if (!isOpen()) return;
 
     const item = itemAt();
-    if (!item.waitForVoice) return;
-    if (event.target.value.trim()) advanceAfterAction(goToSendStep);
+    if (!event.target.value.trim()) return;
+    if (item.waitForQuestion) advanceAfterAction();
+    if (item.waitForVoice) advanceAfterAction(goToSendStep);
   }
 
   function handleModalKeydown(event) {

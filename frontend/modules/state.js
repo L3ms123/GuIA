@@ -69,7 +69,7 @@ const API_ENDPOINTS = {
   speak: `${API_BASES.audio}/speak`,
   transcribe: `${API_BASES.audio}/transcribe`,
   transcribeWarmup: `${API_BASES.audio}/transcribe/warmup`,
-  translations: 'translations.json'
+  translations: 'translations.json?v=20260524-tutorial-location'
 };
 
 const PERSONA_KEYS = ['explorer', 'artist', 'storyteller', 'scholar'];

@@ -2,6 +2,10 @@
 function showOnboarding() {
   state.lastFocusedElement = document.activeElement;
   state.onboardingStep = 1;
+  if (!state.chatStarted) {
+    state.showTutorialOnStart = true;
+    state.accessibilityPrefs.spokenAudio = true;
+  }
   window.guiaResetSpeechQueue?.();
   syncAccessibilityControls();
   applyAccessibilityPrefs();

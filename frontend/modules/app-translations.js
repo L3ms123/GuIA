@@ -76,7 +76,7 @@ function applyAppTranslations() {
     restartBtn.setAttribute('title', restartLabel);
   }
 
-  setText(el('choose-location'), t('app.chooseLocation'));
+  setText(el('choose-location-text') || el('choose-location'), t('app.chooseLocation'));
   setText(el('location-panel-text'), t('app.locationButton', 'Location'));
   setAttribute(el('location-panel-btn'), 'aria-label', t('app.chooseLocation', 'Choose your location'));
   setText(el('room'), t('app.room'));

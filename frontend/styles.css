@@ -1131,8 +1131,21 @@ select {
 }
 
 .context-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   font-size: calc(0.95rem * var(--scale));
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.7rem;
+}
+
+.context-heading-icon {
+  flex: 0 0 auto;
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+  font-size: calc(1.65rem * var(--scale));
+  color: var(--on-primary);
+  background: var(--primary);
+  border: 1px solid var(--outline-medium);
 }
 
 .field-label {
