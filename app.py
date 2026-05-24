@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from flask import send_from_directory
+from flask import Response, send_from_directory
 
 from LLM.LLM_Call import app
 from frontend.audio_api import app as audio_app
@@ -30,6 +30,11 @@ register_audio_routes()
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return Response(status=204)
 
 
 @app.route("/<path:filename>")

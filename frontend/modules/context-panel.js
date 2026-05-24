@@ -19,6 +19,7 @@ function initContextPanel() {
     if (open) {
       announce(t('app.locationPanelOpened', 'Location panel opened.'));
     } else {
+      closeManualLocationPanel();
       announce(t('app.locationPanelClosed', 'Location panel closed.'));
     }
   }

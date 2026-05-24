@@ -192,10 +192,8 @@
           "title": "Choose where you are",
           "body": "This area is for choosing the room or artwork. The options are open now.",
           "target": "#context-box",
-          "targets": "#context-box",
           "openPanel": "location",
-          "group": "location",
-          "waitForAction": false
+          "group": "location"
         },
         {
           "icon": "open_in_new",
@@ -203,8 +201,7 @@
           "body": "Press this button if you want to open NaviLens and scan a NaviLens code.",
           "target": "#open-app-btn",
           "openPanel": "location",
-          "group": "location", 
-          "waitForAction": false
+          "group": "location"
         },
         {
           "icon": "qr_code_2",
@@ -221,8 +218,7 @@
           "body": "Press this button if you want to choose the room from a list.",
           "target": "#manual-location-btn",
           "openPanel": "location",
-          "group": "location",
-          "waitForAction": true
+          "group": "location"
         },
         {
           "icon": "task_alt",
@@ -232,7 +228,6 @@
           "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
           "group": "location",
-          "waitForAction": true,
           "requireLocation": true
         },
         {
@@ -256,19 +251,19 @@
           "waitForVoice": true
         },
         {
-          "icon": "volume_up",
-          "title": "Listen to GuIA",
-          "body": "GuIA can read the answer aloud.",
-          "target": "#audio-controls-panel",
-          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
-          "openPanel": "audio"
-        },
-        {
           "icon": "send",
           "title": "Send the question",
           "body": "Press Send when the question is ready.",
           "target": "#send-btn",
           "waitForSend": true
+        },
+        {
+          "icon": "volume_up",
+          "title": "Adjust the audio",
+          "body": "You can change the volume and the speech speed.",
+          "target": "#audio-controls-panel",
+          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
+          "openPanel": "audio"
         },
         {
           "icon": "settings",
@@ -472,10 +467,8 @@
           "title": "Elige donde estas",
           "body": "Esta zona sirve para elegir la sala o la obra. Las opciones ya estan abiertas.",
           "target": "#context-box",
-          "targets": "#context-box",
           "openPanel": "location",
-          "group": "location",
-          "waitForAction": false
+          "group": "location"
         },
         {
           "icon": "open_in_new",
@@ -483,8 +476,7 @@
           "body": "Pulsa este boton si quieres abrir NaviLens y escanear un codigo NaviLens.",
           "target": "#open-app-btn",
           "openPanel": "location",
-          "group": "location",
-          "waitForAction": false
+          "group": "location"
         },
         {
           "icon": "qr_code_2",
@@ -501,8 +493,7 @@
           "body": "Pulsa este boton si quieres elegir la sala desde una lista.",
           "target": "#manual-location-btn",
           "openPanel": "location",
-          "group": "location",
-          "waitForAction": true
+          "group": "location"
         },
         {
           "icon": "task_alt",
@@ -512,7 +503,6 @@
           "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
           "group": "location",
-          "waitForAction": true,
           "requireLocation": true
         },
         {
@@ -536,19 +526,19 @@
           "waitForVoice": true
         },
         {
-          "icon": "volume_up",
-          "title": "Escucha a GuIA",
-          "body": "GuIA puede leer la respuesta en voz alta.",
-          "target": "#audio-controls-panel",
-          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
-          "openPanel": "audio"
-        },
-        {
           "icon": "send",
           "title": "Envia la pregunta",
           "body": "Pulsa Enviar cuando la pregunta este lista.",
           "target": "#send-btn",
           "waitForSend": true
+        },
+        {
+          "icon": "volume_up",
+          "title": "Ajusta el audio",
+          "body": "Puedes cambiar el volumen y la velocidad de habla.",
+          "target": "#audio-controls-panel",
+          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
+          "openPanel": "audio"
         },
         {
           "icon": "settings",
@@ -752,10 +742,8 @@
           "title": "Tria on ets",
           "body": "Aquesta zona serveix per triar la sala o l'obra. Les opcions ja estan obertes.",
           "target": "#context-box",
-          "targets": "#context-box",
           "openPanel": "location",
-          "group": "location",
-          "waitForAction": false
+          "group": "location"
         },
         {
           "icon": "open_in_new",
@@ -763,8 +751,7 @@
           "body": "Prem aquest botó si vols obrir NaviLens i escanejar un codi NaviLens.",
           "target": "#open-app-btn",
           "openPanel": "location",
-          "group": "location",
-          "waitForAction": false
+          "group": "location"
         },
         {
           "icon": "qr_code_2",
@@ -773,7 +760,7 @@
           "target": "#scan-qr-btn",
           "openPanel": "location",
           "group": "location",
-          "waitForAction": false
+          "qrAction": true
         },
         {
           "icon": "touch_app",
@@ -781,8 +768,7 @@
           "body": "Prem aquest botó si vols triar la sala des d'una llista.",
           "target": "#manual-location-btn",
           "openPanel": "location",
-          "group": "location", 
-          "waitForAction": true
+          "group": "location"
         },
         {
           "icon": "task_alt",
@@ -792,7 +778,6 @@
           "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
           "group": "location",
-          "waitForAction": true,
           "requireLocation": true
         },
         {
@@ -816,19 +801,19 @@
           "waitForVoice": true
         },
         {
-          "icon": "volume_up",
-          "title": "Escolta GuIA",
-          "body": "GuIA pot llegir la resposta en veu alta.",
-          "target": "#audio-controls-panel",
-          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
-          "openPanel": "audio"
-        },
-        {
           "icon": "send",
           "title": "Envia la pregunta",
           "body": "Prem Enviar quan la pregunta estigui preparada.",
           "target": "#send-btn",
           "waitForSend": true
+        },
+        {
+          "icon": "volume_up",
+          "title": "Ajusta l'àudio",
+          "body": "Pots canviar el volum i la velocitat de parla.",
+          "target": "#audio-controls-panel",
+          "targets": ["#audio-controls-panel", "#audio-settings-btn"],
+          "openPanel": "audio"
         },
         {
           "icon": "settings",

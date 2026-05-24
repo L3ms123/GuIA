@@ -65,8 +65,9 @@ EASY_WORD_STOPWORDS = {
 EASY_WORD_MAX_CANDIDATES = 12
 EASY_WORD_USER_AGENT = "GuIA museum accessibility helper/1.0"
 DEFAULT_IDEM_API_URL = "https://rafelsv-guia-idem-api.hf.space/answer"
-DEFAULT_IDEM_API_TIMEOUT_SECONDS = 180
+DEFAULT_IDEM_API_TIMEOUT_SECONDS = 35
 IDEM_MODEL_ALIASES = {
+    "QWEN05B": "Qwen/Qwen2.5-0.5B-Instruct",
     "LLAMA1B": "meta-llama/Llama-3.2-1B-Instruct",
     "GEMMA2B": "google/gemma-2-2b-it",
     "SALAMANDRA2B": "BSC-LT/salamandra-2b-instruct",
@@ -110,7 +111,7 @@ IDEM_LANGUAGE_NAMES = {
 }
 
 IDEM_MAX_CONTEXT_ROWS = 3
-IDEM_MAX_CONTEXT_VALUE_CHARS = 240
+IDEM_MAX_CONTEXT_VALUE_CHARS = 700
 IDEM_MAX_QUESTION_CHARS = 500
 
 
@@ -456,7 +457,7 @@ def build_idem_guide_payload(
         "artwork": artwork,
         "visitor_profile": age_range,
         "personality": personality,
-        "max_new_tokens": 96,
+        "max_new_tokens": 180,
         "options": {
             "visual_descriptions": visual_descriptions,
             "more_time": more_time,
@@ -465,7 +466,7 @@ def build_idem_guide_payload(
             f"Answer only in {language_name}. "
             "Use only the provided context. "
             "Use Lectura Facil / Easy Read language with short, clear sentences. "
-            "Give 3 to 5 useful sentences for a museum guide. "
+            "Answer with the detail needed by the question and available context. "
             "Do not invent facts. Return only the final answer. "
             + (VISUAL_DESCRIPTION_GUIDELINES if visual_descriptions else "")
         ),
