@@ -369,7 +369,6 @@ function initTutorial() {
     }
 
     if (item.requireLocation && event.target.closest?.('#set-context-btn')) {
-      const roomSelected = !!el('room-select')?.value;
       const artworkSelected = !!el('artwork-select')?.value;
       if (!artworkSelected) {
         event.preventDefault();
@@ -379,7 +378,6 @@ function initTutorial() {
         el('artwork-select')?.focus();
         return;
       }
-      if (roomSelected) advanceAfterAction(() => goToStep(firstStepAfterLocationGroup()));
       return;
     }
 
