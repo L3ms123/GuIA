@@ -203,6 +203,14 @@ select {
   margin-bottom: 0.6rem;
 }
 
+.intro-text {
+  font-size: calc(1rem * var(--scale));
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin: 0.75rem 0 1rem 0;
+  padding: 0.75rem 0;
+}
+
 .section-label {
   letter-spacing: 0.18em;
   font-size: calc(1rem * var(--scale));

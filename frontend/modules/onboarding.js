@@ -139,6 +139,7 @@ function applyOnboardingTranslations() {
   setText(q('.eyebrow'), t('onboarding.eyebrow'));
   setText(el('onboarding-title'), t('onboarding.title'));
   setText(el('label-language'), t('onboarding.language'));
+  setText(el('label-personality-intro'), t('onboarding.personalityIntro'));
   setText(el('label-personality'), t('onboarding.personality'));
   setOptionalHeading(el('label-visitor'), t('onboarding.visitor'));
 

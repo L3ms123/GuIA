@@ -4,13 +4,14 @@
       "eyebrow": "GuIA Museu del Renaixamen Guide",
       "title": "Choose your guide.",
       "description": "Choose how GuIA should help you in the museum.",
+      "personalityIntro": "GuIA is an audioguide that uses artificial intelligence to accompany you during your museum visit. You can talk to it, ask questions about artworks, and get personalized explanations. It can explain artworks in different ways: as a story, with artistic details about colors and materials, or in a standard style. Choose the explanation style that works best for you.",
       "language": "Select language",
       "personality": "Select explaination style",
       "visitor": "Select age range",
       "start": "Start visit",
       "stepCount": "Step {current} of {total}",
       "stepDescriptions": {
-        "1": "Select the language, how the guide helps, and age range.",
+        "1": "Select the language, style of the guide, and age range.",
         "2": "Select any accessibility options you want to use.",
         "3": "Read the AI and privacy notice before starting."
       },
@@ -286,13 +287,14 @@
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Elige tu guia.",
       "description": "Elige como quieres que GuIA te ayude en el museo.",
+      "personalityIntro": "GuIA es una audioguía que usa inteligencia artificial para acompañarte durante tu visita al museo. Puedes hablar con ella, hacer preguntas sobre las obras y obtener explicaciones personalizadas. Puede explicar las obras de diferentes formas: como una historia, con detalles artísticos sobre colores y materiales, o en un estilo estándar. Elige el estilo de explicación que mejor te funcione.",
       "language": "Selecciona el idioma",
       "personality": "Selecciona el estilo de explicación",
       "visitor": "Selecciona el rango de edad",
       "start": "Comenzar visita",
       "stepCount": "Paso {current} de {total}",
       "stepDescriptions": {
-        "1": "Selecciona el idioma, como ayuda el guia y la franja de edad.",
+        "1": "Selecciona el idioma, estilo del el guia y la franja de edad.",
         "2": "Selecciona las opciones de accesibilidad que quieras usar.",
         "3": "Lee el aviso de IA y privacidad antes de empezar."
       },
@@ -568,13 +570,14 @@
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Tria el teu guia.",
       "description": "Tria com vols que GuIA t'ajudi al museu.",
+      "personalityIntro": "GuIA és una audioguia que fa servir intel·ligència artificial per acompanyar-te durant la teva visita al museu. Pots parlar amb ella, fer preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard. Tria l'estil d'explicació que millor et funcioni.",
       "language": "Selecciona l’idioma ",
       "personality": "Selecciona l’estil d’explicació",
       "visitor": "Selecciona la franja d'edat",
       "start": "Començar visita",
       "stepCount": "Pas {current} de {total}",
       "stepDescriptions": {
-        "1": "Selecciona l'idioma, com ajuda el guia i la franja d'edat.",
+        "1": "Selecciona l'idioma, estil del guia i la franja d'edat.",
         "2": "Selecciona les opcions d'accessibilitat que vulguis utilitzar.",
         "3": "Llegeix l'avís d'IA i privacitat abans de començar."
       },
