@@ -204,7 +204,6 @@ select {
 }
 
 .section-label {
-  text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: calc(1rem * var(--scale));
   font-weight: 600;
@@ -214,6 +213,14 @@ select {
   padding: 0.25rem 0.6rem;
   border: 1px solid var(--outline-variant);
   background: var(--surface-lowest);
+}
+
+.accessibility-category {
+  font-size: calc(0.9rem * var(--scale));
+  font-weight: 500;
+  color: var(--text-secondary, #666);
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
 }
 
 .onb-grid {

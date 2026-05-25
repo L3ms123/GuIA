@@ -97,6 +97,17 @@ function applyAppTranslations() {
     }
   });
 
+  // Translate accessibility category headers
+  qa('.accessibility-category').forEach((el) => {
+    const key = el.dataset.i18nKey;
+    if (key) {
+      const translation = t(key);
+      if (translation) {
+        el.textContent = translation;
+      }
+    }
+  });
+
   // NaviLens and QR scanner button labels
   const openNaviLensText = el('open-navilens-text');
   if (openNaviLensText) openNaviLensText.textContent = t('app.openNaviLens');

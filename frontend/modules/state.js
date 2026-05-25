@@ -41,7 +41,7 @@ const state = {
     simpleLanguage: !!storedGuiaSession?.accessibilityPrefs?.simpleLanguage,
     spokenAudio: storedGuiaSession?.accessibilityPrefs?.spokenAudio ?? true,
     moreTime: !!storedGuiaSession?.accessibilityPrefs?.moreTime,
-    visualDescriptions: !!storedGuiaSession?.accessibilityPrefs?.visualDescriptions
+    audioDescription: !!storedGuiaSession?.accessibilityPrefs?.audioDescription
 
   }
 };
@@ -73,7 +73,7 @@ const API_ENDPOINTS = {
 };
 
 const PERSONA_KEYS = ['explorer', 'artist', 'storyteller', 'scholar'];
-const AGE_KEYS = ['young', 'adult', 'senior'];
+const AGE_KEYS = ['young', 'youngAdult', 'adult', 'senior'];
 const AUDIO_SPEED_KEYS = ['slow', 'normal', 'fast'];
 const DEFAULT_LANGUAGE = 'ca';
 

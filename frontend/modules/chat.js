@@ -209,7 +209,7 @@ function initChat(audio, voice) {
         age_range: state.selectedAge || 'adult',
         personality: state.selectedPersona,
         simple_language: state.accessibilityPrefs.simpleLanguage,
-        visual_descriptions: state.accessibilityPrefs.visualDescriptions,
+        visual_descriptions: state.accessibilityPrefs.audioDescription,
         more_time: state.accessibilityPrefs.moreTime,
         room: state.currentRoom,
         artwork: state.currentArtwork
@@ -249,7 +249,7 @@ function initChat(audio, voice) {
         age_range: state.selectedAge || 'adult',
         personality: state.selectedPersona,
         simple_language: state.accessibilityPrefs.simpleLanguage,
-        visual_descriptions: state.accessibilityPrefs.visualDescriptions,
+        visual_descriptions: state.accessibilityPrefs.audioDescription,
         more_time: state.accessibilityPrefs.moreTime,
         room: state.currentRoom,
         artwork: state.currentArtwork

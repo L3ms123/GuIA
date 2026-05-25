@@ -96,7 +96,7 @@ function restartGuiaSession() {
     simpleLanguage: false,
     spokenAudio: true,
     moreTime: false,
-    visualDescriptions: false
+    audioDescription: false
   };
 
   const chatThread = el('chat-thread');

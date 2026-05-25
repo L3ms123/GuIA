@@ -182,6 +182,17 @@ function applyOnboardingTranslations() {
   setOptionalHeading(el('label-accessibility'), t('onboarding.accessibility'));
   setText(el('accessibility-help'), t('onboarding.accessibilityHelp'));
 
+  // Translate accessibility category headers
+  qa('.accessibility-category').forEach((el) => {
+    const key = el.dataset.i18nKey;
+    if (key) {
+      const translation = t(key);
+      if (translation) {
+        el.textContent = translation;
+      }
+    }
+  });
+
   const optLargeTextLabel =
     q('label[for="opt-large-text"] .toggle-content > span') ||
     q('#opt-large-text')?.closest('label')?.querySelector('.toggle-content > span');
@@ -215,10 +226,10 @@ function applyOnboardingTranslations() {
   const optMoreTimeHelp = q('#opt-more-time')?.closest('label')?.querySelector('.card-subtitle');
   setText(optMoreTimeHelp, t('onboarding.moreTimeHelp'));
 
-  const optVisualDescriptionsLabel = q('#opt-visual-descriptions')?.closest('label')?.querySelector('.toggle-content > span');
-  setText(optVisualDescriptionsLabel, t('onboarding.visualDescriptions'));
-  const optVisualDescriptionsHelp = q('#opt-visual-descriptions')?.closest('label')?.querySelector('.card-subtitle');
-  setText(optVisualDescriptionsHelp, t('onboarding.visualDescriptionsHelp'));
+  const optAudioDescriptionLabel = q('#opt-visual-descriptions')?.closest('label')?.querySelector('.toggle-content > span');
+  setText(optAudioDescriptionLabel, t('onboarding.audioDescription'));
+  const optAudioDescriptionHelp = q('#opt-visual-descriptions')?.closest('label')?.querySelector('.card-subtitle');
+  setText(optAudioDescriptionHelp, t('onboarding.audioDescriptionHelp'));
 
   setText(el('label-tutorial-choice'), t('onboarding.tutorial'));
   const optStartTutorialLabel = q('#opt-start-tutorial')?.closest('label')?.querySelector('.toggle-content > span');
@@ -304,7 +315,7 @@ function applySettingsTranslations() {
     simpleLanguage: ['onboarding.simpleLanguage', 'onboarding.simpleLanguageHelp'],
     spokenAudio: ['onboarding.spokenExplanations', 'onboarding.spokenExplanationsHelp'],
     moreTime: ['onboarding.moreTime', 'onboarding.moreTimeHelp'],
-    visualDescriptions: ['onboarding.visualDescriptions', 'onboarding.visualDescriptionsHelp']
+    audioDescription: ['onboarding.audioDescription', 'onboarding.audioDescriptionHelp']
   };
 
   Object.entries(preferenceLabels).forEach(([preference, keys]) => {
@@ -472,7 +483,7 @@ function applyAccessibilityPrefs() {
   document.body.toggleAttribute('data-simple-language', state.accessibilityPrefs.simpleLanguage);
   document.body.toggleAttribute('data-spoken-audio', state.accessibilityPrefs.spokenAudio);
   document.body.toggleAttribute('data-more-time', state.accessibilityPrefs.moreTime);
-  document.body.toggleAttribute('data-visual-descriptions', state.accessibilityPrefs.visualDescriptions);
+  document.body.toggleAttribute('data-visual-descriptions', state.accessibilityPrefs.audioDescription);
 
   document.body.setAttribute('data-mode', state.accessibilityPrefs.largeText ? 'larger' : 'regular');
 
@@ -490,7 +501,7 @@ function syncAccessibilityControls() {
     'opt-simple-language': 'simpleLanguage',
     'opt-spoken-audio': 'spokenAudio',
     'opt-more-time': 'moreTime',
-    'opt-visual-descriptions': 'visualDescriptions'
+    'opt-visual-descriptions': 'audioDescription'
   };
 
   Object.entries(preferences).forEach(([id, preference]) => {
@@ -636,7 +647,7 @@ function bindOnboardingFlow() {
 
   function finishOnboarding() {
     state.chatStarted = true;
-    if (state.accessibilityPrefs.visualDescriptions) {
+    if (state.accessibilityPrefs.audioDescription) {
       state.accessibilityPrefs.spokenAudio = true;
     }
     applyAppTranslations();
@@ -661,7 +672,7 @@ function bindOnboardingFlow() {
   bindAccessibilityPreference('opt-simple-language', 'simpleLanguage');
   bindAccessibilityPreference('opt-spoken-audio', 'spokenAudio');
   bindAccessibilityPreference('opt-more-time', 'moreTime');
-  bindAccessibilityPreference('opt-visual-descriptions', 'visualDescriptions');
+  bindAccessibilityPreference('opt-visual-descriptions', 'audioDescription');
   el('opt-start-tutorial')?.addEventListener('change', (event) => {
     state.showTutorialOnStart = event.target.checked;
     syncAccessibilityControls();

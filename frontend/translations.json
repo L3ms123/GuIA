@@ -5,7 +5,7 @@
       "title": "Choose your guide.",
       "description": "Choose how GuIA should help you in the museum.",
       "language": "Select language",
-      "personality": "How do you want the guide to help you?",
+      "personality": "Select explaination style",
       "visitor": "Select age range",
       "start": "Start visit",
       "stepCount": "Step {current} of {total}",
@@ -24,15 +24,18 @@
       "largeText": "Large text",
       "largeTextHelp": "Makes the letters bigger.",
       "uppercaseText": "Capital letters",
-      "uppercaseTextHelp": "Writes letters like this: TEXT.",
+      "uppercaseTextHelp": "Shows the text in capital letters.",
       "simpleLanguage": "Simpler language",
       "simpleLanguageHelp": "GuIA uses short sentences and easier words.",
       "spokenExplanations": "Listen to the guide",
       "spokenExplanationsHelp": "GuIA reads the answers aloud. This option is already on.",
       "moreTime": "Slower voice",
       "moreTimeHelp": "The voice speaks more slowly.",
-      "visualDescriptions": "Visual description of artworks",
-      "visualDescriptionsHelp": "GuIA says what can be seen in the artwork.",
+      "audioDescription": "Audio description",
+      "audioDescriptionHelp": "GuIA says what can be seen in the artwork.",
+      "visual": "Visual accessibility",
+      "cognitive": "Cognitive accessibility",
+      "auditory": "Auditory / multimedia accessibility",
       "privacy": "AI and privacy notice",
       "privacyIntro1": "You are talking to an AI museum audioguide.",
       "privacyIntro2": "The AI may make mistakes, so important information should be verified with museum staff.",
@@ -43,34 +46,38 @@
     },
     "personas": {
       "artist": {
-        "title": "How was it made?",
+        "title": "How the artwork was created",
         "subtitle": "Explains colors, materials, and how the artist worked."
       },
       "storyteller": {
-        "title": "Tell me a story",
-        "subtitle": "Explains the visit like a simple story."
+        "title": "Story-style explanation",
+        "subtitle": "Explains the visit as a simple story."
       },
       "explorer": {
         "title": "Normal guide",
         "subtitle": "Explains the most important things. This option is already selected."
       },
       "scholar": {
-        "title": "I want more details",
-        "subtitle": "Gives more facts about history and context."
+        "title": "Learn more details",
+        "subtitle": "Provides additional historical information and context."
       }
     },
     "ages": {
         "young": {
-            "title": "Young",
-            "subtitle": "(10-19 years old)"
+            "title": "Infant / Adolescent",
+            "subtitle": "(10-17 years old)"
+            },
+        "youngAdult": {
+            "title": "Young Adult",
+            "subtitle": "(18-29 years old)"
             },
         "adult": {
             "title": "Adult",
-            "subtitle": "(20-60 years old)"
+            "subtitle": "(30-64 years old)"
             },
         "senior": {
             "title": "Senior",
-            "subtitle": "(60+ years old)"
+            "subtitle": "(65+ years old)"
             }
     },
     "ageHint": "The ages are just an indicative guideline to help tailor the content. It is optional to answer",
@@ -280,7 +287,7 @@
       "title": "Elige tu guia.",
       "description": "Elige como quieres que GuIA te ayude en el museo.",
       "language": "Selecciona el idioma",
-      "personality": "Como quieres que te ayude el guia?",
+      "personality": "Selecciona el estilo de explicación",
       "visitor": "Selecciona el rango de edad",
       "start": "Comenzar visita",
       "stepCount": "Paso {current} de {total}",
@@ -299,15 +306,18 @@
       "largeText": "Texto grande",
       "largeTextHelp": "Hace las letras mas grandes.",
       "uppercaseText": "Texto en mayusculas",
-      "uppercaseTextHelp": "Escribe las letras asi: TEXTO.",
+      "uppercaseTextHelp": "Muestra el texto en mayusculas.",
       "simpleLanguage": "Texto fácil",
       "simpleLanguageHelp": "GuIA usa frases cortas y palabras mas faciles.",
       "spokenExplanations": "Escuchar la guia",
       "spokenExplanationsHelp": "GuIA lee las respuestas en voz alta. Esta opcion ya esta activada.",
       "moreTime": "Voz mas lenta",
       "moreTimeHelp": "La voz habla mas despacio.",
-      "visualDescriptions": "Descripción visual de las obras",
-      "visualDescriptionsHelp": "GuIA dice lo que se ve en la obra.",
+      "audioDescription": "Audiodescripción",
+      "audioDescriptionHelp": "GuIA dice lo que se ve en la obra.",
+      "visual": "Accesibilidad visual",
+      "cognitive": "Accesibilidad cognitiva",
+      "auditory": "Accesibilidad auditiva / multimedia",
       "privacy": "Aviso de IA y privacidad",
       "privacyIntro1": "Estás hablando con un audioguía de museo que utiliza IA.",
       "privacyIntro2": "La IA puede cometer errores, por lo que la información importante debe ser verificada con el personal del museo.",
@@ -318,34 +328,38 @@
     },
     "personas": {
       "artist": {
-        "title": "Como se hizo?",
-        "subtitle": "Explica colores, materiales y como trabajo el artista."
+        "title": "Como se creó la obra",
+        "subtitle": "Explica además colores, materiales y como trabajó el artista."
       },
       "storyteller": {
-        "title": "Cuentame una historia",
+        "title": "Explicació en forma de historia",
         "subtitle": "Explica la visita como una historia sencilla."
       },
       "explorer": {
         "title": "Guia normal",
-        "subtitle": "Explica lo mas importante. Esta opcion ya esta elegida."
+        "subtitle": "Explica lo más importante. Esta opcion ya esta elegida."
       },
       "scholar": {
-        "title": "Quiero mas detalles",
+        "title": "Conocer mas detalles",
         "subtitle": "Da mas datos sobre la historia y el contexto."
       }
     },
     "ages": {
         "young": {
+            "title": "Infante / Adolescente",
+            "subtitle": "(10-17 años)"
+            },
+        "youngAdult": {
             "title": "Joven",
-            "subtitle": "(10-19 años)"
+            "subtitle": "(18-29 años)"
             },
         "adult": {
             "title": "Adulto",
-            "subtitle": "(20-60 años)"
+            "subtitle": "(30-64 años)"
             },
         "senior": {
-            "title": "Senior",
-            "subtitle": "(60+ años)"
+            "title": "Adulto mayor",
+            "subtitle": "(65+ años)"
             }
     },
     "ageHint": "Las edades son solo una guía indicativa para personalizar el contenido. Es opcional responder",
@@ -555,7 +569,7 @@
       "title": "Tria el teu guia.",
       "description": "Tria com vols que GuIA t'ajudi al museu.",
       "language": "Selecciona l’idioma ",
-      "personality": "Com vols que t'ajudi el guia?",
+      "personality": "Selecciona l’estil d’explicació",
       "visitor": "Selecciona la franja d'edat",
       "start": "Començar visita",
       "stepCount": "Pas {current} de {total}",
@@ -574,15 +588,18 @@
       "largeText": "Text gran",
       "largeTextHelp": "Fa les lletres més grans.",
       "uppercaseText": "Text en majúscules",
-      "uppercaseTextHelp": "Escriu les lletres així: TEXT.",
+      "uppercaseTextHelp": "Mostra el text en majúscules.",
       "simpleLanguage": "Llenguatge més simple",
       "simpleLanguageHelp": "GuIA fa frases curtes i usa paraules més fàcils.",
       "spokenExplanations": "Escoltar la guia",
       "spokenExplanationsHelp": "GuIA llegeix les respostes en veu alta. Aquesta opció ja està activada.",
       "moreTime": "Veu més lenta",
       "moreTimeHelp": "La veu parla més a poc a poc.",
-      "visualDescriptions": "Descripció visual de les obres",
-      "visualDescriptionsHelp": "GuIA explica què es veu a l'obra.",
+      "audioDescription": "Audiodescripció",
+      "audioDescriptionHelp": "GuIA explica què es veu a l'obra.",
+      "visual": "Accessibilitat visual",
+      "cognitive": "Accessibilitat cognitiva",
+      "auditory": "Accessibilitat auditiva / multimèdia",
       "privacy": "Avís d'IA i privacitat",
       "privacyIntro1": "Estàs parlant amb una audioguia de museu que utilitza IA.",
       "privacyIntro2": "La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.",
@@ -593,11 +610,11 @@
     },
     "personas": {
       "artist": {
-        "title": "Com es va fer?",
-        "subtitle": "Explica colors, materials i com treballava l'artista."
+        "title": "Com es va crear l'obra",
+        "subtitle": "Explica també colors, materials i com va treballar l’artista."
       },
       "storyteller": {
-        "title": "Explica'm una història",
+        "title": "Explicació en forma d’història",
         "subtitle": "Explica la visita com una història senzilla."
       },
       "explorer": {
@@ -605,22 +622,26 @@
         "subtitle": "Explica el més important. Aquesta opció ja està triada."
       },
       "scholar": {
-        "title": "Vull més detalls",
+        "title": "Conèixer més detalls",
         "subtitle": "Dona més dades sobre la història i el context."
       }
     },
     "ages": {
         "young": {
+            "title": "Infant / Adolescent",
+            "subtitle": "(10-17 anys)"
+            },
+        "youngAdult": {
             "title": "Jove",
-            "subtitle": "(10-19 anys)"
+            "subtitle": "(18-29 anys)"
             },
         "adult": {
             "title": "Adult",
-            "subtitle": "(20-60 anys)"
+            "subtitle": "(30-64 anys)"
             },
         "senior": {
-            "title": "Senior",
-            "subtitle": "(60+ anys)"
+            "title": "Gent gran",
+            "subtitle": "(65+ anys)"
             }
     },
     "ageHint": "Les edats són només una guia indicativa per personalitzar el contingut. És opcional respondre",
