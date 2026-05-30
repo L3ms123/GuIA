@@ -37,6 +37,14 @@
           <button class="btn-primary" type="submit">Unlock</button>
         </div>
       </form>
+      <div id="session-panel" class="session-panel" hidden>
+        <span class="material-symbols-outlined session-icon" aria-hidden="true">lock_open</span>
+        <div>
+          <strong>Admin access unlocked</strong>
+          <p>Protected uploads and analytics are visible on this device.</p>
+        </div>
+        <button id="logout-btn" class="btn-secondary compact" type="button">Log out</button>
+      </div>
       <p id="auth-status" class="status-text" role="status"></p>
     </section>
 

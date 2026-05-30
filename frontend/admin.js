@@ -1,6 +1,8 @@
 const authForm = document.querySelector('#auth-form');
 const passwordInput = document.querySelector('#admin-password');
 const authStatus = document.querySelector('#auth-status');
+const sessionPanel = document.querySelector('#session-panel');
+const logoutBtn = document.querySelector('#logout-btn');
 const uploadGrid = document.querySelector('#upload-grid');
 const instructions = document.querySelector('#instructions');
 const analyticsPanel = document.querySelector('#analytics-panel');
@@ -9,6 +11,25 @@ const analyticsWarning = document.querySelector('#analytics-warning');
 const analyticsPath = document.querySelector('#analytics-path');
 
 let adminPassword = '';
+
+function setUnlocked(isUnlocked) {
+  authForm.hidden = isUnlocked;
+  sessionPanel.hidden = !isUnlocked;
+  uploadGrid.hidden = !isUnlocked;
+  analyticsPanel.hidden = !isUnlocked;
+  instructions.hidden = !isUnlocked;
+
+  if (!isUnlocked) {
+    adminPassword = '';
+    passwordInput.value = '';
+    document.querySelectorAll('.upload-card input[type="file"]').forEach((input) => {
+      input.value = '';
+    });
+    document.querySelectorAll('.upload-status').forEach((status) => {
+      setStatus(status, '');
+    });
+  }
+}
 
 function setStatus(element, message, type = '') {
   element.textContent = message;
@@ -147,9 +168,7 @@ authForm.addEventListener('submit', async (event) => {
   try {
     const data = await postStatus(password);
     adminPassword = password;
-    uploadGrid.hidden = false;
-    analyticsPanel.hidden = false;
-    instructions.hidden = false;
+    setUnlocked(true);
     setStatus(
       authStatus,
       data.neo4jConfigured ? 'Unlocked. Neo4j is configured.' : 'Unlocked, but Neo4j secrets are incomplete.',
@@ -157,15 +176,18 @@ authForm.addEventListener('submit', async (event) => {
     );
     loadAnalytics();
   } catch (error) {
-    adminPassword = '';
-    uploadGrid.hidden = true;
-    analyticsPanel.hidden = true;
-    instructions.hidden = true;
+    setUnlocked(false);
     setStatus(authStatus, error.message, 'error');
   }
 });
 
 refreshAnalyticsBtn.addEventListener('click', loadAnalytics);
+
+logoutBtn.addEventListener('click', () => {
+  setUnlocked(false);
+  setStatus(authStatus, 'Logged out.');
+  passwordInput.focus();
+});
 
 document.querySelectorAll('.upload-card').forEach((card) => {
   const type = card.dataset.uploadType;

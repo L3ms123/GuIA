@@ -147,6 +147,31 @@ input {
   gap: 0.45rem;
 }
 
+.session-panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--outline-soft);
+  background: var(--surface-low);
+}
+
+.session-panel p {
+  margin-top: 0.2rem;
+}
+
+.session-icon {
+  display: inline-flex;
+  width: 2.4rem;
+  height: 2.4rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--outline-soft);
+  background: var(--surface);
+  color: var(--primary);
+}
+
 .password-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -350,5 +375,14 @@ th {
 
   .password-row {
     grid-template-columns: 1fr;
+  }
+
+  .session-panel {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .session-panel .btn-secondary {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 }
