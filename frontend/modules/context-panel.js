@@ -51,15 +51,7 @@ function initContextPanel() {
       ? artworkSelect.options[artworkSelect.selectedIndex].text
       : '';
 
-    applyContext(roomText, artworkText);
-
-    document.dispatchEvent(new CustomEvent('guia:location-selected', {
-      detail: {
-        source: 'manual',
-        room: roomSelect.value,
-        artwork: artworkSelect.value || ''
-      }
-    }));
+    applyContext(roomText, artworkText, 'manual');
   });
 
   manualLocationBtn?.addEventListener('click', async () => {
@@ -231,13 +223,6 @@ function initContextPanel() {
       const handled = handleQRCodeDetected(decodedText);
 
       if (handled) {
-        document.dispatchEvent(new CustomEvent('guia:location-selected', {
-          detail: {
-            source: 'qr',
-            value: decodedText
-          }
-        }));
-
         await closeQRScanner({ announceClose: false });
       }
     };
@@ -272,7 +257,7 @@ function initContextPanel() {
     const isURL = /^[a-z][a-z0-9+.-]*:\/\//i.test(decodedText);
 
     if (linkPayload) {
-      const applied = applyLocationPayload(linkPayload);
+      const applied = applyLocationPayload(linkPayload, 'qr');
       if (applied) {
         const cameraError = el('camera-error');
         if (cameraError) cameraError.hidden = true;
@@ -300,7 +285,7 @@ function initContextPanel() {
       const applied = applyLocationPayload({
         room: qrData.roomId || qrData.room,
         artwork: qrData.artworkId || qrData.artwork
-      });
+      }, 'qr');
       if (applied) {
         const cameraError = el('camera-error');
         if (cameraError) cameraError.hidden = true;

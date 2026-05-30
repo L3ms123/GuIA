@@ -8,6 +8,7 @@ import base64
 import csv
 import re
 import sys
+import time
 import zipfile
 import xml.etree.ElementTree as ET
 from functools import lru_cache
@@ -19,6 +20,11 @@ from dotenv import load_dotenv
 import cohere
 from flask import Flask, Response, request, jsonify, stream_with_context
 from flask_cors import CORS
+
+try:
+    from LLM import analytics
+except ImportError:  # when this file is run as a standalone script
+    import analytics
 
 # Load environment variables from .env file
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
@@ -829,6 +835,96 @@ def format_chat_text(text: str) -> str:
             formatted.append(" ".join(current))
 
     return "\n\n".join(formatted)
+
+
+DONT_KNOW_PATTERNS = {
+    "es": [
+        r"no\s+(lo\s+)?s[eé]\b",
+        r"no\s+tengo\s+.*informaci",
+        r"no\s+puedo\s+(determinar|responder)",
+        r"no\s+se\s+puede\s+determinar\s+con\s+(los|estos)\s+datos",
+        r"no\s+dispongo\s+de",
+        r"no\s+(figura|consta)\s+en",
+    ],
+    "ca": [
+        r"no\s+(ho\s+)?s[eé]\b",
+        r"no\s+tinc\s+.*informaci",
+        r"no\s+puc\s+(determinar|respondre)",
+        r"no\s+es\s+pot\s+determinar\s+amb\s+.*dades",
+        r"no\s+disposo\s+de",
+        r"no\s+consta",
+    ],
+    "en": [
+        r"i\s+(do\s+not|don'?t)\s+know",
+        r"i\s+(do\s+not|don'?t)\s+have\s+.*information",
+        r"cannot\s+be\s+determined\s+from\s+the\s+(provided|available)\s+data",
+        r"i\s+(can'?t|cannot)\s+determine",
+        r"the\s+(database|data)\s+does\s+not\s+contain",
+    ],
+}
+
+
+def detect_dont_know(text: str, language: str = "en") -> bool:
+    """Heuristically flag answers that say the guide cannot answer.
+
+    Only the first sentence / ~200 chars is checked, because the
+    cannot-answer disclaimers are placed at the start of the answer. This
+    avoids false positives on long answers that merely mention a missing
+    detail mid-text. Returns a boolean only; no text is stored.
+    """
+    if not text:
+        return False
+
+    snippet = text.strip()[:200].lower()
+    lang = language_code(language)
+    pattern_sets = [DONT_KNOW_PATTERNS.get(lang)] if lang in DONT_KNOW_PATTERNS else list(DONT_KNOW_PATTERNS.values())
+    for patterns in pattern_sets:
+        if not patterns:
+            continue
+        for pattern in patterns:
+            if re.search(pattern, snippet):
+                return True
+    return False
+
+
+def log_answer_completed(
+    *,
+    session_id: str,
+    visit_id: Optional[str],
+    client_req_id: Optional[str],
+    language: str,
+    response: str,
+    generator: str,
+    graph_context: Optional[dict[str, Any]],
+    room: Optional[str],
+    artwork: Optional[str],
+    simple_language: bool,
+    visual_descriptions: bool,
+    more_time: bool,
+    latency_ms: Optional[int],
+) -> None:
+    """Emit the backend answer_completed analytics event (metadata only)."""
+    retrieval_empty = not (graph_context and graph_context.get("rows"))
+    analytics.log_event(
+        "answer_completed",
+        {
+            "clientReqId": client_req_id,
+            "lang": language_code(language),
+            "respLen": len(response or ""),
+            "generator": generator,
+            "simpleLanguage": bool(simple_language),
+            "visualDescriptions": bool(visual_descriptions),
+            "moreTime": bool(more_time),
+            "dontKnow": detect_dont_know(response, language),
+            "retrievalEmpty": retrieval_empty,
+            "roomId": room,
+            "artworkId": artwork,
+            "latencyMs": latency_ms,
+        },
+        visit_id=visit_id,
+        session_id=session_id,
+        source="backend",
+    )
 
 
 def safe_console_print(value: Any = "", **kwargs) -> None:
@@ -2167,6 +2263,8 @@ def chat_endpoint():
         data = request.get_json() or {}
 
         session_id = data.get("session_id", "default")
+        visit_id = data.get("visit_id")
+        client_req_id = data.get("client_req_id")
         message = data.get("message", "").strip()
         language = data.get("language", "English")
         age_range = data.get("age_range", "Adult 20-60 years old")
@@ -2182,6 +2280,7 @@ def chat_endpoint():
         if not message:
             return jsonify({"error": "Message cannot be empty"}), 400
 
+        started_at = time.monotonic()
         graph_context = retrieve_neo4j_context(message, session_id, room, artwork, visual_descriptions)
         response = call_llm(
             message=message,
@@ -2197,6 +2296,14 @@ def chat_endpoint():
             more_time=more_time,
         )
         record_session_turn(session_id, message, response, graph_context, room, artwork)
+        generator = "idem" if (simple_language and graph_context and graph_context.get("rows")) else "cohere"
+        log_answer_completed(
+            session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+            language=language, response=response, generator=generator,
+            graph_context=graph_context, room=room, artwork=artwork,
+            simple_language=simple_language, visual_descriptions=visual_descriptions,
+            more_time=more_time, latency_ms=int((time.monotonic() - started_at) * 1000),
+        )
 
         return jsonify({"response": response}), 200
 
@@ -2210,6 +2317,8 @@ def chat_stream_endpoint():
     data = request.get_json() or {}
 
     session_id = data.get("session_id", "default")
+    visit_id = data.get("visit_id")
+    client_req_id = data.get("client_req_id")
     message = data.get("message", "").strip()
     language = data.get("language", "English")
     age_range = data.get("age_range", "Adult 20-60 years old")
@@ -2227,6 +2336,11 @@ def chat_stream_endpoint():
 
     @stream_with_context
     def generate():
+        started_at = time.monotonic()
+
+        def latency_ms() -> int:
+            return int((time.monotonic() - started_at) * 1000)
+
         try:
             yield stream_event({"type": "start"})
             graph_context = retrieve_neo4j_context(message, session_id, room, artwork, visual_descriptions)
@@ -2249,6 +2363,13 @@ def chat_stream_endpoint():
                     yield stream_event({"type": "replace", "text": streamed_response, "source": "idem"})
                     record_session_turn(session_id, message, streamed_response, graph_context, room, artwork)
                     yield stream_event({"type": "done"})
+                    log_answer_completed(
+                        session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+                        language=language, response=streamed_response, generator="idem",
+                        graph_context=graph_context, room=room, artwork=artwork,
+                        simple_language=simple_language, visual_descriptions=visual_descriptions,
+                        more_time=more_time, latency_ms=latency_ms(),
+                    )
                     return
                 except Exception as exc:
                     app.logger.warning("iDEM direct Easy Read generation failed; falling back to Cohere stream: %s", exc)
@@ -2268,6 +2389,13 @@ def chat_stream_endpoint():
                     yield stream_event({"type": "replace", "text": streamed_response, "source": "cohere-fallback"})
                     record_session_turn(session_id, message, streamed_response, graph_context, room, artwork)
                     yield stream_event({"type": "done"})
+                    log_answer_completed(
+                        session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+                        language=language, response=streamed_response, generator="cohere-fallback",
+                        graph_context=graph_context, room=room, artwork=artwork,
+                        simple_language=simple_language, visual_descriptions=visual_descriptions,
+                        more_time=more_time, latency_ms=latency_ms(),
+                    )
                     return
             elif simple_language:
                 app.logger.info("Skipping iDEM Easy Read generation because Neo4j returned no context rows.")
@@ -2293,6 +2421,13 @@ def chat_stream_endpoint():
 
             record_session_turn(session_id, message, streamed_response, graph_context, room, artwork)
             yield stream_event({"type": "done"})
+            log_answer_completed(
+                session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+                language=language, response=streamed_response, generator="cohere",
+                graph_context=graph_context, room=room, artwork=artwork,
+                simple_language=simple_language, visual_descriptions=visual_descriptions,
+                more_time=more_time, latency_ms=latency_ms(),
+            )
 
         except Exception as exc:
             app.logger.exception("Streaming chat failed")
@@ -2354,6 +2489,25 @@ def reset_endpoint():
         "status": "success",
         "session_id": session_id
     }), 200
+
+
+@app.route("/analytics", methods=["POST"])
+def analytics_endpoint():
+    """Receive frontend analytics events. Always returns 204 (no-op when disabled)."""
+    if not analytics.ANALYTICS_ENABLED:
+        return ("", 204)
+
+    try:
+        # sendBeacon sends text/plain, so parse the raw body ourselves.
+        raw = request.get_data(cache=False, as_text=True)
+        data = json.loads(raw) if raw else {}
+        events = data.get("events") if isinstance(data, dict) and "events" in data else [data]
+        for event in events if isinstance(events, list) else []:
+            analytics.log_frontend_event(event)
+    except Exception:
+        app.logger.warning("Could not process analytics event", exc_info=True)
+
+    return ("", 204)
 
 
 if __name__ == "__main__":

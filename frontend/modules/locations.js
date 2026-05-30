@@ -137,7 +137,7 @@ function findLocationArtwork(room, artworkValue) {
   });
 }
 
-function applyLocationPayload(locationPayload) {
+function applyLocationPayload(locationPayload, source = 'url') {
   if (!locationPayload?.room) return false;
 
   const locationKey = JSON.stringify(locationPayload);
@@ -177,7 +177,7 @@ function applyLocationPayload(locationPayload) {
   }
 
   state.lastLocationLinkKey = locationKey;
-  applyContext(roomText, artworkText);
+  applyContext(roomText, artworkText, source);
   return true;
 }
 

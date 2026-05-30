@@ -66,6 +66,7 @@ const API_ENDPOINTS = {
   context: `${API_BASES.llm}/context`,
   easyWords: `${API_BASES.llm}/easy-words`,
   locations: `${API_BASES.llm}/locations`,
+  analytics: `${API_BASES.llm}/analytics`,
   speak: `${API_BASES.audio}/speak`,
   transcribe: `${API_BASES.audio}/transcribe`,
   transcribeWarmup: `${API_BASES.audio}/transcribe/warmup`,

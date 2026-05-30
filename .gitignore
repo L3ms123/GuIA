@@ -15,3 +15,7 @@ KG/neo4j.dump
 VectorDB/chroma_db/
 raw_data/*.pdf
 raw_data/*.pptx
+
+# Local session analytics (testing mode, GUIA_ANALYTICS_ENABLED)
+analytics/
+tmp_analytics/

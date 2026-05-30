@@ -84,6 +84,10 @@ function initChat(audio, voice) {
     let sentenceBuffer = '';
     let fullAssistantText = '';
 
+    const timingStart = performance.now();
+    let ttftMs = null;
+    let streamErrored = false;
+
     try {
       const res = await fetch(API_ENDPOINTS.chatStream, {
         method: 'POST',
@@ -106,6 +110,7 @@ function initChat(audio, voice) {
 
           if (!receivedText) {
             receivedText = true;
+            if (ttftMs === null) ttftMs = Math.round(performance.now() - timingStart);
             setThinkingIndicator(false);
             assistantBubble = addBubble('assistant', '');
           }
@@ -125,6 +130,7 @@ function initChat(audio, voice) {
 
           if (!receivedText) {
             receivedText = true;
+            if (ttftMs === null) ttftMs = Math.round(performance.now() - timingStart);
             setThinkingIndicator(false);
             assistantBubble = addBubble('assistant', '');
           }
@@ -136,6 +142,7 @@ function initChat(audio, voice) {
           chatThread.scrollTop = chatThread.scrollHeight;
 
         } else if (event.type === 'error') {
+          streamErrored = true;
           throw new Error(event.error || 'Streaming chat failed');
         }
       });
@@ -170,8 +177,17 @@ function initChat(audio, voice) {
           await annotateEasyWords(emptyBubble);
         }
       }
+    } catch (err) {
+      streamErrored = true;
+      throw err;
     } finally {
       setThinkingIndicator(false);
+      window.guiaTrack?.('answer_timing', {
+        clientReqId: payload.client_req_id || null,
+        ttftMs,
+        ttdoneMs: Math.round(performance.now() - timingStart),
+        errored: streamErrored
+      });
     }
   }
 
@@ -201,9 +217,25 @@ function initChat(audio, voice) {
     state.chatGenerating = true;
     sendBtn.disabled = true;
 
+    const clientReqId = crypto.randomUUID();
+    const via = window.guiaAnalytics?.state.lastSendVia || 'text';
+    if (window.guiaAnalytics) window.guiaAnalytics.state.lastSendVia = 'text';
+    const locationInfo = window.guiaAnalytics?.nextQuestionIndexForLocation?.() || {};
+    window.guiaTrack?.('question_asked', {
+      clientReqId,
+      lang: state.selectedLang,
+      msgLen: value.length,
+      msgWords: value.split(/\s+/).filter(Boolean).length,
+      via,
+      locationKey: locationInfo.locationKey || null,
+      questionIndexInLocation: locationInfo.questionIndexInLocation || null
+    });
+
     try {
       await streamAssistantReply({
         session_id: sessionId,
+        visit_id: window.guiaAnalytics?.visitId,
+        client_req_id: clientReqId,
         message: value,
         language: state.selectedLang,
         age_range: state.selectedAge || 'adult',
@@ -241,10 +273,25 @@ function initChat(audio, voice) {
     state.chatGenerating = true;
     sendBtn.disabled = true;
 
+    const trimmed = value.trim();
+    const clientReqId = crypto.randomUUID();
+    const locationInfo = window.guiaAnalytics?.nextQuestionIndexForLocation?.() || {};
+    window.guiaTrack?.('question_asked', {
+      clientReqId,
+      lang: state.selectedLang,
+      msgLen: trimmed.length,
+      msgWords: trimmed.split(/\s+/).filter(Boolean).length,
+      via: 'context',
+      locationKey: locationInfo.locationKey || null,
+      questionIndexInLocation: locationInfo.questionIndexInLocation || null
+    });
+
     try {
       await streamAssistantReply({
         session_id: sessionId,
-        message: value.trim(),
+        visit_id: window.guiaAnalytics?.visitId,
+        client_req_id: clientReqId,
+        message: trimmed,
         language: state.selectedLang,
         age_range: state.selectedAge || 'adult',
         personality: state.selectedPersona,
@@ -279,6 +326,7 @@ function initChat(audio, voice) {
       btn.addEventListener('click', () => {
         if (index === 0) {
           chatInput.value = btn.textContent.trim();
+          window.guiaAnalytics?.setLastSendVia('suggestion');
           handleSend();
           return;
         }
@@ -293,6 +341,7 @@ function initChat(audio, voice) {
         if (index === 2) {
           audio.setSpeechSpeed('slow');
           chatInput.value = btn.textContent.trim();
+          window.guiaAnalytics?.setLastSendVia('suggestion');
           handleSend();
         }
       });

@@ -546,8 +546,15 @@ function setPreferredSpeechSpeed(speed) {
 function bindAccessibilityPreference(id, preference) {
   el(id)?.addEventListener('change', (event) => {
     const wasSpokenAudio = state.accessibilityPrefs.spokenAudio;
+    const previous = state.accessibilityPrefs[preference];
 
     state.accessibilityPrefs[preference] = event.target.checked;
+    window.guiaTrack?.('option_changed', {
+      field: `pref:${preference}`,
+      from: previous,
+      to: event.target.checked,
+      where: 'onboarding'
+    });
 
     syncAccessibilityControls();
     applyAccessibilityPrefs();
@@ -593,6 +600,7 @@ function bindSettingsPanel() {
       }
       const previousLang = state.selectedLang;
       state.selectedLang = btn.dataset.settingsLang;
+      window.guiaTrack?.('option_changed', { field: 'lang', from: previousLang, to: state.selectedLang, where: 'settings' });
       selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
       syncSettingsControls();
       await applyLanguageChange(previousLang);
@@ -603,7 +611,9 @@ function bindSettingsPanel() {
 
   qa('[data-settings-persona]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      const previous = state.selectedPersona;
       state.selectedPersona = btn.dataset.settingsPersona;
+      window.guiaTrack?.('option_changed', { field: 'persona', from: previous, to: state.selectedPersona, where: 'settings' });
       selectRadio(qa('[data-persona]'), q(`[data-persona="${state.selectedPersona}"]`));
       syncSettingsControls();
       updateOnboardingButtons();
@@ -613,7 +623,9 @@ function bindSettingsPanel() {
 
   qa('[data-settings-age]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      const previous = state.selectedAge;
       state.selectedAge = state.selectedAge === btn.dataset.settingsAge ? null : btn.dataset.settingsAge;
+      window.guiaTrack?.('option_changed', { field: 'age', from: previous, to: state.selectedAge, where: 'settings' });
       selectRadio(qa('[data-age]'), state.selectedAge ? q(`[data-age="${state.selectedAge}"]`) : null);
       if (!state.selectedAge) qa('[data-age]').forEach((ageBtn) => ageBtn.setAttribute('aria-checked', 'false'));
       syncSettingsControls();
@@ -625,7 +637,9 @@ function bindSettingsPanel() {
     input.addEventListener('change', (event) => {
       const preference = event.target.dataset.settingsPref;
       const wasSpokenAudio = state.accessibilityPrefs.spokenAudio;
+      const previous = state.accessibilityPrefs[preference];
       state.accessibilityPrefs[preference] = event.target.checked;
+      window.guiaTrack?.('option_changed', { field: `pref:${preference}`, from: previous, to: event.target.checked, where: 'settings' });
       syncAccessibilityControls();
       applyAccessibilityPrefs();
       window.saveGuiaSession?.();
@@ -651,6 +665,12 @@ function bindOnboardingFlow() {
     if (state.accessibilityPrefs.audioDescription) {
       state.accessibilityPrefs.spokenAudio = true;
     }
+    window.guiaTrack?.('onboarding_completed', {
+      lang: state.selectedLang,
+      persona: state.selectedPersona,
+      age: state.selectedAge,
+      prefs: { ...state.accessibilityPrefs }
+    });
     applyAppTranslations();
     applyAccessibilityPrefs();
     syncAccessibilityControls();

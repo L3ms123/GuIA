@@ -66,6 +66,7 @@ function initLanguageSelector() {
       }
       const previousLang = state.selectedLang;
       state.selectedLang = btn.dataset.lang;
+      window.guiaTrack?.('option_changed', { field: 'lang', from: previousLang, to: state.selectedLang, where: 'onboarding' });
       selectRadio(btns, btn);
       await applyLanguageChange(previousLang);
       window.saveGuiaSession?.();
@@ -77,7 +78,9 @@ function initPersonaButtons() {
   const btns = qa('[data-persona]');
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
+      const previous = state.selectedPersona;
       state.selectedPersona = btn.dataset.persona;
+      window.guiaTrack?.('option_changed', { field: 'persona', from: previous, to: state.selectedPersona, where: 'onboarding' });
       selectRadio(btns, btn);
       updateOnboardingButtons();
       window.saveGuiaSession?.();
@@ -89,6 +92,7 @@ function initAgeButtons() {
   const btns = qa('[data-age]');
   btns.forEach((btn) => {
     btn.addEventListener('click', () => {
+      const previous = state.selectedAge;
       if (state.selectedAge === btn.dataset.age) {
         state.selectedAge = null;
         btn.setAttribute('aria-checked', 'false');
@@ -96,6 +100,7 @@ function initAgeButtons() {
         state.selectedAge = btn.dataset.age;
         selectRadio(btns, btn);
       }
+      window.guiaTrack?.('option_changed', { field: 'age', from: previous, to: state.selectedAge, where: 'onboarding' });
       updateOnboardingButtons();
       window.saveGuiaSession?.();
     });

@@ -156,6 +156,7 @@ function initVoiceInput(audio) {
           const text = await transcribeVoiceRecording();
           if (sendAfterVoiceTranscription && text) {
             sendAfterVoiceTranscription = false;
+            window.guiaAnalytics?.setLastSendVia('voice');
             setTimeout(() => {
               handleSendRef();
             }, 0);

@@ -76,6 +76,7 @@ function restoreGuiaSessionUI() {
 }
 
 function restartGuiaSession() {
+  window.guiaAnalytics?.endSession('restart');
   localStorage.removeItem(GUIA_SESSION_STORAGE_KEY);
 
   state.selectedPersona = DEFAULT_PERSONA;
@@ -142,4 +143,5 @@ function restartGuiaSession() {
 
 window.addEventListener('beforeunload', () => {
   saveGuiaSession();
+  window.guiaAnalytics?.endSession('beforeunload');
 });

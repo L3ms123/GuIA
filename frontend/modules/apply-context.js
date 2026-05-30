@@ -1,6 +1,6 @@
 // Apply context
 
-function applyContext(roomText, artworkText) {
+function applyContext(roomText, artworkText, source = 'unknown') {
   if (state.chatGenerating || state.conversationTranslating) {
     const error = el('context-error');
     if (error) error.textContent = t('app.contextBusy', 'Wait until the current response finishes before changing location.');
@@ -11,7 +11,7 @@ function applyContext(roomText, artworkText) {
   state.currentRoom = roomText;
   state.currentArtwork = artworkText;
   document.dispatchEvent(new CustomEvent('guia:location-selected', {
-    detail: { room: roomText, artwork: artworkText }
+    detail: { room: roomText, artwork: artworkText, source }
   }));
   window.saveGuiaSession?.();
 
