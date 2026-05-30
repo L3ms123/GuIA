@@ -18,140 +18,186 @@
 <body>
   <header class="admin-header">
     <div>
-      <p class="eyebrow">GuIA del Museu del Renaixement</p>
-      <h1>Admin Portal</h1>
+      <p class="eyebrow" data-i18n="brand">GuIA del Museu del Renaixement</p>
+      <h1 data-i18n="title">Admin Portal</h1>
     </div>
-    <a class="home-link" href="/">Open guide</a>
+    <div class="header-actions">
+      <label class="language-control">
+        <span data-i18n="language">Language</span>
+        <select id="admin-language">
+          <option value="en">English</option>
+          <option value="ca">Català</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
+      <a class="home-link" href="/" data-i18n="openGuide">Open guide</a>
+    </div>
   </header>
 
   <main class="admin-shell">
     <section class="auth-panel" aria-labelledby="auth-title">
       <div>
-        <h2 id="auth-title">Protected upload access</h2>
-        <p>Use the admin secret configured in Hugging Face to sync museum data with Neo4j.</p>
+        <h2 id="auth-title" data-i18n="authTitle">Protected upload access</h2>
+        <p data-i18n="authHelp">Use the admin secret configured in Hugging Face to sync museum data with Neo4j.</p>
       </div>
       <form id="auth-form" class="auth-form">
-        <label for="admin-password">Password</label>
+        <label for="admin-password" data-i18n="password">Password</label>
         <div class="password-row">
           <input id="admin-password" type="password" autocomplete="current-password" required />
-          <button class="btn-primary" type="submit">Unlock</button>
+          <button class="btn-primary" type="submit" data-i18n="unlock">Unlock</button>
         </div>
       </form>
       <div id="session-panel" class="session-panel" hidden>
         <span class="material-symbols-outlined session-icon" aria-hidden="true">lock_open</span>
         <div>
-          <strong>Admin access unlocked</strong>
-          <p>Protected uploads and analytics are visible on this device.</p>
+          <strong data-i18n="unlockedTitle">Admin access unlocked</strong>
+          <p data-i18n="unlockedHelp">Protected uploads and analytics are visible on this device.</p>
         </div>
-        <button id="logout-btn" class="btn-secondary compact" type="button">Log out</button>
+        <button id="logout-btn" class="btn-secondary compact" type="button" data-i18n="logout">Log out</button>
       </div>
       <p id="auth-status" class="status-text" role="status"></p>
     </section>
 
-    <section id="upload-grid" class="upload-grid" aria-label="Upload data" hidden>
+    <nav id="admin-tabs" class="admin-tabs" aria-label="Admin sections" hidden>
+      <button class="tab-btn active" type="button" data-section-target="uploads" data-i18n="uploadsTab">Artworks</button>
+      <button class="tab-btn" type="button" data-section-target="analytics" data-i18n="analyticsTab">Analytics</button>
+    </nav>
+
+    <section id="uploads-section" class="admin-section" hidden>
+      <section id="upload-grid" class="upload-grid" aria-label="Upload data">
       <article class="upload-card" data-upload-type="artpiece">
         <span class="material-symbols-outlined card-icon" aria-hidden="true">museum</span>
         <h2>ArtPiece</h2>
-        <p>Upload the artwork spreadsheet or CSV. Excel files should keep the header row used by the current template.</p>
+        <p data-i18n="artpieceHelp">Upload the artwork spreadsheet or CSV. Excel files should keep the header row used by the current template.</p>
         <input type="file" accept=".xlsx,.csv" />
-        <button class="btn-secondary" type="button">Sync ArtPiece</button>
+        <button class="btn-secondary" type="button" data-i18n="syncArtpiece">Sync ArtPiece</button>
         <p class="upload-status" role="status"></p>
       </article>
 
       <article class="upload-card" data-upload-type="visualdescription">
         <span class="material-symbols-outlined card-icon" aria-hidden="true">visibility</span>
         <h2>VisualDescription</h2>
-        <p>Upload `VisualDescription.csv` with comma-separated values and an `artwork_id` column.</p>
+        <p data-i18n="visualHelp">Upload VisualDescription.csv with comma-separated values and an artwork_id column.</p>
         <input type="file" accept=".csv" />
-        <button class="btn-secondary" type="button">Sync descriptions</button>
+        <button class="btn-secondary" type="button" data-i18n="syncDescriptions">Sync descriptions</button>
         <p class="upload-status" role="status"></p>
       </article>
 
       <article class="upload-card" data-upload-type="artist">
         <span class="material-symbols-outlined card-icon" aria-hidden="true">person</span>
         <h2>Artist</h2>
-        <p>Upload `AuthorInfo.csv` using semicolon-separated values and the `Author's Name` column.</p>
+        <p data-i18n="artistHelp">Upload AuthorInfo.csv using semicolon-separated values and the Author's Name column.</p>
         <input type="file" accept=".csv" />
-        <button class="btn-secondary" type="button">Sync artists</button>
+        <button class="btn-secondary" type="button" data-i18n="syncArtists">Sync artists</button>
         <p class="upload-status" role="status"></p>
       </article>
 
       <article class="upload-card" data-upload-type="technique">
         <span class="material-symbols-outlined card-icon" aria-hidden="true">palette</span>
         <h2>Technique</h2>
-        <p>Upload `Tech.csv` using semicolon-separated values and the `Art Technique` column.</p>
+        <p data-i18n="techniqueHelp">Upload Tech.csv using semicolon-separated values and the Art Technique column.</p>
         <input type="file" accept=".csv" />
-        <button class="btn-secondary" type="button">Sync techniques</button>
+        <button class="btn-secondary" type="button" data-i18n="syncTechniques">Sync techniques</button>
         <p class="upload-status" role="status"></p>
       </article>
     </section>
 
-    <section id="analytics-panel" class="analytics-panel" aria-labelledby="analytics-title" hidden>
+      <section id="instructions" class="instructions">
+        <h2 data-i18n="templateRules">Template rules</h2>
+        <p data-i18n="templateHelp">Keep the template column names unchanged. ArtPiece uploads create or update artwork nodes and link them to matching Artist and Technique nodes. VisualDescription uploads attach descriptions to existing artwork IDs.</p>
+      </section>
+    </section>
+
+    <section id="analytics-section" class="admin-section" hidden>
+    <section id="analytics-panel" class="analytics-panel" aria-labelledby="analytics-title">
       <div class="section-header">
         <div>
-          <h2 id="analytics-title">Analytics</h2>
-          <p id="analytics-path">Metadata-only session summary.</p>
+          <h2 id="analytics-title" data-i18n="analyticsTitle">Analytics</h2>
+          <p id="analytics-path" data-i18n="analyticsHelp">Metadata-only session summary.</p>
         </div>
-        <button id="refresh-analytics" class="btn-secondary compact" type="button">Refresh</button>
+        <div class="section-actions">
+          <button id="toggle-analytics-view" class="btn-secondary compact" type="button" data-i18n="showCharts">Show charts</button>
+          <button id="download-analytics" class="btn-secondary compact" type="button" data-i18n="downloadJsonl">Download JSONL</button>
+          <button id="refresh-analytics" class="btn-secondary compact" type="button" data-i18n="refresh">Refresh</button>
+        </div>
       </div>
 
       <div id="analytics-warning" class="analytics-warning" hidden></div>
 
       <div class="metric-grid">
         <div class="metric-card">
-          <span class="metric-label">Visits</span>
+          <span class="metric-label" data-i18n="visits">Visits</span>
           <strong id="metric-visits">0</strong>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Questions</span>
+          <span class="metric-label" data-i18n="questions">Questions</span>
           <strong id="metric-questions">0</strong>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Locations</span>
+          <span class="metric-label" data-i18n="locations">Locations</span>
           <strong id="metric-locations">0</strong>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Avg question chars</span>
+          <span class="metric-label" data-i18n="avgChars">Avg question chars</span>
           <strong id="metric-avg-chars">0</strong>
         </div>
       </div>
 
       <div class="analytics-grid">
         <section class="summary-block">
-          <h3>Languages</h3>
+          <h3 data-i18n="languages">Languages</h3>
           <div id="analytics-languages" class="pill-list"></div>
         </section>
         <section class="summary-block">
-          <h3>Ages</h3>
+          <h3 data-i18n="ages">Ages</h3>
           <div id="analytics-ages" class="pill-list"></div>
         </section>
         <section class="summary-block">
-          <h3>Guide styles</h3>
+          <h3 data-i18n="guideStyles">Guide styles</h3>
           <div id="analytics-personas" class="pill-list"></div>
         </section>
         <section class="summary-block">
-          <h3>Selected flags</h3>
+          <h3 data-i18n="selectedFlags">Selected flags</h3>
           <div id="analytics-preferences" class="pill-list"></div>
         </section>
         <section class="summary-block wide-block">
-          <h3>Rooms visited</h3>
+          <h3 data-i18n="roomsVisited">Rooms visited</h3>
           <div id="analytics-rooms" class="pill-list"></div>
         </section>
       </div>
 
+      <section id="charts-panel" class="charts-panel" hidden>
+        <div class="chart-card">
+          <h3 data-i18n="languages">Languages</h3>
+          <div id="chart-languages" class="bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <h3 data-i18n="ages">Ages</h3>
+          <div id="chart-ages" class="bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <h3 data-i18n="selectedFlags">Selected flags</h3>
+          <div id="chart-preferences" class="bar-chart"></div>
+        </div>
+        <div class="chart-card">
+          <h3 data-i18n="roomsVisited">Rooms visited</h3>
+          <div id="chart-rooms" class="bar-chart"></div>
+        </div>
+      </section>
+
       <section class="summary-block recent-block">
-        <h3>Recent visits</h3>
+        <h3 data-i18n="recentVisits">Recent visits</h3>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Started</th>
-                <th>Language</th>
-                <th>Age</th>
-                <th>Flags</th>
-                <th>Rooms</th>
-                <th>Questions</th>
-                <th>Avg chars</th>
+                <th data-i18n="started">Started</th>
+                <th data-i18n="languageColumn">Language</th>
+                <th data-i18n="ageColumn">Age</th>
+                <th data-i18n="flagsColumn">Flags</th>
+                <th data-i18n="roomsColumn">Rooms</th>
+                <th data-i18n="questionsColumn">Questions</th>
+                <th data-i18n="avgCharsColumn">Avg chars</th>
               </tr>
             </thead>
             <tbody id="recent-visits-body"></tbody>
@@ -159,10 +205,6 @@
         </div>
       </section>
     </section>
-
-    <section id="instructions" class="instructions" hidden>
-      <h2>Template rules</h2>
-      <p>Keep the template column names unchanged. ArtPiece uploads create or update artwork nodes and link them to matching Artist and Technique nodes. VisualDescription uploads attach descriptions to existing artwork IDs.</p>
     </section>
   </main>
 

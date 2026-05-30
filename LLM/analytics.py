@@ -24,7 +24,12 @@ SCHEMA_VERSION = 1
 _TRUTHY = {"1", "true", "yes", "on"}
 ANALYTICS_ENABLED = (os.getenv("GUIA_ANALYTICS_ENABLED") or "").strip().lower() in _TRUTHY
 
-_DEFAULT_PATH = Path(__file__).resolve().parents[1] / "analytics" / "sessions.jsonl"
+_PERSISTENT_DATA_DIR = Path("/data")
+_DEFAULT_PATH = (
+    _PERSISTENT_DATA_DIR / "analytics" / "sessions.jsonl"
+    if _PERSISTENT_DATA_DIR.exists()
+    else Path(__file__).resolve().parents[1] / "analytics" / "sessions.jsonl"
+)
 ANALYTICS_PATH = Path(os.getenv("GUIA_ANALYTICS_PATH") or _DEFAULT_PATH)
 
 # gunicorn runs a single worker, but the streaming endpoint uses threads, so a

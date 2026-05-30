@@ -4,7 +4,7 @@ import unicodedata
 from pathlib import Path
 
 import pandas as pd
-from flask import Response, jsonify, request, send_from_directory
+from flask import Response, jsonify, request, send_file, send_from_directory
 from neo4j import GraphDatabase
 
 
@@ -398,6 +398,23 @@ def admin_analytics():
         return jsonify({"ok": True, "analytics": summarize_analytics(read_analytics_events())})
     except Exception as exc:
         return jsonify({"error": str(exc)}), 500
+
+
+@app.route("/admin/api/analytics/download", methods=["POST"])
+def admin_analytics_download():
+    denied = require_admin_password()
+    if denied:
+        return denied
+
+    if not ANALYTICS_PATH.exists():
+        return jsonify({"error": "Analytics file does not exist yet."}), 404
+
+    return send_file(
+        ANALYTICS_PATH,
+        mimetype="application/jsonl",
+        as_attachment=True,
+        download_name="sessions.jsonl",
+    )
 
 
 @app.route("/admin/api/upload/<node_type>", methods=["POST"])

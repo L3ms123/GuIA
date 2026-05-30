@@ -49,6 +49,33 @@ input {
   line-height: 1.1;
 }
 
+.header-actions,
+.section-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.language-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--on-surface-variant);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.language-control select {
+  min-height: 2.8rem;
+  border: 1px solid var(--outline-soft);
+  background: var(--surface-low);
+  color: var(--on-surface);
+  padding: 0 0.6rem;
+  font-weight: 700;
+}
+
 .eyebrow {
   margin: 0 0 0.35rem;
   color: var(--on-surface-variant);
@@ -198,6 +225,33 @@ input {
   margin-top: 1rem;
 }
 
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  border-bottom: 1px solid var(--outline-soft);
+}
+
+.tab-btn {
+  min-height: 3rem;
+  border: 1px solid var(--outline-soft);
+  border-bottom: none;
+  background: var(--surface-low);
+  padding: 0 1rem;
+  color: var(--on-surface);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.admin-section {
+  margin-top: 1rem;
+}
+
 .analytics-panel {
   margin-top: 1rem;
   padding: 1rem;
@@ -247,6 +301,56 @@ input {
 .analytics-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 1rem;
+}
+
+.charts-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.chart-card {
+  border: 1.5px solid var(--outline);
+  background: var(--surface);
+  padding: 0.9rem;
+}
+
+.chart-card h3 {
+  margin: 0 0 0.8rem;
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.8fr) 3rem;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.bar-label,
+.bar-value {
+  font-size: 0.9rem;
+  color: var(--on-surface-variant);
+  overflow-wrap: anywhere;
+}
+
+.bar-track {
+  min-height: 1.15rem;
+  border: 1px solid var(--outline-soft);
+  background: var(--surface-low);
+}
+
+.bar-fill {
+  display: block;
+  min-width: 0.2rem;
+  height: 100%;
+  background: var(--primary);
 }
 
 .summary-block {
@@ -366,8 +470,26 @@ th {
     flex-direction: column;
   }
 
+  .header-actions,
+  .section-actions,
+  .language-control {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .language-control {
+    flex-direction: column;
+  }
+
+  .language-control select,
+  .home-link,
+  .section-actions .btn-secondary {
+    width: 100%;
+  }
+
   .auth-panel,
   .metric-grid,
+  .charts-panel,
   .analytics-grid,
   .upload-grid {
     grid-template-columns: 1fr;
