@@ -7,16 +7,31 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+from neo4j import GraphDatabase
 
-ROOT = Path(__file__).resolve().parents[1]
+try:
+    from LLM.analytics import ANALYTICS_PATH
+except ImportError:  # when this file is run as a standalone script
+    from analytics import ANALYTICS_PATH
+
 UNRESOLVED_PATH = Path(
-    os.getenv("GUIA_UNRESOLVED_PATH") or ROOT / "analytics" / "unresolved_questions.json"
+    os.getenv("GUIA_UNRESOLVED_PATH") or ANALYTICS_PATH.parent / "unresolved_questions.json"
 )
 LOCK = threading.Lock()
 
 
 def normalize_question(text: str) -> str:
     return " ".join((text or "").strip().lower().split())
+
+
+def _neo4j_config() -> Optional[tuple[str, str, str, str]]:
+    uri = (os.getenv("NEO4J_URI") or os.getenv("AURA_URI") or "").strip()
+    user = (os.getenv("NEO4J_USERNAME") or os.getenv("AURA_USER") or "").strip()
+    password = (os.getenv("NEO4J_PASSWORD") or os.getenv("AURA_PASSWORD") or "").strip()
+    database = (os.getenv("NEO4J_DATABASE") or "neo4j").strip()
+    if not uri or not user or not password:
+        return None
+    return uri, user, password, database
 
 
 ENTITY_PROPERTIES = {
@@ -110,6 +125,68 @@ def _write_items(items: list[dict[str, Any]]) -> None:
     temporary_path.replace(UNRESOLVED_PATH)
 
 
+def _record_in_neo4j(item: dict[str, Any]) -> bool:
+    config = _neo4j_config()
+    if not config:
+        return False
+    uri, user, password, database = config
+    with GraphDatabase.driver(uri, auth=(user, password)) as driver:
+        with driver.session(database=database) as session:
+            session.run(
+                """
+                MERGE (q:AdminUnresolvedQuestion {id: $id})
+                ON CREATE SET q.createdAt = $createdAt, q.askCount = 0
+                SET q.question = $question, q.questionNormalized = $questionNormalized,
+                  q.language = $language, q.roomId = $roomId, q.artworkId = $artworkId,
+                  q.lastAskedAt = $lastAskedAt, q.status = 'pending',
+                  q.askCount = coalesce(q.askCount, 0) + 1,
+                  q.failedCypher = CASE WHEN $failedCypher <> '' THEN $failedCypher ELSE coalesce(q.failedCypher, '') END
+                REMOVE q.resolvedAt
+                """,
+                **item,
+            ).consume()
+    return True
+
+
+def _read_pending_from_neo4j() -> Optional[list[dict[str, Any]]]:
+    config = _neo4j_config()
+    if not config:
+        return None
+    uri, user, password, database = config
+    with GraphDatabase.driver(uri, auth=(user, password)) as driver:
+        with driver.session(database=database) as session:
+            return [
+                dict(row["item"])
+                for row in session.run(
+                    """
+                    MATCH (q:AdminUnresolvedQuestion {status: 'pending'})
+                    RETURN properties(q) AS item
+                    ORDER BY q.lastAskedAt DESC
+                    """
+                )
+            ]
+
+
+def _resolve_in_neo4j(question_id: str, status: str) -> Optional[bool]:
+    config = _neo4j_config()
+    if not config:
+        return None
+    uri, user, password, database = config
+    with GraphDatabase.driver(uri, auth=(user, password)) as driver:
+        with driver.session(database=database) as session:
+            row = session.run(
+                """
+                MATCH (q:AdminUnresolvedQuestion {id: $id, status: 'pending'})
+                SET q.status = $status, q.resolvedAt = $resolvedAt
+                RETURN q.id AS id
+                """,
+                id=question_id,
+                status=status,
+                resolvedAt=datetime.now(timezone.utc).isoformat(),
+            ).single()
+    return bool(row)
+
+
 def record_unresolved_question(
     question: str,
     language: str,
@@ -122,7 +199,23 @@ def record_unresolved_question(
         return
     now = datetime.now(timezone.utc).isoformat()
     question_id = hashlib.sha256(f"{normalized}|{room or ''}|{artwork or ''}".encode("utf-8")).hexdigest()[:24]
+    item = {
+        "id": question_id,
+        "question": question.strip(),
+        "questionNormalized": normalized,
+        "language": language,
+        "roomId": room,
+        "artworkId": artwork,
+        "createdAt": now,
+        "lastAskedAt": now,
+        "failedCypher": failed_cypher or "",
+    }
     with LOCK:
+        try:
+            if _record_in_neo4j(item):
+                return
+        except Exception:
+            pass
         items = _read_items()
         existing = next((item for item in items if item.get("id") == question_id), None)
         if existing:
@@ -154,7 +247,12 @@ def record_unresolved_question(
 
 def list_pending_questions() -> list[dict[str, Any]]:
     with LOCK:
-        items = [item for item in _read_items() if item.get("status") == "pending"]
+        try:
+            items = _read_pending_from_neo4j()
+        except Exception:
+            items = None
+        if items is None:
+            items = [item for item in _read_items() if item.get("status") == "pending"]
     for item in items:
         item["inferredUpdates"] = infer_missing_updates(item.get("failedCypher", ""), item.get("artworkId"))
     return sorted(items, key=lambda item: item.get("lastAskedAt") or item.get("createdAt") or "", reverse=True)
@@ -166,6 +264,12 @@ def get_pending_question(question_id: str) -> Optional[dict[str, Any]]:
 
 def mark_question_resolved(question_id: str, status: str) -> bool:
     with LOCK:
+        try:
+            resolved = _resolve_in_neo4j(question_id, status)
+            if resolved is not None:
+                return resolved
+        except Exception:
+            pass
         items = _read_items()
         item = next((entry for entry in items if entry.get("id") == question_id and entry.get("status") == "pending"), None)
         if not item:

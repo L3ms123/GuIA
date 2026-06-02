@@ -1828,6 +1828,7 @@ def get_query_api_schema() -> str:
     node_rows = execute_query_api(
         """
         MATCH (n)
+        WHERE NONE(label IN labels(n) WHERE label STARTS WITH 'Admin')
         WITH labels(n) AS labels, keys(n) AS keys
         UNWIND labels AS label
         UNWIND keys AS property
@@ -1838,6 +1839,8 @@ def get_query_api_schema() -> str:
     rel_rows = execute_query_api(
         """
         MATCH (a)-[r]->(b)
+        WHERE NONE(label IN labels(a) WHERE label STARTS WITH 'Admin')
+          AND NONE(label IN labels(b) WHERE label STARTS WITH 'Admin')
         RETURN DISTINCT labels(a) AS from_labels, type(r) AS relationship, labels(b) AS to_labels
         ORDER BY relationship
         LIMIT 200

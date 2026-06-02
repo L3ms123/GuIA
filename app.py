@@ -24,7 +24,7 @@ register_env_aliases()
 
 from LLM.LLM_Call import app
 from frontend.audio_api import app as audio_app
-from LLM.analytics import ANALYTICS_ENABLED, ANALYTICS_PATH
+from LLM.analytics import ANALYTICS_ENABLED, ANALYTICS_PATH, read_events, storage_label
 from LLM.unresolved_questions import get_pending_question, list_pending_questions, mark_question_resolved
 
 
@@ -271,23 +271,7 @@ def run_neo4j_query(statement, **parameters):
 
 
 def read_analytics_events(limit=10000):
-    path = ANALYTICS_PATH
-    if not path.exists():
-        return []
-
-    events = []
-    with path.open("r", encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                events.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
-            if len(events) > limit:
-                events = events[-limit:]
-    return events
+    return read_events(limit)
 
 
 def increment(counter, key):
@@ -402,7 +386,7 @@ def summarize_analytics(events):
 
     return {
         "enabled": ANALYTICS_ENABLED,
-        "path": str(ANALYTICS_PATH),
+        "path": storage_label(),
         "totals": totals,
         "questionChars": {
             "avg": avg_question_chars,
@@ -464,11 +448,12 @@ def admin_analytics_download():
     if denied:
         return denied
 
-    if not ANALYTICS_PATH.exists():
-        return jsonify({"error": "Analytics file does not exist yet."}), 404
-
+    events = read_analytics_events()
+    if not events:
+        return jsonify({"error": "No analytics events exist yet."}), 404
+    payload = "".join(json.dumps(event, ensure_ascii=False) + "\n" for event in events).encode("utf-8")
     return send_file(
-        ANALYTICS_PATH,
+        io.BytesIO(payload),
         mimetype="application/jsonl",
         as_attachment=True,
         download_name="sessions.jsonl",

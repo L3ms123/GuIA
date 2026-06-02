@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+from neo4j import GraphDatabase
 
 SCHEMA_VERSION = 1
 
@@ -83,6 +84,81 @@ def _ensure_dir() -> None:
     _DIR_READY = True
 
 
+def _neo4j_config() -> Optional[tuple[str, str, str, str]]:
+    uri = (os.getenv("NEO4J_URI") or os.getenv("AURA_URI") or "").strip()
+    user = (os.getenv("NEO4J_USERNAME") or os.getenv("AURA_USER") or "").strip()
+    password = (os.getenv("NEO4J_PASSWORD") or os.getenv("AURA_PASSWORD") or "").strip()
+    database = (os.getenv("NEO4J_DATABASE") or "neo4j").strip()
+    if not uri or not user or not password:
+        return None
+    return uri, user, password, database
+
+
+def _persist_event_to_neo4j(record: dict[str, Any]) -> bool:
+    config = _neo4j_config()
+    if not config:
+        return False
+    uri, user, password, database = config
+    with GraphDatabase.driver(uri, auth=(user, password)) as driver:
+        with driver.session(database=database) as session:
+            session.run(
+                """
+                CREATE (:AdminAnalyticsEvent {
+                  event: $event, ts: $ts, recordJson: $record_json
+                })
+                """,
+                event=record.get("event"),
+                ts=record.get("ts"),
+                record_json=json.dumps(record, ensure_ascii=False),
+            ).consume()
+    return True
+
+
+def storage_label() -> str:
+    return "Neo4j (:AdminAnalyticsEvent)" if _neo4j_config() else str(ANALYTICS_PATH)
+
+
+def read_events(limit: int = 10000) -> list[dict[str, Any]]:
+    """Read persistent Neo4j analytics when configured, otherwise local JSONL."""
+    config = _neo4j_config()
+    if config:
+        try:
+            uri, user, password, database = config
+            with GraphDatabase.driver(uri, auth=(user, password)) as driver:
+                with driver.session(database=database) as session:
+                    rows = session.run(
+                        """
+                        MATCH (event:AdminAnalyticsEvent)
+                        RETURN event.recordJson AS recordJson
+                        ORDER BY event.ts DESC
+                        LIMIT $limit
+                        """,
+                        limit=limit,
+                    )
+                    records = []
+                    for row in rows:
+                        try:
+                            records.append(json.loads(row["recordJson"]))
+                        except (TypeError, json.JSONDecodeError):
+                            continue
+                    return list(reversed(records))
+        except Exception:
+            pass
+
+    if not ANALYTICS_PATH.exists():
+        return []
+    events = []
+    with ANALYTICS_PATH.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+            if len(events) > limit:
+                events = events[-limit:]
+    return events
+
+
 def log_event(
     event_type: str,
     payload: Optional[dict[str, Any]] = None,
@@ -113,6 +189,11 @@ def log_event(
 
         line = json.dumps(record, ensure_ascii=False) + "\n"
         with _LOCK:
+            try:
+                if _persist_event_to_neo4j(record):
+                    return
+            except Exception:
+                pass
             _ensure_dir()
             with open(ANALYTICS_PATH, "a", encoding="utf-8") as handle:
                 handle.write(line)
