@@ -60,6 +60,7 @@
 
     <nav id="admin-tabs" class="admin-tabs" aria-label="Admin sections" hidden>
       <button class="tab-btn active" type="button" data-section-target="uploads" data-i18n="uploadsTab">Artworks</button>
+      <button class="tab-btn" type="button" data-section-target="unresolved" data-i18n="unresolvedTab">Unresolved questions</button>
       <button class="tab-btn" type="button" data-section-target="analytics" data-i18n="analyticsTab">Analytics</button>
     </nav>
 
@@ -105,6 +106,20 @@
       <section id="instructions" class="instructions">
         <h2 data-i18n="templateRules">Template rules</h2>
         <p data-i18n="templateHelp">Keep the template column names unchanged. ArtPiece uploads create or update artwork nodes and link them to matching Artist and Technique nodes. VisualDescription uploads attach descriptions to existing artwork IDs.</p>
+      </section>
+    </section>
+
+    <section id="unresolved-section" class="admin-section" hidden>
+      <section class="unresolved-panel" aria-labelledby="unresolved-title">
+        <div class="section-header">
+          <div>
+            <h2 id="unresolved-title" data-i18n="unresolvedTitle">Unresolved questions</h2>
+            <p data-i18n="unresolvedHelp">Review questions GuIA could not answer and add missing information to an existing graph entity.</p>
+          </div>
+          <button id="refresh-unresolved" class="btn-secondary compact" type="button" data-i18n="refresh">Refresh</button>
+        </div>
+        <p id="unresolved-status" class="status-text" role="status"></p>
+        <div id="unresolved-list" class="unresolved-list"></div>
       </section>
     </section>
 

@@ -6,6 +6,7 @@ const logoutBtn = document.querySelector('#logout-btn');
 const adminLanguage = document.querySelector('#admin-language');
 const adminTabs = document.querySelector('#admin-tabs');
 const uploadsSection = document.querySelector('#uploads-section');
+const unresolvedSection = document.querySelector('#unresolved-section');
 const analyticsSection = document.querySelector('#analytics-section');
 const uploadGrid = document.querySelector('#upload-grid');
 const analyticsPanel = document.querySelector('#analytics-panel');
@@ -14,12 +15,14 @@ const downloadAnalyticsBtn = document.querySelector('#download-analytics');
 const toggleAnalyticsViewBtn = document.querySelector('#toggle-analytics-view');
 const analyticsWarning = document.querySelector('#analytics-warning');
 const analyticsPath = document.querySelector('#analytics-path');
+const unresolvedList = document.querySelector('#unresolved-list');
+const unresolvedStatus = document.querySelector('#unresolved-status');
+const refreshUnresolvedBtn = document.querySelector('#refresh-unresolved');
 
 let adminPassword = '';
 let activeSection = 'uploads';
 let analyticsView = 'summary';
 let lastAnalytics = null;
-
 const TRANSLATIONS = {
   en: {
     brand: 'GuIA del Museu del Renaixement',
@@ -34,7 +37,17 @@ const TRANSLATIONS = {
     unlockedHelp: 'Protected uploads and analytics are visible on this device.',
     logout: 'Log out',
     uploadsTab: 'Artworks',
+    unresolvedTab: 'Unresolved questions',
     analyticsTab: 'Analytics',
+    unresolvedTitle: 'Unresolved questions',
+    unresolvedHelp: 'Review questions GuIA could not answer and add missing information to an existing graph entity.',
+    noUnresolved: 'No unresolved questions are waiting for review.',
+    entityId: 'Existing entity identifier',
+    missingInformation: 'Missing information',
+    relationshipTarget: 'Existing relationship target identifier',
+    accept: 'Accept and update graph',
+    reject: 'Reject',
+    resolving: 'Updating...',
     artpieceHelp: 'Upload the artwork spreadsheet or CSV. Excel files should keep the header row used by the current template.',
     visualHelp: 'Upload VisualDescription.csv with comma-separated values and an artwork_id column.',
     artistHelp: "Upload AuthorInfo.csv using semicolon-separated values and the Author's Name column.",
@@ -94,7 +107,17 @@ const TRANSLATIONS = {
     unlockedHelp: 'Les càrregues protegides i les analítiques són visibles en aquest dispositiu.',
     logout: 'Tancar sessió',
     uploadsTab: 'Obres',
+    unresolvedTab: 'Preguntes pendents',
     analyticsTab: 'Analítiques',
+    unresolvedTitle: 'Preguntes pendents',
+    unresolvedHelp: 'Revisa les preguntes que GuIA no ha pogut respondre i afegeix la informació a una entitat existent del graf.',
+    noUnresolved: 'No hi ha preguntes pendents de revisió.',
+    entityId: 'Identificador de l’entitat existent',
+    missingInformation: 'Informació que falta',
+    relationshipTarget: 'Identificador de l’objectiu existent',
+    accept: 'Acceptar i actualitzar el graf',
+    reject: 'Rebutjar',
+    resolving: 'Actualitzant...',
     artpieceHelp: 'Puja el full de càlcul o CSV de les obres. Els fitxers Excel han de mantenir la fila de capçaleres de la plantilla actual.',
     visualHelp: 'Puja VisualDescription.csv amb valors separats per comes i una columna artwork_id.',
     artistHelp: "Puja AuthorInfo.csv amb valors separats per punt i coma i la columna Author's Name.",
@@ -154,7 +177,17 @@ const TRANSLATIONS = {
     unlockedHelp: 'Las cargas protegidas y las analíticas son visibles en este dispositivo.',
     logout: 'Cerrar sesión',
     uploadsTab: 'Obras',
+    unresolvedTab: 'Preguntas pendientes',
     analyticsTab: 'Analíticas',
+    unresolvedTitle: 'Preguntas pendientes',
+    unresolvedHelp: 'Revisa las preguntas que GuIA no pudo responder y añade la información a una entidad existente del grafo.',
+    noUnresolved: 'No hay preguntas pendientes de revisión.',
+    entityId: 'Identificador de la entidad existente',
+    missingInformation: 'Información que falta',
+    relationshipTarget: 'Identificador del objetivo existente',
+    accept: 'Aceptar y actualizar el grafo',
+    reject: 'Rechazar',
+    resolving: 'Actualizando...',
     artpieceHelp: 'Sube la hoja de cálculo o CSV de obras. Los archivos Excel deben mantener la fila de cabeceras de la plantilla actual.',
     visualHelp: 'Sube VisualDescription.csv con valores separados por comas y una columna artwork_id.',
     artistHelp: "Sube AuthorInfo.csv con valores separados por punto y coma y la columna Author's Name.",
@@ -240,12 +273,16 @@ function showSection(section) {
   const isUnlocked = !!adminPassword;
   activeSection = section || activeSection;
   uploadsSection.hidden = !isUnlocked || activeSection !== 'uploads';
+  unresolvedSection.hidden = !isUnlocked || activeSection !== 'unresolved';
   analyticsSection.hidden = !isUnlocked || activeSection !== 'analytics';
   document.querySelectorAll('[data-section-target]').forEach((button) => {
     button.classList.toggle('active', button.dataset.sectionTarget === activeSection);
   });
   if (isUnlocked && activeSection === 'analytics') {
     loadAnalytics();
+  }
+  if (isUnlocked && activeSection === 'unresolved') {
+    loadUnresolvedQuestions();
   }
 }
 
@@ -446,6 +483,126 @@ async function loadAnalytics() {
   }
 }
 
+async function postUnresolved(path = '', payload = {}) {
+  const response = await fetch(`/admin/api/unresolved${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: adminPassword, ...payload }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || 'Could not update unresolved questions.');
+  }
+  return data;
+}
+
+function createUnresolvedCard(question) {
+  const card = document.createElement('article');
+  card.className = 'unresolved-card';
+  const title = document.createElement('h3');
+  title.textContent = question.question;
+  const meta = document.createElement('p');
+  meta.className = 'unresolved-meta';
+  meta.textContent = [
+    question.language || '-',
+    question.roomId || '-',
+    question.artworkId || '-',
+    `Asked ${question.askCount || 1} time(s)`,
+  ].join(' | ');
+  const form = document.createElement('form');
+  form.className = 'resolution-form';
+  const inferredUpdates = question.inferredUpdates || [];
+  const inputs = new Map();
+  inferredUpdates.forEach((update) => {
+    const field = document.createElement('label');
+    field.className = 'wide-field';
+    const label = document.createElement('span');
+    label.textContent = update.fieldLabel;
+    field.append(label);
+    const updateInputs = {};
+    if (!update.entityId) {
+      const entityId = document.createElement('input');
+      entityId.placeholder = text('entityId');
+      entityId.required = true;
+      field.append(entityId);
+      updateInputs.entityId = entityId;
+    }
+    const value = update.kind === 'property' ? document.createElement('textarea') : document.createElement('input');
+    if (update.kind === 'property') value.rows = 4;
+    value.placeholder = update.kind === 'property' ? text('missingInformation') : text('relationshipTarget');
+    value.required = true;
+    field.append(value);
+    updateInputs.value = value;
+    inputs.set(update.key, updateInputs);
+    form.append(field);
+  });
+  const actions = document.createElement('div');
+  actions.className = 'resolution-actions wide-field';
+  actions.innerHTML = `
+    <button class="btn-primary" type="submit">${text('accept')}</button>
+    <button class="btn-secondary compact" type="button" data-action="reject">${text('reject')}</button>
+  `;
+  const status = document.createElement('p');
+  status.className = 'status-text wide-field';
+  status.setAttribute('role', 'status');
+  form.append(actions, status);
+  if (!inferredUpdates.length) {
+    setStatus(status, 'The failed query did not identify a supported missing graph field.', 'error');
+    actions.querySelector('[type="submit"]').disabled = true;
+  }
+
+  async function resolveQuestion(action) {
+    const buttons = form.querySelectorAll('button');
+    buttons.forEach((button) => { button.disabled = true; });
+    setStatus(status, text('resolving'));
+    const updates = {};
+    inferredUpdates.forEach((update) => {
+      const updateInputs = inputs.get(update.key);
+      updates[update.key] = {
+        entityId: updateInputs.entityId?.value || update.entityId || '',
+        [update.kind === 'property' ? 'value' : 'targetId']: updateInputs.value.value,
+      };
+    });
+    try {
+      await postUnresolved(`/${question.id}/resolve`, {
+        action,
+        updates,
+      });
+      card.remove();
+      if (!unresolvedList.children.length) unresolvedList.textContent = text('noUnresolved');
+    } catch (error) {
+      setStatus(status, error.message, 'error');
+      buttons.forEach((button) => { button.disabled = false; });
+    }
+  }
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    resolveQuestion('accept');
+  });
+  form.querySelector('[data-action="reject"]').addEventListener('click', () => resolveQuestion('reject'));
+  card.append(title, meta, form);
+  return card;
+}
+
+async function loadUnresolvedQuestions() {
+  if (!adminPassword) return;
+  refreshUnresolvedBtn.disabled = true;
+  setStatus(unresolvedStatus, '');
+  try {
+    const data = await postUnresolved();
+    unresolvedList.innerHTML = '';
+    if (!data.questions.length) {
+      unresolvedList.textContent = text('noUnresolved');
+      return;
+    }
+    data.questions.forEach((question) => unresolvedList.append(createUnresolvedCard(question)));
+  } catch (error) {
+    setStatus(unresolvedStatus, error.message, 'error');
+  } finally {
+    refreshUnresolvedBtn.disabled = false;
+  }
+}
+
 authForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const password = passwordInput.value;
@@ -467,6 +624,7 @@ authForm.addEventListener('submit', async (event) => {
 });
 
 refreshAnalyticsBtn.addEventListener('click', loadAnalytics);
+refreshUnresolvedBtn.addEventListener('click', loadUnresolvedQuestions);
 toggleAnalyticsViewBtn.addEventListener('click', () => {
   setAnalyticsView(analyticsView === 'summary' ? 'charts' : 'summary');
 });
@@ -490,6 +648,9 @@ adminLanguage.addEventListener('change', () => {
   applyTranslations();
   if (adminPassword && activeSection === 'analytics') {
     loadAnalytics();
+  }
+  if (adminPassword && activeSection === 'unresolved') {
+    loadUnresolvedQuestions();
   }
 });
 

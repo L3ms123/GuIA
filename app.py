@@ -24,6 +24,7 @@ register_env_aliases()
 from LLM.LLM_Call import app
 from frontend.audio_api import app as audio_app
 from LLM.analytics import ANALYTICS_ENABLED, ANALYTICS_PATH
+from LLM.unresolved_questions import get_pending_question, list_pending_questions, mark_question_resolved
 
 
 ROOT = Path(__file__).resolve().parent
@@ -89,8 +90,19 @@ ADMIN_NODE_CONFIG = {
         """,
     },
 }
-
-
+CURATOR_ENTITY_CONFIG = {
+    "Artist": {"idProperty": "name", "properties": {"biography", "Information"}},
+    "ArtPiece": {"idProperty": "artwork_id", "alternateIdProperty": "title", "properties": {"description", "dating", "artist", "technique", "title"}},
+    "Technique": {"idProperty": "name", "properties": {"description", "Information"}},
+    "VisualDescription": {
+        "idProperty": "artwork_id",
+        "properties": {
+            "audio_description", "background", "colors", "composition", "figures_gestures",
+            "foreground", "materials_textures", "middle_ground", "mood_atmosphere",
+            "objects_symbols", "spatial_order", "subject_matter", "uncertainties", "visual_overview",
+        },
+    },
+}
 def register_audio_routes() -> None:
     for rule in audio_app.url_map.iter_rules():
         if rule.endpoint == "static":
@@ -210,6 +222,13 @@ def sync_dataframe(config, df):
                 session.run(config["cypher"], id=str(row_id), params=params)
                 count += 1
     return count
+
+
+def run_neo4j_query(statement, **parameters):
+    database = os.getenv("NEO4J_DATABASE") or "neo4j"
+    with get_neo4j_driver() as driver:
+        with driver.session(database=database) as session:
+            return [record.data() for record in session.run(statement, **parameters)]
 
 
 def read_analytics_events(limit=10000):
@@ -415,6 +434,83 @@ def admin_analytics_download():
         as_attachment=True,
         download_name="sessions.jsonl",
     )
+
+
+@app.route("/admin/api/unresolved", methods=["POST"])
+def admin_unresolved_questions():
+    denied = require_admin_password()
+    if denied:
+        return denied
+    try:
+        questions = [
+            {key: value for key, value in question.items() if key != "failedCypher"}
+            for question in list_pending_questions()
+        ]
+        return jsonify({"ok": True, "questions": questions})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+
+@app.route("/admin/api/unresolved/<question_id>/resolve", methods=["POST"])
+def admin_resolve_unresolved_question(question_id):
+    denied = require_admin_password()
+    if denied:
+        return denied
+    data = request.get_json(silent=True) or {}
+    action = str(data.get("action") or "").strip().lower()
+    if action not in {"accept", "reject"}:
+        return jsonify({"error": "Action must be accept or reject."}), 400
+    try:
+        if action == "reject":
+            if not mark_question_resolved(question_id, "rejected"):
+                return jsonify({"error": "Pending question not found."}), 404
+        else:
+            question = get_pending_question(question_id)
+            if not question:
+                return jsonify({"error": "Pending question not found."}), 404
+            submitted_updates = data.get("updates") if isinstance(data.get("updates"), dict) else {}
+            inferred_updates = question.get("inferredUpdates") or []
+            if not inferred_updates:
+                return jsonify({"error": "The failed query did not identify a supported missing graph field."}), 400
+            for update in inferred_updates:
+                submitted = submitted_updates.get(update["key"]) if isinstance(submitted_updates.get(update["key"]), dict) else {}
+                entity_label = update["entityLabel"]
+                config = CURATOR_ENTITY_CONFIG[entity_label]
+                entity_id = str(submitted.get("entityId") or update.get("entityId") or "").strip()
+                node_match = f"n.{config['idProperty']} = $entityId"
+                if config.get("alternateIdProperty"):
+                    node_match += f" OR n.{config['alternateIdProperty']} = $entityId"
+                if update["kind"] == "property":
+                    property_value = str(submitted.get("value") or "").strip()
+                    if not entity_id or not property_value:
+                        return jsonify({"error": f"Complete the field: {update['fieldLabel']}."}), 400
+                    rows = run_neo4j_query(
+                        f"MATCH (n:{entity_label}) WHERE {node_match} SET n += $properties RETURN elementId(n) AS id",
+                        entityId=entity_id,
+                        properties={update["propertyName"]: property_value},
+                    )
+                else:
+                    target_label = update["targetLabel"]
+                    target_config = CURATOR_ENTITY_CONFIG[target_label]
+                    target_id = str(submitted.get("targetId") or update.get("targetId") or "").strip()
+                    if not entity_id or not target_id:
+                        return jsonify({"error": f"Complete the field: {update['fieldLabel']}."}), 400
+                    rows = run_neo4j_query(
+                        f"""
+                        MATCH (n:{entity_label}) WHERE {node_match}
+                        MATCH (target:{target_label} {{{target_config['idProperty']}: $targetId}})
+                        MERGE (n)-[:{update['relationshipType']}]->(target)
+                        RETURN elementId(n) AS id
+                        """,
+                        entityId=entity_id,
+                        targetId=target_id,
+                    )
+                if not rows:
+                    return jsonify({"error": f"Graph entity not found for: {update['fieldLabel']}."}), 404
+            mark_question_resolved(question_id, "accepted")
+        return jsonify({"ok": True, "id": question_id, "status": f"{action}ed"})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.route("/admin/api/upload/<node_type>", methods=["POST"])

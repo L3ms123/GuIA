@@ -58,6 +58,7 @@ function initAudioControls() {
   function updateSpokenAudioButton() {
     spokenAudioEnabled = !!state.accessibilityPrefs.spokenAudio;
     isMuted = !spokenAudioEnabled;
+    syncChatLiveRegionWithNarration();
 
     if (volumeSlider) {
       if (spokenAudioEnabled) {
@@ -265,10 +266,10 @@ function initAudioControls() {
   }
 
   function queueSpeech(text, lang = state.selectedLang, persona = browserSpeechPersonaFromAge()) {
-    if (!spokenAudioEnabled) return;
+    if (!spokenAudioEnabled) return Promise.resolve();
 
     const sentence = text.trim();
-    if (!sentence) return;
+    if (!sentence) return Promise.resolve();
 
     const queueVersion = speechQueueVersion;
 
@@ -305,7 +306,7 @@ function initAudioControls() {
           }
         });
 
-      return;
+      return speechPlaybackQueue;
     }
 
     speechPlaybackQueue = speechPlaybackQueue
@@ -319,6 +320,8 @@ function initAudioControls() {
 
         return speakBrowser(sentence, lang, persona, false);
       });
+
+    return speechPlaybackQueue;
   }
 
   function replayLastAssistantSpeech() {
@@ -508,22 +511,34 @@ function initAudioControls() {
 function initInitialWelcomeSpeech(audio) {
   let welcomeSpoken = false;
 
-  function speakInitialWelcome() {
-    if (!state.chatStarted) return;
-    if (welcomeSpoken) return;
+  async function speakInitialWelcome() {
+    if (!state.chatStarted || welcomeSpoken) {
+      window.guiaRevealAppShellAfterWelcome?.();
+      return;
+    }
 
     const firstBubble = q('.assistant-bubble');
     const text = firstBubble?.textContent?.trim();
-    if (!text) return;
+    if (!text) {
+      window.guiaRevealAppShellAfterWelcome?.();
+      return;
+    }
 
     audio.lastAssistantText = text;
     audio.resetSpeechQueue();
     audio.resumeAudioOutput();
     
-    if (!state.accessibilityPrefs.spokenAudio) return;
+    if (!state.accessibilityPrefs.spokenAudio) {
+      window.guiaRevealAppShellAfterWelcome?.();
+      return;
+    }
 
-    audio.queueSpeech(text, state.selectedLang);
     welcomeSpoken = true;
+    try {
+      await audio.queueSpeech(text, state.selectedLang);
+    } finally {
+      window.guiaRevealAppShellAfterWelcome?.();
+    }
   }
 
   window.guiaSpeakInitialWelcome = speakInitialWelcome;

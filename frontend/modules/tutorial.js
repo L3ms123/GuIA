@@ -340,6 +340,7 @@ function initTutorial() {
 
     window.setTimeout(() => {
       if (!document.body.hasAttribute('data-onboarding-open')) {
+        window.guiaSuppressAppShellForWelcome?.();
         window.guiaSpeakInitialWelcome?.();
       }
     }, 0);

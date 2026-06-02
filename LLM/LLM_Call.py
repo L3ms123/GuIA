@@ -23,8 +23,10 @@ from flask_cors import CORS
 
 try:
     from LLM import analytics
+    from LLM.unresolved_questions import record_unresolved_question
 except ImportError:  # when this file is run as a standalone script
     import analytics
+    from unresolved_questions import record_unresolved_question
 
 # Load environment variables from .env file
 load_dotenv(dotenv_path=Path(__file__).with_name(".env"))
@@ -892,6 +894,7 @@ def log_answer_completed(
     session_id: str,
     visit_id: Optional[str],
     client_req_id: Optional[str],
+    question: str,
     language: str,
     response: str,
     generator: str,
@@ -905,6 +908,18 @@ def log_answer_completed(
 ) -> None:
     """Emit the backend answer_completed analytics event (metadata only)."""
     retrieval_empty = not (graph_context and graph_context.get("rows"))
+    dont_know = detect_dont_know(response, language)
+    if dont_know:
+        try:
+            record_unresolved_question(
+                question,
+                language_code(language),
+                room,
+                artwork,
+                graph_context.get("cypher") if graph_context else None,
+            )
+        except Exception as exc:
+            app.logger.warning("Could not record unresolved question: %s", exc)
     analytics.log_event(
         "answer_completed",
         {
@@ -915,7 +930,7 @@ def log_answer_completed(
             "simpleLanguage": bool(simple_language),
             "visualDescriptions": bool(visual_descriptions),
             "moreTime": bool(more_time),
-            "dontKnow": detect_dont_know(response, language),
+            "dontKnow": dont_know,
             "retrievalEmpty": retrieval_empty,
             "roomId": room,
             "artworkId": artwork,
@@ -2299,6 +2314,7 @@ def chat_endpoint():
         generator = "idem" if (simple_language and graph_context and graph_context.get("rows")) else "cohere"
         log_answer_completed(
             session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+            question=message,
             language=language, response=response, generator=generator,
             graph_context=graph_context, room=room, artwork=artwork,
             simple_language=simple_language, visual_descriptions=visual_descriptions,
@@ -2365,6 +2381,7 @@ def chat_stream_endpoint():
                     yield stream_event({"type": "done"})
                     log_answer_completed(
                         session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+                        question=message,
                         language=language, response=streamed_response, generator="idem",
                         graph_context=graph_context, room=room, artwork=artwork,
                         simple_language=simple_language, visual_descriptions=visual_descriptions,
@@ -2391,6 +2408,7 @@ def chat_stream_endpoint():
                     yield stream_event({"type": "done"})
                     log_answer_completed(
                         session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+                        question=message,
                         language=language, response=streamed_response, generator="cohere-fallback",
                         graph_context=graph_context, room=room, artwork=artwork,
                         simple_language=simple_language, visual_descriptions=visual_descriptions,
@@ -2423,6 +2441,7 @@ def chat_stream_endpoint():
             yield stream_event({"type": "done"})
             log_answer_completed(
                 session_id=session_id, visit_id=visit_id, client_req_id=client_req_id,
+                question=message,
                 language=language, response=streamed_response, generator="cohere",
                 graph_context=graph_context, room=room, artwork=artwork,
                 simple_language=simple_language, visual_descriptions=visual_descriptions,

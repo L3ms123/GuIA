@@ -16,15 +16,32 @@ function showOnboarding() {
   // Ensure onboarding is interactive when shown (remove any leftover inert)
   onboarding.removeAttribute('inert');
   appShell?.setAttribute('inert', '');
+  appShell?.setAttribute('aria-hidden', 'true');
   document.body.toggleAttribute('data-onboarding-open', true);
 
   showOnboardingStep(1);
   window.setTimeout(() => focusFirstAvailable(onboarding), 0);
 }
 
-function hideOnboarding() {
-  const onboarding = el('onboarding');
+function setAppShellAccessibilityEnabled(enabled, focusChatInput = false) {
   const appShell = q('.app-shell');
+  if (!appShell) return;
+
+  if (enabled) {
+    appShell.removeAttribute('inert');
+    appShell.removeAttribute('aria-hidden');
+    if (focusChatInput) {
+      requestAnimationFrame(() => el('chat-input')?.focus?.());
+    }
+    return;
+  }
+
+  appShell.setAttribute('inert', '');
+  appShell.setAttribute('aria-hidden', 'true');
+}
+
+function hideOnboarding({ deferAppShellAccessibility = false } = {}) {
+  const onboarding = el('onboarding');
 
   document.activeElement?.blur();
 
@@ -33,12 +50,14 @@ function hideOnboarding() {
   onboarding.setAttribute('inert', '');
   onboarding.setAttribute('aria-hidden', 'true');
   onboarding.style.display = 'none';
-  appShell?.removeAttribute('inert');
+  setAppShellAccessibilityEnabled(!deferAppShellAccessibility);
   document.body.removeAttribute('data-onboarding-open');
 
-  requestAnimationFrame(() => {
-    previous?.focus?.();
-  });
+  if (!deferAppShellAccessibility) {
+    requestAnimationFrame(() => {
+      previous?.focus?.();
+    });
+  }
   
 }
 
@@ -467,6 +486,16 @@ function updateOnboardingButtons() {
   if (nextBtn) nextBtn.disabled = !valid;
 }
 
+function syncChatLiveRegionWithNarration() {
+  const chatPanel = q('.chat-panel');
+  if (!chatPanel) return;
+
+  chatPanel.setAttribute('aria-live', state.accessibilityPrefs.spokenAudio ? 'off' : 'polite');
+}
+
+window.guiaSuppressAppShellForWelcome = () => setAppShellAccessibilityEnabled(false);
+window.guiaRevealAppShellAfterWelcome = () => setAppShellAccessibilityEnabled(true, true);
+
 function applyAccessibilityPrefs() {
   const visualTargets = [
     document.documentElement,
@@ -485,6 +514,8 @@ function applyAccessibilityPrefs() {
   document.body.toggleAttribute('data-spoken-audio', state.accessibilityPrefs.spokenAudio);
   document.body.toggleAttribute('data-more-time', state.accessibilityPrefs.moreTime);
   document.body.toggleAttribute('data-visual-descriptions', state.accessibilityPrefs.audioDescription);
+
+  syncChatLiveRegionWithNarration();
 
   document.body.setAttribute('data-mode', state.accessibilityPrefs.largeText ? 'larger' : 'regular');
 
@@ -674,17 +705,20 @@ function bindOnboardingFlow() {
     applyAppTranslations();
     applyAccessibilityPrefs();
     syncAccessibilityControls();
-    hideOnboarding();
+    const startsTutorial = state.showTutorialOnStart;
+    const deferAppShellAccessibility = state.accessibilityPrefs.spokenAudio && !startsTutorial;
+    hideOnboarding({ deferAppShellAccessibility });
     window.saveGuiaSession?.();
     if (state.deferredSpokenAudioChange) {
       const { wasEnabled, isEnabled } = state.deferredSpokenAudioChange;
       state.deferredSpokenAudioChange = null;
       window.guiaHandleNarrationPreferenceChange?.(wasEnabled, isEnabled);
     }
-    // Always speak welcome message if audio is enabled (with delay to ensure DOM is updated)
-    window.setTimeout(() => window.guiaSpeakInitialWelcome?.(), 300);
-    if (state.showTutorialOnStart) {
+    // The tutorial announces its own content. Narrate the welcome after it closes.
+    if (startsTutorial) {
       window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
+    } else {
+      window.setTimeout(() => window.guiaSpeakInitialWelcome?.(), 300);
     }
   }
 
