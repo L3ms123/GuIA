@@ -24,14 +24,14 @@
     class="onboarding-overlay"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="step-count"
+    aria-labelledby="onboarding-title"
   >
     <section class="onboarding-panel">
       <header class="onboarding-header">
         <p id="onboarding-eyebrow" class="eyebrow">GuIA del Museu del Renaixement</p>
         <h2 id="onboarding-title" class="headline">Coneix el teu guia.</h2>
  
-        <div class="step-meta" aria-live="polite">
+        <div class="step-meta">
           <div class="step-header">
             <p id="step-count">Pas 1 de 3 - Selecciona l'idioma, com ajuda el guia i la franja d'edat.</p>
           </div>
@@ -48,7 +48,7 @@
         <!-- STEP 1: Preferences -->
         <section class="onboarding-step" data-step="1">
  
-          <p id="label-personality-intro" class="intro-text">GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil que tu triis. Pots parlar amb ella, fer preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard. Tria l'estil d'explicació que millor et funcioni.</p>
+          <p id="label-personality-intro" class="intro-text">GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil y amb las opcions de accessibilitat que tu triis. Pots fer-li preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard.</p>
 
           <!-- Llengua -->
           <div class="onb-section">
@@ -143,8 +143,8 @@
             >
               <button type="button" class="chip radio-chip" data-age="young" role="radio" aria-checked="false">
                 <span class="material-symbols-outlined card-pictogram" aria-hidden="true">face</span>
-                <span class="age-title">Infant / Adolescent</span>
-                <p class="card-subtitle">(10-17 anys)</p>
+                <span class="age-title">Nen/Adolescent</span>
+                <p class="card-subtitle">(12-17 anys)</p>
               </button>
 
               <button type="button" class="chip radio-chip" data-age="youngAdult" role="radio" aria-checked="false">
@@ -180,7 +180,7 @@
             <h3 class="accessibility-category" data-i18n-key="onboarding.visual">Accessibilitat visual</h3>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-large-text" aria-describedby="opt-large-text-help" />
+                <input type="checkbox" id="opt-large-text" aria-label="Text gran" aria-describedby="opt-large-text-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">format_size</span>
                 <div class="toggle-content">
                   <span>Text gran</span>
@@ -189,7 +189,7 @@
               </label>
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-uppercase-text" aria-describedby="opt-uppercase-text-help" />
+                <input type="checkbox" id="opt-uppercase-text" aria-label="Text en majúscules" aria-describedby="opt-uppercase-text-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">format_size</span>
                 <div class="toggle-content">
                   <span>Text en majúscules</span>
@@ -198,7 +198,7 @@
               </label>
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-visual-descriptions" autocomplete="off" aria-describedby="opt-visual-descriptions-help" />
+                <input type="checkbox" id="opt-visual-descriptions" aria-label="Audiodescripció" autocomplete="off" aria-describedby="opt-visual-descriptions-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">visibility</span>
                 <div class="toggle-content">
                   <span>Audiodescripció</span>
@@ -210,7 +210,7 @@
             <h3 class="accessibility-category" data-i18n-key="onboarding.cognitive">Accessibilitat cognitiva</h3>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-simple-language" aria-describedby="opt-simple-language-help" />
+                <input type="checkbox" id="opt-simple-language" aria-label="Llenguatge més simple" aria-describedby="opt-simple-language-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">short_text</span>
                 <div class="toggle-content">
                   <span>Llenguatge més simple</span>
@@ -222,7 +222,7 @@
             <h3 class="accessibility-category" data-i18n-key="onboarding.auditory">Accessibilitat auditiva / multimèdia</h3>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-spoken-audio" autocomplete="off" aria-describedby="opt-spoken-audio-help" checked />
+                <input type="checkbox" id="opt-spoken-audio" aria-label="Escoltar la guia" autocomplete="off" aria-describedby="opt-spoken-audio-help" checked />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
                 <div class="toggle-content">
                   <span>Escoltar la guia</span>
@@ -231,7 +231,7 @@
               </label>
 
               <label class="toggle-row">
-                <input type="checkbox" id="opt-more-time" aria-describedby="opt-more-time-help" />
+                <input type="checkbox" id="opt-more-time" aria-label="Veu més lenta" aria-describedby="opt-more-time-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">slow_motion_video</span>
                 <div class="toggle-content">
                   <span>Veu més lenta</span>
@@ -245,7 +245,7 @@
             <h2 id="label-tutorial-choice" class="section-label">Ajuda inicial</h2>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-start-tutorial" aria-describedby="opt-start-tutorial-help" checked />
+                <input type="checkbox" id="opt-start-tutorial" aria-label="Veure ajuda abans de començar" aria-describedby="opt-start-tutorial-help" checked />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
                 <div class="toggle-content">
                   <span>Veure ajuda abans de començar</span>
@@ -264,12 +264,12 @@
             <div
               id="privacy-notice"
               class="info-block"
-              role="note"
+              role="region"
               tabindex="-1"
               aria-labelledby="privacy-notice-title"
               aria-describedby="privacy-notice-text"
             >
-              <div id="privacy-notice-text">
+              <div id="privacy-notice-text" role="region" tabindex="0">
               <p>Estàs parlant amb una audioguia de museu que utilitza IA.</p>
               <p>La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.</p>
               <p>Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.</p>
@@ -304,7 +304,6 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="settings-title"
-    aria-describedby="settings-help"
     aria-hidden="true"
     hidden
   >
@@ -398,7 +397,7 @@
           <h3 id="settings-accessibility-title" class="section-label">Ajudes</h3>
           <div class="toggle-list">
             <label class="toggle-row">
-              <input type="checkbox" data-settings-pref="largeText" />
+              <input type="checkbox" data-settings-pref="largeText" aria-label="Text gran" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">format_size</span>
               <div class="toggle-content">
                 <span data-settings-label="largeText">Text gran</span>
@@ -406,14 +405,14 @@
               </div>
             </label>
             <label class="toggle-row">
-              <input type="checkbox" data-settings-pref="uppercaseText" />
+              <input type="checkbox" data-settings-pref="uppercaseText" aria-label="Text en majúscules" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">text_fields</span>
               <div class="toggle-content">
                 <span data-settings-label="uppercaseText">Text en majúscules</span>
               </div>
             </label>
             <label class="toggle-row">
-              <input type="checkbox" data-settings-pref="simpleLanguage" />
+              <input type="checkbox" data-settings-pref="simpleLanguage" aria-label="Llenguatge més simple" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">short_text</span>
               <div class="toggle-content">
                 <span data-settings-label="simpleLanguage">Llenguatge més simple</span>
@@ -421,7 +420,7 @@
               </div>
             </label>
             <label class="toggle-row">
-              <input type="checkbox" data-settings-pref="spokenAudio" />
+              <input type="checkbox" data-settings-pref="spokenAudio" aria-label="Escoltar la guia" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
               <div class="toggle-content">
                 <span data-settings-label="spokenAudio">Escoltar la guia</span>
@@ -429,7 +428,7 @@
               </div>
             </label>
             <label class="toggle-row">
-              <input type="checkbox" data-settings-pref="moreTime" />
+              <input type="checkbox" data-settings-pref="moreTime" aria-label="Veu més lenta" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">slow_motion_video</span>
               <div class="toggle-content">
                 <span data-settings-label="moreTime">Veu més lenta</span>
@@ -437,7 +436,7 @@
               </div>
             </label>
             <label class="toggle-row">
-              <input type="checkbox" data-settings-pref="audioDescription" />
+              <input type="checkbox" data-settings-pref="audioDescription" aria-label="Audiodescripció" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">visibility</span>
               <div class="toggle-content">
                 <span data-settings-label="audioDescription">Audiodescripció</span>
@@ -445,7 +444,7 @@
               </div>
             </label>
             <label class="toggle-row">
-              <input type="checkbox" id="settings-start-tutorial" />
+              <input type="checkbox" id="settings-start-tutorial" aria-label="Veure ajuda abans de començar" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
               <div class="toggle-content">
                 <span id="settings-start-tutorial-label">Veure ajuda abans de començar</span>
@@ -790,6 +789,9 @@
     aria-modal="true"
     aria-labelledby="tutorial-title"
     aria-describedby="tutorial-intro"
+    aria-live="polite"
+    aria-atomic="true"
+    tabindex="-1"
     aria-hidden="true"
     hidden
   >
@@ -813,7 +815,10 @@
         Aquesta guia explica els botons principals. Pots llegir-la i tancar-la quan vulguis.
       </p>
 
-      <div id="tutorial-steps" class="tutorial-steps"></div>
+      <div id="tutorial-steps" class="tutorial-steps" aria-live="polite" aria-atomic="true"></div>
+
+      <!-- Live region for assistive tech to announce tutorial steps -->
+      <div id="tutorial-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
       <footer class="tutorial-footer">
         <button id="tutorial-prev-btn" type="button" class="btn-secondary">

@@ -213,7 +213,7 @@ select {
 
 .section-label {
   letter-spacing: 0.18em;
-  font-size: calc(1rem * var(--scale));
+  font-size: calc(1.1rem * var(--scale));
   font-weight: 600;
   margin: 0;
   color: var(--on-surface-variant);
@@ -1616,11 +1616,6 @@ select:focus-visible,
     margin-bottom: 0;
   }
 
-  .section-label {
-    font-size: 1rem;
-    margin-top: 1rem;
-  }
-
   .toggle-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1912,7 +1907,7 @@ select:focus-visible,
     flex-direction: column;
     gap: 0.55rem;
     overflow: hidden;
-    padding: 0.55rem var(--gutter) 0;
+    padding: 0.55rem var(--gutter) calc(7.5rem + env(safe-area-inset-bottom));
   }
 
   .context-column,
@@ -1996,7 +1991,11 @@ select:focus-visible,
   }
 
   .bottom-bar {
-    position: static;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
     flex: 0 0 auto;
     transform: none;
     max-width: none;

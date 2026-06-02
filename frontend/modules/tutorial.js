@@ -111,7 +111,21 @@ function initTutorial() {
   }
 
   function clearTarget() {
-    qa('.tutorial-target').forEach((node) => node.classList.remove('tutorial-target'));
+    qa('.tutorial-target').forEach((node) => {
+      node.classList.remove('tutorial-target');
+      // restore any aria-describedby we overwrote
+      if (node.dataset.tutorialOriginalDescribedby) {
+        node.setAttribute('aria-describedby', node.dataset.tutorialOriginalDescribedby);
+        delete node.dataset.tutorialOriginalDescribedby;
+      } else {
+        node.removeAttribute('aria-describedby');
+      }
+      // remove temporary tabindex if we added one
+      if (node.dataset.tutorialAddedTabindex) {
+        node.removeAttribute('tabindex');
+        delete node.dataset.tutorialAddedTabindex;
+      }
+    });
   }
 
   function openAudioPanelIfNeeded(item) {
@@ -160,6 +174,22 @@ function initTutorial() {
       const block = isMobile() && modal.getAttribute('data-placement') !== 'top' ? 'start' : 'nearest';
 
       target.classList.add('tutorial-target');
+      // ensure the target is focusable and referenced by the tutorial description
+      try {
+        const descId = `tutorial-step-desc-${currentStep}`;
+        const original = target.getAttribute('aria-describedby');
+        if (original) target.dataset.tutorialOriginalDescribedby = original;
+        target.setAttribute('aria-describedby', descId);
+
+        // if target is not focusable, make it temporarily focusable
+        const focusableSelector = 'a, button, input, select, textarea, [tabindex]';
+        const isFocusable = target.matches?.(focusableSelector) || !!q(focusableSelector, target);
+        if (!isFocusable && !target.hasAttribute('tabindex')) {
+          target.setAttribute('tabindex', '0');
+          target.dataset.tutorialAddedTabindex = 'true';
+        }
+      } catch (e) {}
+
       target.scrollIntoView({
         behavior: 'smooth',
         block,
@@ -253,9 +283,34 @@ function initTutorial() {
     setAttribute(closeBtn, 'aria-label', t('tutorial.close', 'Close help'));
   }
 
+  // Announce text to assistive tech and optionally speak via SpeechSynthesis
+  function announce(text) {
+    try {
+      const live = document.getElementById('tutorial-live');
+      if (live) {
+        // Clear first to ensure change is detected by some AT
+        live.textContent = '';
+        window.setTimeout(() => (live.textContent = text), 50);
+      }
+
+      if (state?.accessibilityPrefs?.spokenAudio && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.speak(u);
+        } catch (e) {
+          // degrade silently
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
   function buildStepCard(item) {
     const card = document.createElement('article');
     card.className = 'tutorial-step';
+    card.setAttribute('role', 'region');
     card.setAttribute('aria-live', 'polite');
 
     const icon = document.createElement('span');
@@ -274,9 +329,16 @@ function initTutorial() {
 
     const title = document.createElement('h3');
     title.textContent = item.title || '';
+    // Ensure title has an id so targets can reference it
+    if (!title.id) title.id = `tutorial-step-title-${currentStep}`;
+    title.tabIndex = -1;
 
     const body = document.createElement('p');
     body.textContent = item.body || '';
+    if (!body.id) body.id = `tutorial-step-desc-${currentStep}`;
+
+    // Make the card identifiable for assistive tech
+    card.id = `tutorial-step-${currentStep}`;
 
     content.append(progress, title, body);
     card.append(icon, content);
@@ -291,6 +353,22 @@ function initTutorial() {
 
     stepsNode.textContent = '';
     stepsNode.appendChild(buildStepCard(item));
+
+    // Focus the step title so screen readers move to the new content
+    window.setTimeout(() => {
+      const title = stepsNode.querySelector(`#tutorial-step-title-${currentStep}`);
+      if (title) title.focus();
+    }, 50);
+
+    // Announce title + body + progress for screen reader and optional TTS
+    try {
+      const titleText = item.title || '';
+      const bodyText = item.body || '';
+      const progressText = t('tutorial.progress', 'Step {current} of {total}')
+        .replace('{current}', currentStep + 1)
+        .replace('{total}', totalSteps());
+      announce(`${progressText}. ${titleText}. ${bodyText}`);
+    } catch (e) {}
 
     if (prevBtn) prevBtn.disabled = currentStep === 0;
     if (nextBtn) {
@@ -319,6 +397,10 @@ function initTutorial() {
     document.body.setAttribute('data-tutorial-open', '');
 
     renderCurrentStep();
+
+    window.setTimeout(() => {
+      closeBtn?.focus?.();
+    }, 0);
   }
 
   function closeTutorial() {
@@ -337,6 +419,10 @@ function initTutorial() {
     if (playbackBtn?.getAttribute('aria-pressed') === 'true') playbackBtn.click();
 
     requestAnimationFrame(() => lastFocus?.focus?.());
+
+    try {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    } catch (e) {}
 
     window.setTimeout(() => {
       if (!document.body.hasAttribute('data-onboarding-open')) {

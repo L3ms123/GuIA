@@ -4,9 +4,9 @@
       "eyebrow": "GuIA Museu del Renaixamen Guide",
       "title": "Choose your guide.",
       "description": "Choose how GuIA should help you in the museum.",
-      "personalityIntro": "GuIA is an audioguide that uses artificial intelligence to explain the museum in the style you choose. You can talk to it, ask questions about artworks, and get personalized explanations. It can explain artworks in different ways: as a story, with artistic details about colors and materials, or in a standard style. Choose the explanation style that works best for you.",
+      "personalityIntro": "GuIA is an audioguide that uses artificial intelligence to explain the museum in the style and with the accessibility options you choose. You can ask it questions about artworks, and get personalized explanations. It can explain artworks in different ways: as a story, with artistic details about colors and materials, or in a standard style.",
       "language": "Select language",
-      "personality": "Select explaination style",
+      "personality": "Select explanation style",
       "visitor": "Select age range",
       "start": "Start visit",
       "stepCount": "Step {current} of {total}",
@@ -65,8 +65,8 @@
     },
     "ages": {
         "young": {
-            "title": "Infant / Adolescent",
-            "subtitle": "(10-17 years old)"
+            "title": "Child/Teenager",
+            "subtitle": "(12-17 years old)"
             },
         "youngAdult": {
             "title": "Young Adult",
@@ -287,7 +287,7 @@
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Elige tu guia.",
       "description": "Elige como quieres que GuIA te ayude en el museo.",
-      "personalityIntro": "GuIA es una audioguía que usa inteligencia artificial para explicar el museo en el estilo que elijas. Puedes hablar con ella, hacer preguntas sobre las obras y obtener explicaciones personalizadas. Puede explicar las obras de diferentes formas: como una historia, con detalles artísticos sobre colores y materiales, o en un estilo estándar. Elige el estilo de explicación que mejor te funcione.",
+      "personalityIntro": "GuIA es una audioguía que usa inteligencia artificial para explicar el museo en el estilo y con las opciones de accesibilidad que elijas. Puedes hacerle preguntas sobre las obras y obtener explicaciones personalizadas. Puede explicar las obras de diferentes formas: como una historia, con detalles artísticos sobre colores y materiales, o en un estilo estándar.",
       "language": "Selecciona el idioma",
       "personality": "Selecciona el estilo de explicación",
       "visitor": "Selecciona el rango de edad",
@@ -348,8 +348,8 @@
     },
     "ages": {
         "young": {
-            "title": "Infante / Adolescente",
-            "subtitle": "(10-17 años)"
+            "title": "Niño/Adolescente",
+            "subtitle": "(12-17 años)"
             },
         "youngAdult": {
             "title": "Joven",
@@ -481,8 +481,8 @@
       "steps": [
         {
           "icon": "place",
-          "title": "Elige donde estas",
-          "body": "Esta zona sirve para elegir la sala o la obra. Las opciones ya estan abiertas.",
+          "title": "Elige dónde estás",
+          "body": "Esta zona sirve para elegir la sala o la obra. Las opciones ya están abiertas.",
           "target": "#context-box",
           "openPanel": "location",
           "group": "location"
@@ -490,15 +490,15 @@
         {
           "icon": "open_in_new",
           "title": "Usa NaviLens",
-          "body": "Pulsa este boton si quieres abrir NaviLens y escanear un codigo NaviLens.",
+          "body": "Pulsa este botón si quieres abrir NaviLens y escanear un código NaviLens.",
           "target": "#open-app-btn",
           "openPanel": "location",
           "group": "location"
         },
         {
           "icon": "qr_code_2",
-          "title": "Escanea un codigo QR",
-          "body": "Pulsa este boton para abrir la camara. Apunta al codigo QR del museo.",
+          "title": "Escanea un código QR",
+          "body": "Pulsa este botón para abrir la cámara. Apunta al código QR del museo.",
           "target": "#scan-qr-btn",
           "openPanel": "location",
           "group": "location",
@@ -506,8 +506,8 @@
         },
         {
           "icon": "touch_app",
-          "title": "Elige manualmente",
-          "body": "Pulsa este boton si quieres elegir la sala desde una lista.",
+          "title": "Selecciona manualmente",
+          "body": "Pulsa este botón si quieres elegir la sala desde una lista.",
           "target": "#manual-location-btn",
           "openPanel": "location",
           "group": "location"
@@ -515,7 +515,7 @@
         {
           "icon": "task_alt",
           "title": "Selecciona un lugar",
-          "body": "Elige una sala y una obra. Despues pulsa Confirmar ubicacion.",
+          "body": "Elige una sala y una obra. Después pulsa Confirmar ubicación.",
           "target": "#manual-location-panel",
           "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
@@ -524,7 +524,7 @@
         },
         {
           "icon": "info",
-          "title": "Lee la respuesta aqui",
+          "title": "Lee la respuesta aquí",
           "body": "GuIA escribe la respuesta en esta zona.",
           "target": ".chat-panel"
         },
@@ -538,13 +538,13 @@
         {
           "icon": "keyboard_voice",
           "title": "O di tu pregunta",
-          "body": "Tambien puedes pulsar el microfono y decir una pregunta corta.",
+          "body": "También puedes pulsar el micrófono y decir una pregunta corta.",
           "target": "#mic-btn"
         },
         {
           "icon": "send",
-          "title": "Envia la pregunta",
-          "body": "Pulsa Enviar cuando la pregunta este lista.",
+          "title": "Envía la pregunta",
+          "body": "Pulsa Enviar cuando la pregunta esté lista.",
           "target": "#send-btn",
           "waitForSend": true
         },
@@ -559,7 +559,7 @@
         {
           "icon": "settings",
           "title": "Cambia las ayudas",
-          "body": "Usa este boton para cambiar idioma, tamano del texto, voz o palabras faciles.",
+          "body": "Usa este botón para cambiar idioma, tamaño del texto, voz o palabras fáciles.",
           "target": "#app-title"
         }
       ]
@@ -570,7 +570,7 @@
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Tria el teu guia.",
       "description": "Tria com vols que GuIA t'ajudi al museu.",
-      "personalityIntro": "GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil que tu triis. Pots parlar amb ella, fer preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard. Tria l'estil d'explicació que millor et funcioni.",
+      "personalityIntro": "GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil y amb las opcions de accessibilitat que tu triis. Pots fer-li preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard.",
       "language": "Selecciona l’idioma ",
       "personality": "Selecciona l’estil d’explicació",
       "visitor": "Selecciona la franja d'edat",
@@ -631,8 +631,8 @@
     },
     "ages": {
         "young": {
-            "title": "Infant / Adolescent",
-            "subtitle": "(10-17 anys)"
+            "title": "Nen/Adolescent",
+            "subtitle": "(12-17 anys)"
             },
         "youngAdult": {
             "title": "Jove",
@@ -758,7 +758,7 @@
       "intro": "Ho veurem pas a pas.",
       "close": "Tancar ajuda",
       "previous": "Enrere",
-      "next": "Seguent",
+      "next": "Següent",
       "done": "Entesos",
       "progress": "Pas {current} de {total}",
       "steps": [
@@ -807,7 +807,7 @@
         },
         {
           "icon": "info",
-          "title": "Llegeix la resposta aqui",
+          "title": "Llegeix la resposta aquí",
           "body": "GuIA escriu la resposta en aquesta zona.",
           "target": ".chat-panel"
         },

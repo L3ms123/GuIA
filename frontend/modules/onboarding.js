@@ -425,7 +425,8 @@ function showOnboardingStep(step) {
   updateOnboardingButtons();
   window.setTimeout(() => {
     if (step === 3) {
-      el('privacy-notice')?.focus();
+      // Focus the privacy notice text so screen readers announce the full content
+      el('privacy-notice-text')?.focus();
       return;
     }
 
