@@ -61,6 +61,7 @@ const TRANSLATIONS = {
     syncDescriptions: 'Sync descriptions',
     syncArtists: 'Sync artists',
     syncTechniques: 'Sync techniques',
+    downloadTemplate: 'Download template',
     templateRules: 'Template rules',
     templateHelp: 'Keep the template column names unchanged. ArtPiece uploads create or update artwork nodes and link them to matching Artist and Technique nodes. VisualDescription uploads attach descriptions to existing artwork IDs.',
     analyticsTitle: 'Analytics',
@@ -136,6 +137,7 @@ const TRANSLATIONS = {
     syncDescriptions: 'Sincronitzar descripcions',
     syncArtists: 'Sincronitzar artistes',
     syncTechniques: 'Sincronitzar tècniques',
+    downloadTemplate: 'Descarregar plantilla',
     templateRules: 'Regles de plantilla',
     templateHelp: 'Mantén els noms de columna sense canvis. Les càrregues ArtPiece creen o actualitzen obres i les enllacen amb Artist i Technique. VisualDescription afegeix descripcions a artwork_id existents.',
     analyticsTitle: 'Analítiques',
@@ -211,6 +213,7 @@ const TRANSLATIONS = {
     syncDescriptions: 'Sincronizar descripciones',
     syncArtists: 'Sincronizar artistas',
     syncTechniques: 'Sincronizar técnicas',
+    downloadTemplate: 'Descargar plantilla',
     templateRules: 'Reglas de plantilla',
     templateHelp: 'Mantén los nombres de columna sin cambios. Las cargas ArtPiece crean o actualizan obras y las enlazan con Artist y Technique. VisualDescription añade descripciones a artwork_id existentes.',
     analyticsTitle: 'Analíticas',
@@ -414,6 +417,28 @@ async function downloadAnalytics() {
   const link = document.createElement('a');
   link.href = url;
   link.download = 'sessions.jsonl';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function downloadTemplate(type) {
+  const response = await fetch(`/admin/api/template/${type}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: adminPassword }),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Could not download template.');
+  }
+  const disposition = response.headers.get('Content-Disposition') || '';
+  const filename = disposition.match(/filename="?([^";]+)"?/)?.[1] || `${type}_template.csv`;
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
   document.body.append(link);
   link.click();
   link.remove();
@@ -736,8 +761,24 @@ document.querySelectorAll('[data-section-target]').forEach((button) => {
 document.querySelectorAll('.upload-card').forEach((card) => {
   const type = card.dataset.uploadType;
   const input = card.querySelector('input[type="file"]');
-  const button = card.querySelector('button');
+  const button = card.querySelector('.upload-sync-btn');
+  const templateButton = card.querySelector('.template-download-btn');
   const status = card.querySelector('.upload-status');
+
+  templateButton.addEventListener('click', async () => {
+    if (!adminPassword) {
+      setStatus(status, text('unlockFirst'), 'error');
+      return;
+    }
+    templateButton.disabled = true;
+    try {
+      await downloadTemplate(type);
+    } catch (error) {
+      setStatus(status, error.message, 'error');
+    } finally {
+      templateButton.disabled = false;
+    }
+  });
 
   card.addEventListener('dragover', (event) => {
     event.preventDefault();

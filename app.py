@@ -1,5 +1,6 @@
 import os
 import json
+import io
 import unicodedata
 from pathlib import Path
 
@@ -88,6 +89,44 @@ ADMIN_NODE_CONFIG = {
         WHERE a.technique = t.name
         FOREACH (_ IN CASE WHEN a IS NOT NULL THEN [1] ELSE [] END | MERGE (a)-[:USES_TECHNIQUE]->(t))
         """,
+    },
+}
+ADMIN_TEMPLATE_CONFIG = {
+    "artpiece": {
+        "filename": "ArtPiece_Template.csv",
+        "sep": ",",
+        "columns": {
+            "INV.": ["INV-001"], "AUTORIA": ["Name"], "DATACIÓ": ["Date"],
+            "TÈCNICA / TIPOLOGIA": ["Technique"], "TÍTOL / DESCRIPCIÓ": ["Title"],
+            "DESCRIPTION": ["Description"],
+        },
+    },
+    "visualdescription": {
+        "filename": "Visual_Template.csv",
+        "sep": ",",
+        "columns": {
+            "artwork_id": ["INV-001"], "title": ["Title"], "artist": ["Name"],
+            "room_or_location": ["Location"], "visual_overview": ["Overview"],
+            "audio_description": ["Audio text"], "background": ["Background detail"],
+            "colors": ["Colors used"], "composition": ["Composition description"],
+            "figures_gestures": ["Figures and gestures"], "foreground": ["Foreground details"],
+            "language": ["en"], "materials_textures": ["Materials and textures"],
+            "middle_ground": ["Middle ground details"], "model": ["Model name"],
+            "mood_atmosphere": ["Mood/Atmosphere"], "objects_symbols": ["Objects/Symbols"],
+            "reviewed": ["False"], "source": ["Source name"], "spatial_order": ["Spatial order"],
+            "subject_matter": ["Subject matter"], "uncertainties": ["Any uncertainties"],
+            "created_at": ["2026-01-01"], "updated_at": ["2026-01-01"],
+        },
+    },
+    "artist": {
+        "filename": "Artist_Template.csv",
+        "sep": ";",
+        "columns": {"Author's Name": ["Name"], "Information": ["Bio"]},
+    },
+    "technique": {
+        "filename": "Tech_Template.csv",
+        "sep": ";",
+        "columns": {"Art Technique": ["Technique"], "Information": ["Desc"]},
     },
 }
 CURATOR_ENTITY_CONFIG = {
@@ -536,6 +575,23 @@ def admin_upload(node_type):
         return jsonify({"error": str(exc)}), 400
 
     return jsonify({"ok": True, "label": config["label"], "count": count})
+
+
+@app.route("/admin/api/template/<node_type>", methods=["POST"])
+def admin_template_download(node_type):
+    denied = require_admin_password()
+    if denied:
+        return denied
+    config = ADMIN_TEMPLATE_CONFIG.get(node_type.lower())
+    if not config:
+        return jsonify({"error": "Unknown template type."}), 404
+    csv_bytes = pd.DataFrame(config["columns"]).to_csv(index=False, sep=config["sep"]).encode("utf-8")
+    return send_file(
+        io.BytesIO(csv_bytes),
+        mimetype="text/csv; charset=utf-8",
+        as_attachment=True,
+        download_name=config["filename"],
+    )
 
 
 @app.route("/favicon.ico")
