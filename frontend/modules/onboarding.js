@@ -420,8 +420,6 @@ function showOnboardingStep(step) {
   updateBackButtonState(backBtn, step === 1);
   nextBtn.textContent = step === state.totalSteps || (state.privacyAccepted && step === 2) ? 'Start' : 'Continue';
 
-  el('onboarding')?.setAttribute('aria-describedby', 'step-count');
-
   updateOnboardingButtons();
   window.setTimeout(() => {
     if (step === 3) {
