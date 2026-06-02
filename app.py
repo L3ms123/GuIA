@@ -473,6 +473,7 @@ def admin_resolve_unresolved_question(question_id):
             if not inferred_updates:
                 return jsonify({"error": "The failed query did not identify a supported missing graph field."}), 400
             for update in inferred_updates:
+                field_reference = update.get("propertyName") or update.get("relationshipType") or update["key"]
                 submitted = submitted_updates.get(update["key"]) if isinstance(submitted_updates.get(update["key"]), dict) else {}
                 entity_label = update["entityLabel"]
                 config = CURATOR_ENTITY_CONFIG[entity_label]
@@ -483,7 +484,7 @@ def admin_resolve_unresolved_question(question_id):
                 if update["kind"] == "property":
                     property_value = str(submitted.get("value") or "").strip()
                     if not entity_id or not property_value:
-                        return jsonify({"error": f"Complete the field: {update['fieldLabel']}."}), 400
+                        return jsonify({"error": f"Complete the field: {field_reference}."}), 400
                     rows = run_neo4j_query(
                         f"MATCH (n:{entity_label}) WHERE {node_match} SET n += $properties RETURN elementId(n) AS id",
                         entityId=entity_id,
@@ -494,7 +495,7 @@ def admin_resolve_unresolved_question(question_id):
                     target_config = CURATOR_ENTITY_CONFIG[target_label]
                     target_id = str(submitted.get("targetId") or update.get("targetId") or "").strip()
                     if not entity_id or not target_id:
-                        return jsonify({"error": f"Complete the field: {update['fieldLabel']}."}), 400
+                        return jsonify({"error": f"Complete the field: {field_reference}."}), 400
                     rows = run_neo4j_query(
                         f"""
                         MATCH (n:{entity_label}) WHERE {node_match}
@@ -506,7 +507,7 @@ def admin_resolve_unresolved_question(question_id):
                         targetId=target_id,
                     )
                 if not rows:
-                    return jsonify({"error": f"Graph entity not found for: {update['fieldLabel']}."}), 404
+                    return jsonify({"error": f"Graph entity not found for: {field_reference}."}), 404
             mark_question_resolved(question_id, "accepted")
         return jsonify({"ok": True, "id": question_id, "status": f"{action}ed"})
     except Exception as exc:

@@ -70,7 +70,7 @@ def infer_missing_updates(failed_cypher: str, artwork: Optional[str]) -> list[di
             "entityLabel": label,
             "entityId": entity_id,
             "propertyName": property_name,
-            "fieldLabel": f"{property_name.replace('_', ' ').title()} of {entity_id or label}",
+            "fieldSubject": entity_id or label,
         })
     if updates:
         return updates
@@ -89,7 +89,6 @@ def infer_missing_updates(failed_cypher: str, artwork: Optional[str]) -> list[di
             "relationshipType": relationship_type,
             "targetLabel": target_label,
             "targetId": target_id,
-            "fieldLabel": f"{target_label} linked by {relationship_type.replace('_', ' ').title()}",
         }]
     return []
 

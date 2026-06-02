@@ -45,6 +45,11 @@ const TRANSLATIONS = {
     entityId: 'Existing entity identifier',
     missingInformation: 'Missing information',
     relationshipTarget: 'Existing relationship target identifier',
+    askedOnce: 'Asked once',
+    askedMany: 'Asked {count} times',
+    propertyOf: '{property} of {subject}',
+    relationshipField: '{target} linked by {relationship}',
+    unsupportedMissingField: 'The failed query did not identify a supported missing graph field.',
     accept: 'Accept and update graph',
     reject: 'Reject',
     resolving: 'Updating...',
@@ -115,6 +120,11 @@ const TRANSLATIONS = {
     entityId: 'Identificador de l’entitat existent',
     missingInformation: 'Informació que falta',
     relationshipTarget: 'Identificador de l’objectiu existent',
+    askedOnce: 'Preguntada una vegada',
+    askedMany: 'Preguntada {count} vegades',
+    propertyOf: '{property} de {subject}',
+    relationshipField: '{target} relacionat mitjançant {relationship}',
+    unsupportedMissingField: 'La consulta fallida no ha identificat cap camp compatible que falti al graf.',
     accept: 'Acceptar i actualitzar el graf',
     reject: 'Rebutjar',
     resolving: 'Actualitzant...',
@@ -185,6 +195,11 @@ const TRANSLATIONS = {
     entityId: 'Identificador de la entidad existente',
     missingInformation: 'Información que falta',
     relationshipTarget: 'Identificador del objetivo existente',
+    askedOnce: 'Preguntada una vez',
+    askedMany: 'Preguntada {count} veces',
+    propertyOf: '{property} de {subject}',
+    relationshipField: '{target} relacionado mediante {relationship}',
+    unsupportedMissingField: 'La consulta fallida no identificó ningún campo compatible que falte en el grafo.',
     accept: 'Aceptar y actualizar el grafo',
     reject: 'Rechazar',
     resolving: 'Actualizando...',
@@ -238,6 +253,66 @@ const TRANSLATIONS = {
 
 function text(key) {
   return (TRANSLATIONS[adminLanguage.value] || TRANSLATIONS.en)[key] || TRANSLATIONS.en[key] || key;
+}
+
+const GRAPH_LABELS = {
+  en: {
+    biography: 'Biography', Information: 'Information', description: 'Description', dating: 'Dating',
+    artist: 'Artist', technique: 'Technique', title: 'Title', visual_overview: 'Visual overview',
+    audio_description: 'Audio description', background: 'Background', colors: 'Colors',
+    composition: 'Composition', figures_gestures: 'Figures and gestures', foreground: 'Foreground',
+    materials_textures: 'Materials and textures', middle_ground: 'Middle ground',
+    mood_atmosphere: 'Mood and atmosphere', objects_symbols: 'Objects and symbols',
+    spatial_order: 'Spatial order', subject_matter: 'Subject matter', uncertainties: 'Uncertainties',
+    Artist: 'Artist', Technique: 'Technique', VisualDescription: 'Visual description',
+    CREATED_BY: 'created by', USES_TECHNIQUE: 'uses technique',
+    HAS_VISUAL_DESCRIPTION: 'has visual description', CONTEMPORARY_OF: 'contemporary of',
+  },
+  ca: {
+    biography: 'Biografia', Information: 'Informació', description: 'Descripció', dating: 'Datació',
+    artist: 'Artista', technique: 'Tècnica', title: 'Títol', visual_overview: 'Descripció visual general',
+    audio_description: 'Audiodescripció', background: 'Fons', colors: 'Colors',
+    composition: 'Composició', figures_gestures: 'Figures i gestos', foreground: 'Primer pla',
+    materials_textures: 'Materials i textures', middle_ground: 'Pla mitjà',
+    mood_atmosphere: 'Ambient i atmosfera', objects_symbols: 'Objectes i símbols',
+    spatial_order: 'Ordre espacial', subject_matter: 'Tema', uncertainties: 'Incerteses',
+    Artist: 'Artista', Technique: 'Tècnica', VisualDescription: 'Descripció visual',
+    CREATED_BY: 'creada per', USES_TECHNIQUE: 'utilitza la tècnica',
+    HAS_VISUAL_DESCRIPTION: 'té descripció visual', CONTEMPORARY_OF: 'contemporani de',
+  },
+  es: {
+    biography: 'Biografía', Information: 'Información', description: 'Descripción', dating: 'Datación',
+    artist: 'Artista', technique: 'Técnica', title: 'Título', visual_overview: 'Descripción visual general',
+    audio_description: 'Audiodescripción', background: 'Fondo', colors: 'Colores',
+    composition: 'Composición', figures_gestures: 'Figuras y gestos', foreground: 'Primer plano',
+    materials_textures: 'Materiales y texturas', middle_ground: 'Plano medio',
+    mood_atmosphere: 'Ambiente y atmósfera', objects_symbols: 'Objetos y símbolos',
+    spatial_order: 'Orden espacial', subject_matter: 'Tema', uncertainties: 'Incertidumbres',
+    Artist: 'Artista', Technique: 'Técnica', VisualDescription: 'Descripción visual',
+    CREATED_BY: 'creada por', USES_TECHNIQUE: 'utiliza la técnica',
+    HAS_VISUAL_DESCRIPTION: 'tiene descripción visual', CONTEMPORARY_OF: 'contemporáneo de',
+  },
+};
+
+function interpolate(template, values) {
+  return Object.entries(values).reduce((result, [key, value]) => result.replace(`{${key}}`, value), template);
+}
+
+function graphLabel(key) {
+  return GRAPH_LABELS[adminLanguage.value]?.[key] || GRAPH_LABELS.en[key] || key;
+}
+
+function inferredFieldLabel(update) {
+  if (update.kind === 'property') {
+    return interpolate(text('propertyOf'), {
+      property: graphLabel(update.propertyName),
+      subject: update.fieldSubject || update.entityLabel,
+    });
+  }
+  return interpolate(text('relationshipField'), {
+    target: graphLabel(update.targetLabel),
+    relationship: graphLabel(update.relationshipType),
+  });
 }
 
 function applyTranslations() {
@@ -507,7 +582,7 @@ function createUnresolvedCard(question) {
     question.language || '-',
     question.roomId || '-',
     question.artworkId || '-',
-    `Asked ${question.askCount || 1} time(s)`,
+    question.askCount === 1 ? text('askedOnce') : interpolate(text('askedMany'), { count: question.askCount || 1 }),
   ].join(' | ');
   const form = document.createElement('form');
   form.className = 'resolution-form';
@@ -517,7 +592,7 @@ function createUnresolvedCard(question) {
     const field = document.createElement('label');
     field.className = 'wide-field';
     const label = document.createElement('span');
-    label.textContent = update.fieldLabel;
+    label.textContent = inferredFieldLabel(update);
     field.append(label);
     const updateInputs = {};
     if (!update.entityId) {
@@ -547,7 +622,7 @@ function createUnresolvedCard(question) {
   status.setAttribute('role', 'status');
   form.append(actions, status);
   if (!inferredUpdates.length) {
-    setStatus(status, 'The failed query did not identify a supported missing graph field.', 'error');
+    setStatus(status, text('unsupportedMissingField'), 'error');
     actions.querySelector('[type="submit"]').disabled = true;
   }
 

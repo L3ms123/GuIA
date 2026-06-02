@@ -182,7 +182,11 @@ with tabs[4]:
             inferred_updates = question.get("inferredUpdates") or []
             submitted_updates = []
             for index, update in enumerate(inferred_updates):
-                st.markdown(f"**{update['fieldLabel']}**")
+                if update["kind"] == "property":
+                    field_label = f"{update['propertyName'].replace('_', ' ').title()} of {update.get('fieldSubject') or update['entityLabel']}"
+                else:
+                    field_label = f"{update['targetLabel']} linked by {update['relationshipType'].replace('_', ' ').title()}"
+                st.markdown(f"**{field_label}**")
                 entity_id = update.get("entityId") or st.text_input("Existing entity identifier", key=f"entity-id-{question_id}-{index}")
                 if update["kind"] == "property":
                     value = st.text_area("Missing information", key=f"value-{question_id}-{index}")
