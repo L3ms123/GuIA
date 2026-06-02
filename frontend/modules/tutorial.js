@@ -283,30 +283,6 @@ function initTutorial() {
     setAttribute(closeBtn, 'aria-label', t('tutorial.close', 'Close help'));
   }
 
-  // Announce text to assistive tech and optionally speak via SpeechSynthesis
-  function announce(text) {
-    try {
-      const live = document.getElementById('tutorial-live');
-      if (live) {
-        // Clear first to ensure change is detected by some AT
-        live.textContent = '';
-        window.setTimeout(() => (live.textContent = text), 50);
-      }
-
-      if (state?.accessibilityPrefs?.spokenAudio && 'speechSynthesis' in window) {
-        try {
-          window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance(text);
-          window.speechSynthesis.speak(u);
-        } catch (e) {
-          // degrade silently
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
-
   function buildStepCard(item) {
     const card = document.createElement('article');
     card.className = 'tutorial-step';
@@ -360,16 +336,6 @@ function initTutorial() {
       if (title) title.focus();
     }, 50);
 
-    // Announce title + body + progress for screen reader and optional TTS
-    try {
-      const titleText = item.title || '';
-      const bodyText = item.body || '';
-      const progressText = t('tutorial.progress', 'Step {current} of {total}')
-        .replace('{current}', currentStep + 1)
-        .replace('{total}', totalSteps());
-      announce(`${progressText}. ${titleText}. ${bodyText}`);
-    } catch (e) {}
-
     if (prevBtn) prevBtn.disabled = currentStep === 0;
     if (nextBtn) {
       nextBtn.hidden = currentStep >= totalSteps() - 1;
@@ -419,10 +385,6 @@ function initTutorial() {
     if (playbackBtn?.getAttribute('aria-pressed') === 'true') playbackBtn.click();
 
     requestAnimationFrame(() => lastFocus?.focus?.());
-
-    try {
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    } catch (e) {}
 
     window.setTimeout(() => {
       if (!document.body.hasAttribute('data-onboarding-open')) {
