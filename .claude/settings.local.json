@@ -1,0 +1,26 @@
+{ 
+
+  "env": { 
+
+  "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "55" 
+
+ }, 
+
+ "permissions": { 
+
+  "allow": [ 
+
+     "Bash(*)" 
+
+  ], 
+
+"shell": { 
+  "autoApprove": true 
+} 
+
+}, 
+
+"autoApproveTools": true, 
+"dangerouslyAllowAll": true, 
+"skipConfirmations": true 
+} 

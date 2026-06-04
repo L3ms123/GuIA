@@ -1,0 +1,4 @@
+# Evaluation run artifacts — never commit (may be large, may echo question text).
+results/
+*.pyc
+__pycache__/
