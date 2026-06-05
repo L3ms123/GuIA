@@ -60,7 +60,7 @@ RETRIEVAL_RUNS = 1
 RANDOM_SEED = 1234  # fixed so the sampled question set is reproducible
 
 # --- Rate limiting / robustness --------------------------------------------
-REQUEST_SLEEP_S = 15 #use between questions to ease Cohere rate limits
+REQUEST_SLEEP_S = 5 #use between questions to ease Cohere rate limits
 MAX_RETRIES_429 = 4    # exponential-backoff attempts on rate-limit errors
 BACKOFF_BASE_S = 2.0
 

@@ -1498,10 +1498,78 @@ def repair_cypher_string_literals(cypher: str) -> str:
     return "".join(repaired)
 
 
+def harden_tolower_against_non_strings(cypher: str) -> str:
+    """Wrap every ``toLower(<arg>)`` argument in ``toString(...)`` so the query
+    survives non-string property values.
+
+    Some graph properties are NOT strings: ``KG/kg.ipynb`` loads the inventory via
+    pandas, so an empty author/name/dating cell becomes a float ``NaN`` (and some
+    datings load as integers). Neo4j's ``toLower`` REQUIRES a string and aborts the
+    WHOLE statement with ``TypeError: Expected a string value for toLower, but got
+    Double(NaN)`` the moment it evaluates one such row — so a single bad node kills
+    an otherwise-correct query (observed on a ``toLower(artist.name)`` author scan).
+
+    ``toString(x)`` is a total function: ``toString('Foo') = 'Foo'`` (no change for
+    real strings) and ``toString(NaN) = 'NaN'`` / ``toString(1733) = '1733'`` (now a
+    string toLower accepts — it just won't match, which is the correct behaviour for
+    a nameless node). So wrapping is always safe and changes no matching semantics
+    for genuine string values.
+
+    Operates only OUTSIDE string literals (a title like ``'toLower('`` cannot
+    trigger it), matches balanced parentheses so nested calls like
+    ``toLower(replace(replace(x)))`` are wrapped whole, and is idempotent: an
+    argument that already begins with ``toString(`` is left untouched.
+    """
+    masked = _cypher_outside_string_literals(cypher)
+    needle = "tolower("
+    # Collect (arg_start, arg_end) spans for each toLower(...) call, scanning the
+    # masked copy so offsets line up with the real string and literals are ignored.
+    spans: list[tuple[int, int]] = []
+    search_from = 0
+    lowered = masked.lower()
+    while True:
+        hit = lowered.find(needle, search_from)
+        if hit == -1:
+            break
+        arg_start = hit + len(needle)
+        depth = 1
+        idx = arg_start
+        while idx < len(masked) and depth > 0:
+            ch = masked[idx]
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+            idx += 1
+        if depth != 0:
+            break  # unbalanced parens -> bail on the rest, leave cypher as-is
+        arg_end = idx - 1  # index of the matching ')'
+        spans.append((arg_start, arg_end))
+        search_from = idx
+
+    if not spans:
+        return cypher
+
+    out = []
+    cursor = 0
+    for arg_start, arg_end in spans:
+        out.append(cypher[cursor:arg_start])
+        arg = cypher[arg_start:arg_end]
+        if arg.lstrip().lower().startswith("tostring("):
+            out.append(arg)  # already hardened -> idempotent
+        else:
+            out.append(f"toString({arg})")
+        cursor = arg_end
+    out.append(cypher[cursor:])
+    return "".join(out)
+
+
 def prepare_generated_cypher(cypher: str) -> str:
     """Apply deterministic repairs that keep generated Cypher read-only and parseable."""
     repaired = repair_cypher_string_literals(cypher)
     repaired = rewrite_combined_sala_id_filters(repaired)
+    repaired = rewrite_mandatory_artist_match_to_optional(repaired)
+    repaired = harden_tolower_against_non_strings(repaired)
     if not is_read_only_cypher(repaired):
         raise ValueError(f"Generated Cypher is not read-only after repair: {repaired}")
     return repaired
@@ -1612,6 +1680,154 @@ def rewrite_combined_sala_id_filters(cypher: str) -> str:
         rewritten,
         flags=re.IGNORECASE,
     )
+
+
+def _cypher_outside_string_literals(cypher: str) -> str:
+    """Return ``cypher`` with every single-quoted string literal blanked to spaces.
+
+    Used so keyword/variable scans cannot be fooled by reserved words or dots
+    that appear *inside* a title literal (e.g. ``'The Return of the King'``).
+    Length is preserved so offsets still line up with the original string.
+    Mirrors the escaped-quote handling of ``repair_cypher_string_literals``.
+    """
+    out = []
+    in_quote = False
+    index = 0
+    while index < len(cypher):
+        char = cypher[index]
+        if char == "\\" and in_quote:
+            out.append("  " if index + 1 < len(cypher) else " ")
+            index += 2
+            continue
+        if char == "'":
+            out.append(" ")
+            in_quote = not in_quote
+            index += 1
+            continue
+        out.append(" " if in_quote else char)
+        index += 1
+    return "".join(out)
+
+
+def rewrite_mandatory_artist_match_to_optional(cypher: str) -> str:
+    """Make author lookups resolve for anonymous artworks, deterministically.
+
+    Every ArtPiece carries its author on the ``artist`` property, but a separate
+    ``(:Artist)`` node and the ``(:ArtPiece)-[:CREATED_BY]->(:Artist)``
+    relationship exist ONLY for non-anonymous authors: ``KG/kg.ipynb`` SETs
+    ``a.artist`` for every row but MERGEs the Artist node only when the name is
+    not ``Anònim...``. A generated query that *requires* the CREATED_BY
+    relationship therefore returns nothing for anonymous works even though the
+    answer is sitting on ``a.artist``.
+
+    This rewrites the simple mandatory author lookup
+        ``MATCH (a:ArtPiece ...)-[:CREATED_BY]->(artist:Artist) <where> RETURN ...``
+    into
+        ``MATCH (a:ArtPiece ...) <where> OPTIONAL MATCH (a)-[:CREATED_BY]->(artist:Artist) RETURN a.artist, ...``
+    so anonymous authors resolve too.
+
+    **Bail-heavy by design.** Regex surgery on arbitrary Cypher is fragile, so
+    this fires ONLY on the dead-simple canonical shape and returns the cypher
+    UNCHANGED on anything more complex. Returning it untouched is always safe:
+    at worst the anonymous fix simply does not apply (as before the rewrite
+    existed); it never rewrites a query into a wrong or invalid one. It bails when:
+
+    * there is more than one MATCH/OPTIONAL MATCH/WITH/UNWIND/UNION/CALL clause
+      (any compound query — covers "MATCH ..., (a)-[:LOCATED_IN]->(s)", a WITH
+      between the match and a later artist filter, etc.);
+    * the Artist node carries a property map ``(artist:Artist {name:'X'})`` —
+      that IS the "works by artist X" filter and must stay mandatory;
+    * the artist variable is referenced anywhere outside the matched pattern
+      (also "works by artist X": ``WHERE artist.name CONTAINS '...'``);
+    * the RETURN is absent or is ``RETURN *`` (can't safely inject ``a.artist``).
+
+    All keyword/variable scans run on a copy with string literals blanked, so a
+    title containing a reserved word cannot mislead them. Any unexpected error
+    falls back to the original cypher. Idempotent: after a rewrite the author
+    path is an OPTIONAL MATCH with no ``:ArtPiece`` label, so it never re-matches.
+    """
+    try:
+        masked = _cypher_outside_string_literals(cypher)
+
+        # Bail on any compound query: more than one of these top-level clauses.
+        clause_hits = re.findall(
+            r"\b(?:OPTIONAL\s+MATCH|MATCH|WITH|UNWIND|UNION|CALL)\b",
+            masked, flags=re.IGNORECASE,
+        )
+        if len(clause_hits) != 1:  # must be exactly the single MATCH we target
+            return cypher
+
+        pattern = re.compile(
+            r"\bMATCH\s*\(\s*(?P<av>\w+)\s*:\s*ArtPiece\s*(?P<propsa>\{[^}]*\})?\s*\)"
+            r"\s*-\s*\[\s*\w*\s*:\s*CREATED_BY\s*\]\s*->\s*"
+            r"\(\s*(?P<artv>\w+)\s*:\s*Artist\s*(?P<propsart>\{[^}]*\})?\s*\)",
+            flags=re.IGNORECASE,
+        )
+        match = pattern.search(masked)
+        if not match:
+            return cypher
+
+        av = match.group("av")
+        artv = match.group("artv")
+        # propsa is re-emitted, so take it from the ORIGINAL cypher (the match ran
+        # on the masked copy, where any title literal inside it is blanked). Offsets
+        # line up because masking preserves length.
+        propsa = (
+            cypher[match.start("propsa"): match.end("propsa")]
+            if match.group("propsa") else ""
+        )
+
+        # A property map on the Artist node is a "works by artist X" filter.
+        if match.group("propsart"):
+            return cypher
+
+        head = cypher[: match.start()]
+        tail = cypher[match.end():]
+        masked_tail = masked[match.end():]
+
+        # The matched pattern must be the END of its MATCH clause: the next
+        # non-space char in the tail must begin a WHERE or RETURN, not continue
+        # the path ('-') or add another pattern (','). (Scan on masked text.)
+        nxt = masked_tail.lstrip()
+        if not re.match(r"(WHERE\b|RETURN\b)", nxt, flags=re.IGNORECASE):
+            return cypher
+
+        # Locate the RETURN projection (on masked text) and require it be safe.
+        ret = re.search(r"\bRETURN\b\s*(?:DISTINCT\s+)?", masked_tail, flags=re.IGNORECASE)
+        if not ret:
+            return cypher
+
+        # The artist variable must NOT be referenced in the WHERE region (the part
+        # before RETURN). A reference there means it is filtered -> "works by
+        # artist X" -> the relationship must stay mandatory; it would also be an
+        # unbound variable once the match becomes OPTIONAL. Referencing artist in
+        # the RETURN projection (e.g. RETURN artist.name) is fine -> null for
+        # anonymous works, which is exactly what we want.
+        masked_where = masked_tail[: ret.start()]
+        if re.search(rf"\b{re.escape(artv)}\b", masked_where):
+            return cypher
+        insert_pos = match.end() + ret.end()
+        masked_proj_region = masked[insert_pos:]
+        proj_end = re.search(r"\b(ORDER\s+BY|LIMIT|SKIP|UNION)\b", masked_proj_region, flags=re.IGNORECASE)
+        masked_projection = masked_proj_region[: proj_end.start()] if proj_end else masked_proj_region
+        if "*" in masked_projection:  # RETURN * — cannot mix with an explicit term
+            return cypher
+
+        between = tail[: ret.start()]  # the WHERE region (or just spacing)
+        rest = tail[ret.start():]      # from RETURN onward
+        new_match = f"MATCH ({av}:ArtPiece{(' ' + propsa) if propsa else ''})"
+        optional_clause = f" OPTIONAL MATCH ({av})-[:CREATED_BY]->({artv}:Artist) "
+        result = head + new_match + between + optional_clause + rest
+
+        # Guarantee the property-borne author is projected (anonymous works only
+        # have it here). Insert a.artist right after RETURN[ DISTINCT] if absent.
+        if not re.search(rf"\b{re.escape(av)}\s*\.\s*artist\b", masked_projection, flags=re.IGNORECASE):
+            ins = re.search(r"\bRETURN\b\s*(?:DISTINCT\s+)?", result, flags=re.IGNORECASE)
+            if ins:
+                result = result[: ins.end()] + f"{av}.artist, " + result[ins.end():]
+        return result
+    except Exception:  # pragma: no cover - safety net: never break retrieval over a rewrite
+        return cypher
 
 
 def rewrite_exact_property_matches_to_contains(cypher: str) -> str:
@@ -1886,7 +2102,14 @@ def generate_query_api_cypher(query: str) -> str:
         "For room questions, match the graph's separate room fields: Sala.palau is the Palau number and Sala.id is the Sala number. "
         "If the context contains a UI location like P1-S2, query it as s.palau = '1' AND s.id = '2', never as s.id = 'P1-S2'. "
         "Example: MATCH (a:ArtPiece)-[:LOCATED_IN]->(s:Sala) "
-        "WHERE toLower(a.title) CONTAINS 'anunciació' AND s.palau = '1' AND s.id = '3' RETURN a.title, a.description LIMIT 5"
+        "WHERE toLower(a.title) CONTAINS 'anunciació' AND s.palau = '1' AND s.id = '3' RETURN a.title, a.description LIMIT 5. "
+        "For artist/author questions about a specific artwork, read the ArtPiece.artist property: every ArtPiece has an `artist` "
+        "property, but the (:Artist) node and the (:ArtPiece)-[:CREATED_BY]->(:Artist) relationship exist ONLY for non-anonymous "
+        "authors (anonymous works such as 'Anònim, ...' carry the value on a.artist but have NO Artist node). So do NOT require the "
+        "CREATED_BY relationship for such a question; use OPTIONAL MATCH (a)-[:CREATED_BY]->(artist:Artist) and RETURN a.artist plus "
+        "artist.name, artist.biography. (Keep CREATED_BY mandatory only when filtering BY an artist, e.g. 'works by X'.) "
+        "Example: MATCH (a:ArtPiece) WHERE toLower(a.title) CONTAINS 'flagel·lació' "
+        "OPTIONAL MATCH (a)-[:CREATED_BY]->(artist:Artist) RETURN a.artist, artist.name, artist.biography LIMIT 5"
     )
     message = (
         f"Live schema:\n{schema}\n\n"
