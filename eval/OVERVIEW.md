@@ -20,7 +20,6 @@ backend (`LLM/LLM_Call.py`) and calls its functions directly, no HTTP server.
 |------|--------------------|----------|--------|
 | **1 — Faithfulness** | Does the guide invent facts beyond its retrieved rows? | retrieve → answer → **judge** | built + run |
 | **2 — Retrieval recall** | Did retrieval fetch the *right* fact at all? | retrieve → **match** known answer | built + run |
-| 3 & 4 | TBD (likely TTS/STT, Easy-Read iDEM) | — | not defined |
 
 The two parts are complementary: Part 1 can score an answer **faithful** even when
 retrieval fetched the *wrong* row (the guide honestly repeated it). Part 2 is the
