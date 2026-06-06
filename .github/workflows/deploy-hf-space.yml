@@ -39,7 +39,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          hf upload RafelSV/guia-demo . . \
+          hf upload --no-create RafelSV/guia-demo . . \
             --repo-type space \
             --token "$HF_TOKEN" \
             --exclude ".git/*" \
