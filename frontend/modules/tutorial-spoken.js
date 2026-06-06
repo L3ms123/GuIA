@@ -136,8 +136,9 @@ function initSpokenTutorial(audio) {
     nextBtn = document.createElement('button');
     nextBtn.type = 'button';
     nextBtn.className = 'tutorial-spoken-next';
+    nextBtn.textContent = t('tutorialSpoken.next', 'Next');
 
-    controls.append(audioBtn, closeBtn, prevBtn, nextBtn);
+    controls.append(prevBtn, nextBtn, audioBtn, closeBtn);
     panel.append(header, bodyNode, controls);
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
@@ -225,7 +226,8 @@ function initSpokenTutorial(audio) {
       ? closeSpokenTutorial
       : () => showStep(currentIndex + 1);
 
-    window.setTimeout(() => closeBtn?.focus?.(), 50);
+    // Focus next button instead of close button for better accessibility
+    window.setTimeout(() => nextBtn?.focus?.(), 50);
 
     // No speak automatically - user must press audio button
   }

@@ -788,6 +788,9 @@ function bindOnboardingFlow() {
     const startsTutorial = state.showTutorialOnStart;
     const deferAppShellAccessibility = false;
     hideOnboarding({ deferAppShellAccessibility });
+    // Reopen location panel after onboarding
+    document.body.toggleAttribute('data-location-panel-open', true);
+    el('location-panel-btn')?.setAttribute('aria-expanded', 'true');
     window.saveGuiaSession?.();
     if (state.deferredSpokenAudioChange) {
       const { wasEnabled, isEnabled } = state.deferredSpokenAudioChange;

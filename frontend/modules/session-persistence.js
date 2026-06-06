@@ -95,7 +95,7 @@ function restartGuiaSession() {
     largeText: false,
     uppercaseText: false,
     simpleLanguage: false,
-    spokenAudio: true,
+    spokenAudio: false,
     moreTime: false,
     audioDescription: false,
     tutorialSpoken: false

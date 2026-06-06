@@ -39,7 +39,7 @@ const state = {
     largeText: !!storedGuiaSession?.accessibilityPrefs?.largeText,
     uppercaseText: !!storedGuiaSession?.accessibilityPrefs?.uppercaseText,
     simpleLanguage: !!storedGuiaSession?.accessibilityPrefs?.simpleLanguage,
-    spokenAudio: storedGuiaSession?.accessibilityPrefs?.spokenAudio ?? true,
+    spokenAudio: storedGuiaSession?.accessibilityPrefs?.spokenAudio ?? false,
     moreTime: !!storedGuiaSession?.accessibilityPrefs?.moreTime,
     audioDescription: !!storedGuiaSession?.accessibilityPrefs?.audioDescription,
     tutorialSpoken: !!storedGuiaSession?.accessibilityPrefs?.tutorialSpoken

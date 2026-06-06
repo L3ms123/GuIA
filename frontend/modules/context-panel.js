@@ -26,6 +26,9 @@ function initContextPanel() {
     }
   }
 
+  // Open location panel by default
+  setLocationPanelOpen(true);
+
   locationPanelBtn?.addEventListener('click', () => {
     const willOpen = !document.body.hasAttribute('data-location-panel-open');
     if (willOpen) {
