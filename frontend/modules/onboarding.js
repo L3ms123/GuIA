@@ -432,21 +432,21 @@ function showOnboardingStep(step) {
   nextBtn.textContent = step === state.totalSteps || (state.privacyAccepted && step === 2) ? 'Start' : 'Continue';
 
   updateOnboardingButtons();
+
+  // Focus the step-count element in the header to trigger aria-live announcement
   window.setTimeout(() => {
+    const stepCount = el('step-count');
+    if (!stepCount) return;
+
     if (step === 1) {
-      // Focus the intro text so screen readers announce it automatically via aria-live
-      el('label-personality-intro')?.focus();
-      return;
+      stepCount.setAttribute('aria-describedby', 'label-personality-intro');
+    } else {
+      stepCount.removeAttribute('aria-describedby');
     }
 
-    if (step === 3) {
-      // Focus the privacy notice text so screen readers announce it automatically via aria-live
-      el('privacy-notice-text')?.focus();
-      return;
-    }
+    stepCount.focus();
+  }, 50);
 
-    focusFirstAvailable(steps.find((section) => !section.hidden));
-  }, 0);
 }
 
 function updateBackButtonState(backBtn, isFirstStep) {

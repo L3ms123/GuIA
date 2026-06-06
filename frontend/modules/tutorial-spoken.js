@@ -227,12 +227,6 @@ function initSpokenTutorial(audio) {
     titleNode.textContent = step.title;
     bodyNode.textContent = step.body;
 
-    // Force screenreader to announce the new content by toggling aria-live
-    bodyNode.setAttribute('aria-live', 'off');
-    window.setTimeout(() => {
-      bodyNode.setAttribute('aria-live', 'polite');
-    }, 10);
-
     updateNavigation();
 
     overlay.hidden = false;
@@ -250,8 +244,11 @@ function initSpokenTutorial(audio) {
       ? closeSpokenTutorial
       : () => showStep(currentIndex + 1);
 
-    // Focus next button instead of close button for better accessibility
-    window.setTimeout(() => nextBtn?.focus?.(), 50);
+    // Focus the title to announce the new step content
+    window.setTimeout(() => {
+      titleNode.setAttribute('tabindex', '-1');
+      titleNode.focus();
+    }, 50);
 
     // No speak automatically - user must press audio button
   }
