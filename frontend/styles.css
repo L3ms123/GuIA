@@ -1498,11 +1498,14 @@ body[data-tutorial-open] .input-shell.tutorial-target {
 }
 
 .tutorial-spoken-controls {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.6rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   padding-top: 0.25rem;
+}
+
+.tutorial-spoken-controls button {
+  width: 100%;
 }
 
 .tutorial-spoken-controls button {
