@@ -93,6 +93,8 @@ function initSpokenTutorial(audio) {
     bodyNode = document.createElement('p');
     bodyNode.id = 'tutorial-spoken-body';
     bodyNode.className = 'tutorial-spoken-body';
+    bodyNode.setAttribute('aria-live', 'polite');
+    bodyNode.setAttribute('aria-atomic', 'true');
 
     const controls = document.createElement('div');
     controls.className = 'tutorial-spoken-controls';
@@ -217,6 +219,12 @@ function initSpokenTutorial(audio) {
     titleNode.textContent = step.title;
     bodyNode.textContent = step.body;
 
+    // Force screenreader to announce the new content
+    bodyNode.setAttribute('aria-live', 'off');
+    window.setTimeout(() => {
+      bodyNode.setAttribute('aria-live', 'polite');
+    }, 10);
+
     updateNavigation();
 
     overlay.hidden = false;
@@ -239,6 +247,14 @@ function initSpokenTutorial(audio) {
     isOpen = false;
     isAudioPlaying = false;
     audio?.resetSpeechQueue();
+
+    // Restore background content visibility for screenreaders
+    const chatThread = q('.chat-thread');
+    const chatPanel = q('.chat-panel');
+    const contextColumn = q('.context-column');
+    if (chatThread) chatThread.removeAttribute('aria-hidden');
+    if (chatPanel) chatPanel.removeAttribute('aria-hidden');
+    if (contextColumn) contextColumn.removeAttribute('aria-hidden');
 
     window.setTimeout(() => {
       if (!document.body.hasAttribute('data-onboarding-open') &&
