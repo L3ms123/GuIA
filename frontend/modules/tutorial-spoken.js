@@ -126,7 +126,8 @@ function initSpokenTutorial(audio) {
     closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.className = 'tutorial-spoken-close';
-    closeBtn.textContent = t('tutorialSpoken.close', 'Close');
+    closeBtn.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">close</span>';
+    closeBtn.setAttribute('aria-label', t('tutorialSpoken.close', 'Close'));
     closeBtn.addEventListener('click', closeSpokenTutorial);
 
     prevBtn = document.createElement('button');
@@ -140,8 +141,15 @@ function initSpokenTutorial(audio) {
     nextBtn.className = 'tutorial-spoken-next';
     nextBtn.textContent = t('tutorialSpoken.next', 'Next');
 
-    controls.append(prevBtn, nextBtn, audioBtn, closeBtn);
-    panel.append(header, bodyNode, controls);
+    const topControls = document.createElement('div');
+    topControls.className = 'tutorial-spoken-top-controls';
+    topControls.append(audioBtn, closeBtn);
+
+    const bottomControls = document.createElement('div');
+    bottomControls.className = 'tutorial-spoken-bottom-controls';
+    bottomControls.append(prevBtn, nextBtn);
+
+    panel.append(topControls, header, bodyNode, bottomControls);
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
 

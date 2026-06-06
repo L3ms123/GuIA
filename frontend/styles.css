@@ -1497,6 +1497,60 @@ body[data-tutorial-open] .input-shell.tutorial-target {
   opacity: 0.85;
 }
 
+.tutorial-spoken-top-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  align-self: flex-end;
+}
+
+.tutorial-spoken-top-controls button {
+  border: 1px solid var(--outline-soft);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  min-width: 3rem;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutorial-spoken-top-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tutorial-spoken-bottom-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.tutorial-spoken-bottom-controls button {
+  width: 100%;
+  border: 1px solid var(--outline-soft);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.tutorial-spoken-bottom-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .tutorial-spoken-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
