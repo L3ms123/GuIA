@@ -481,13 +481,14 @@ function initAudioControls() {
 
   window.guiaResetSpeechQueue = resetSpeechQueue;
   window.guiaUpdateSpokenAudio = updateSpokenAudioButton;
-  window.guiaReleaseAudioWaiters = releaseAudioWaiters; 
+  window.guiaReleaseAudioWaiters = releaseAudioWaiters;
   window.guiaHandleNarrationPreferenceChange = handleNarrationPreferenceChange;
   window.guiaSetLastAssistantText = (text) => {
     if (typeof text === 'string' && text.trim()) {
       lastAssistantText = text.trim();
     }
   };
+  window.guiaReplayLastAssistantSpeech = replayLastAssistantSpeech;
 
   return {
     get lastAssistantText() {
@@ -503,7 +504,8 @@ function initAudioControls() {
     queueSpeech,
     resetSpeechQueue,
     applyAudioSettings,
-    resumeAudioOutput
+    resumeAudioOutput,
+    updateSpokenAudioButton
   };
 }
 
@@ -517,7 +519,13 @@ function initInitialWelcomeSpeech(audio) {
       return;
     }
 
-    const firstBubble = q('.assistant-bubble');
+    const bubbles = qa('#chat-thread .msg-bubble');
+    if (bubbles.length !== 1 || !bubbles[0]?.classList.contains('assistant-bubble')) {
+      window.guiaRevealAppShellAfterWelcome?.();
+      return;
+    }
+
+    const firstBubble = bubbles[0];
     const text = firstBubble?.textContent?.trim();
     if (!text) {
       window.guiaRevealAppShellAfterWelcome?.();

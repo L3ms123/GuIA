@@ -80,8 +80,13 @@ body[data-settings-open] {
 }
 
 .app-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
   min-height: 100dvh;
   font-size: calc(1rem * var(--scale));
+  display: flex;
+  flex-direction: column;
 }
 
 html[data-uppercase-text],
@@ -321,9 +326,10 @@ select {
 /* chips for age */
 .chip {
   display: flex;
-  flex-direction: column; 
-  align-items: flex-start;
-  gap: 8px; 
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   background: var(--surface-lowest);
   padding: 0.8rem;
   border: none;
@@ -339,34 +345,15 @@ select {
   background: var(--surface-low);
 }
 
-/* SVG flag in lang cards */
-.flag svg {
-  width: 2.2rem;
-  height: 1.5rem;
-  display: block;
-  margin-bottom: 0.35rem;
+.chip .age-title,
+.chip .card-subtitle {
+  display: inline-block;
+  margin: 0;
 }
 
-/* SVG icons in persona cards */
-.card-icon {
-  width: 3.2rem;
-  height: 3.2rem;
-  color: var(--on-surface-variant);
-  margin-bottom: 0.35rem;
-  display: block;
-}
 
 .radio-card[aria-checked="true"] .card-icon {
   color: var(--primary);
-}
-
-/* SVG icons in age chips */
-.chip-icon {
-  width: 2.2rem;
-  height: 2.2rem;
-  color: var(--on-surface-variant);
-  margin-bottom: 0.2rem;
-  display: inline-block;
 }
 
 .age-title {
@@ -639,16 +626,6 @@ select {
   width: 100%;
 }
 
-/* App shell */
-.app-shell {
-  width: 100%;
-  max-width: none;
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Top bar */
 .top-bar {
   position: sticky;
@@ -706,7 +683,7 @@ select {
   color: inherit;
   cursor: pointer;
   text-align: left;
-  order: 1;
+  order: 0;
 }
 
 .help-btn {
@@ -720,6 +697,7 @@ select {
   color: inherit;
   cursor: pointer;
   font-weight: 700;
+  order: 1;
 }
 
 .help-btn .material-symbols-outlined {
@@ -1448,8 +1426,157 @@ body[data-tutorial-open] .input-shell.tutorial-target {
   }
 }
 
+/* Spoken tutorial */
+#tutorial-spoken-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(12, 15, 14, 0.75);
+  color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+#tutorial-spoken-overlay[hidden] {
+  display: none;
+}
+
+.tutorial-spoken-panel {
+  width: min(100%, 44rem);
+  max-width: 44rem;
+  background: var(--surface-lowest);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 1.75rem 1.5rem 1.5rem;
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tutorial-spoken-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tutorial-spoken-icon {
+  font-size: 1.6rem;
+  color: var(--primary);
+  flex-shrink: 0;
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+}
+
+.tutorial-spoken-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  color: var(--on-surface);
+}
+
+.tutorial-spoken-progress {
+  font-size: 0.8rem;
+  color: var(--on-surface-variant);
+  opacity: 0.55;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tutorial-spoken-body {
+  font-size: 1.1rem;
+  line-height: 1.65;
+  margin: 0;
+  color: var(--on-surface);
+  opacity: 0.85;
+}
+
+.tutorial-spoken-controls {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+
+.tutorial-spoken-controls button {
+  border: 1px solid var(--outline-soft);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.tutorial-spoken-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tutorial-spoken-audio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.tutorial-spoken-audio--off {
+  opacity: 0.5;
+}
+
+.tutorial-spoken-audio--off:hover {
+  opacity: 0.7;
+}
+
+.tutorial-spoken-audio--on {
+  opacity: 1;
+}
+
+.tutorial-spoken-close {
+  background: var(--surface-low);
+  margin-right: auto;
+}
+
+.tutorial-spoken-prev {
+  background: var(--surface-low);
+  opacity: 0.85;
+}
+
+.tutorial-spoken-next {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
+.tutorial-spoken-done {
+  background: #16a34a;
+  color: white;
+  border-color: #16a34a;
+}
+
+@media (max-width: 480px) {
+  .tutorial-spoken-panel {
+    width: 100%;
+    padding: 1.25rem 1.1rem 1.1rem;
+    border-radius: 0.8rem;
+  }
+}
+
 /* bottom bar */
-.bottom-bar {
+.bottom-bar { 
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
@@ -1611,11 +1738,6 @@ select:focus-visible,
     gap: 1rem;
   }
 
-  .onb-section {
-    gap: 0.55rem;
-    margin-bottom: 0;
-  }
-
   .toggle-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1718,8 +1840,6 @@ select:focus-visible,
 
   .top-left {
     display: contents;
-    margin: 0;
-    min-width: 0;
   }
 
   .app-title {
@@ -2108,6 +2228,24 @@ select:focus-visible,
   .settings-grid.age-grid {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .lang-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .lang-card .card-title,
+  .lang-card .card-subtitle {
+    margin: 0;
+    display: inline-block;
+  }
+
+  .lang-card .card-subtitle {
+    color: var(--on-surface-variant);
+    font-size: 0.95rem;
   }
 
   .settings-panel {

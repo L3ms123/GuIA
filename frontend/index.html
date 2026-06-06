@@ -242,14 +242,23 @@
           </div>
 
           <div class="onb-section">
-            <h2 id="label-tutorial-choice" class="section-label">Ajuda inicial</h2>
+            <h2 id="label-tutorial-choice" class="section-label">Ajuda inicial visual</h2>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-start-tutorial" aria-label="Veure ajuda abans de començar" aria-describedby="opt-start-tutorial-help" checked />
+                <input type="checkbox" id="opt-start-tutorial" aria-label="Veure ajuda abans de començar" aria-describedby="opt-start-tutorial-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
                 <div class="toggle-content">
-                  <span>Veure ajuda abans de començar</span>
-                  <p id="opt-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals abans de començar. Aquesta opció ja està activada.</p>
+                  <span>Tutorial visual</span>
+                  <p id="opt-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals visualment abans de començar.</p>
+                </div>
+              </label>
+              
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-tutorial-spoken" aria-label="Tutorial visual amb veu" aria-describedby="opt-tutorial-spoken-help" />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
+                <div class="toggle-content">
+                  <span>Tutorial amb veu</span>
+                  <p id="opt-tutorial-spoken-help" class="card-subtitle">GuIA explica els botons principals amb veu abans de començar.</p>
                 </div>
               </label>
             </div>
@@ -447,8 +456,16 @@
               <input type="checkbox" id="settings-start-tutorial" aria-label="Veure ajuda abans de començar" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
               <div class="toggle-content">
-                <span id="settings-start-tutorial-label">Veure ajuda abans de començar</span>
-                <p id="settings-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals abans de començar.</p>
+                <span id="settings-start-tutorial-label">Veure ajuda visual abans de començar</span>
+                <p id="settings-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals visualment abans de començar.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" id="settings-tutorial-spoken" aria-label="Tutorial amb veu" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
+              <div class="toggle-content">
+                <span id="settings-tutorial-spoken-label">Tutorial amb veu</span>
+                <p id="settings-tutorial-spoken-help" class="card-subtitle">GuIA explica els botons principals amb veu abans de començar.</p>
               </div>
             </label>
           </div>
@@ -710,7 +727,17 @@
 
           <p id="camera-error" class="field-error" aria-live="assertive" hidden></p>
           <div id="manual-location-panel" class="manual-location-panel" hidden>
-            <label class="field-label" id="room" for="room-select">Sala</label>
+            <label class="field-label" id="floor" for="floor-select" data-i18n-key="app.floorLabel">Planta</label>
+            <select
+              id="floor-select"
+              class="field-select"
+              aria-describedby="floor-help"
+            >
+              <option value="">Selecciona una planta</option>
+            </select>
+            <p id="floor-help" class="sr-only" data-i18n-key="app.floorHelp">Selecciona la planta on ets ara.</p>
+
+            <label class="field-label" id="room" for="room-select" data-i18n-key="app.roomLabel">Sala</label>
             <select
               id="room-select"
               class="field-select"
@@ -718,7 +745,7 @@
             >
               <option value="">Selecciona una sala</option>
             </select>
-            <p id="room-help" class="sr-only" data-i18n-key="app.roomHelp">Selecciona la sala on ets ara.</p>
+            <p id="room-help" class="sr-only" data-i18n-key="app.roomHelp">Selecciona la planta i la sala on ets ara.</p>
 
             <label class="field-label" id="artwork" for="artwork-select">Obra</label>
             <select
@@ -847,6 +874,7 @@
   <script src="./modules/locations.js"></script>
   <script src="./app.js"></script>
   <script src="./modules/tutorial.js?v=20260524-tutorial-location"></script>
+  <script src="./modules/tutorial-spoken.js"></script>
   <script src="./modules/audio.js"></script>
   <script src="./modules/voice.js"></script>
   <script src="./modules/context-panel.js"></script>

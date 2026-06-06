@@ -3,8 +3,8 @@ function showOnboarding() {
   state.lastFocusedElement = document.activeElement;
   state.onboardingStep = 1;
   if (!state.chatStarted) {
-    state.showTutorialOnStart = true;
-    state.accessibilityPrefs.spokenAudio = true;
+    state.showTutorialOnStart = false;
+    state.accessibilityPrefs.spokenAudio = false;
   }
   window.guiaResetSpeechQueue?.();
   syncAccessibilityControls();
@@ -105,7 +105,8 @@ function settingsEls() {
     closeBtn: el('settings-close-btn'),
     doneBtn: el('settings-done-btn'),
     resetBtn: el('settings-reset-btn'),
-    tutorialInput: el('settings-start-tutorial')
+    tutorialInput: el('settings-start-tutorial'),
+    tutorialSpokenInput: el('settings-tutorial-spoken')
   };
 }
 
@@ -345,6 +346,8 @@ function applySettingsTranslations() {
 
   setText(el('settings-start-tutorial-label'), t('onboarding.startTutorial'));
   setText(el('settings-start-tutorial-help'), t('onboarding.startTutorialHelp'));
+  setText(el('settings-tutorial-spoken-label'), t('onboarding.tutorialSpoken'));
+  setText(el('settings-tutorial-spoken-help'), t('onboarding.tutorialSpokenHelp'));
   enhanceSettingsAccessibility();
 }
 
@@ -381,6 +384,12 @@ function enhanceSettingsAccessibility() {
   if (tutorialInput) {
     tutorialInput.setAttribute('aria-labelledby', 'settings-start-tutorial-label');
     tutorialInput.setAttribute('aria-describedby', 'settings-start-tutorial-help');
+  }
+
+  const tutorialSpokenInput = el('settings-tutorial-spoken');
+  if (tutorialSpokenInput) {
+    tutorialSpokenInput.setAttribute('aria-labelledby', 'settings-tutorial-spoken-label');
+    tutorialSpokenInput.setAttribute('aria-describedby', 'settings-tutorial-spoken-help');
   }
 }
 
@@ -540,10 +549,20 @@ function syncAccessibilityControls() {
     if (input) input.checked = !!state.accessibilityPrefs[preference];
   });
 
+  // Tutorials (mutually exclusive)
   const tutorialInput = el('opt-start-tutorial');
-  if (tutorialInput) tutorialInput.checked = !!state.showTutorialOnStart;
+  if (tutorialInput) {
+    tutorialInput.checked = !!state.showTutorialOnStart;
+  }
+
+  const tutorialSpokenInput = el('opt-tutorial-spoken');
+  if (tutorialSpokenInput) {
+    tutorialSpokenInput.checked = !!state.accessibilityPrefs.tutorialSpoken;
+  }
+
   syncSettingsControls();
 }
+
 
 function syncSettingsControls() {
   qa('[data-settings-lang]').forEach((btn) => {
@@ -564,6 +583,9 @@ function syncSettingsControls() {
 
   const tutorialInput = el('settings-start-tutorial');
   if (tutorialInput) tutorialInput.checked = !!state.showTutorialOnStart;
+
+  const tutorialSpokenInput = el('settings-tutorial-spoken');
+  if (tutorialSpokenInput) tutorialSpokenInput.checked = !!state.accessibilityPrefs.tutorialSpoken;
 }
 
 function setPreferredSpeechSpeed(speed) {
@@ -680,11 +702,68 @@ function bindSettingsPanel() {
     });
   });
 
+  const tutorialSpokenInput = el('opt-tutorial-spoken');
+
   tutorialInput?.addEventListener('change', (event) => {
+    // Visual tutorial
     state.showTutorialOnStart = event.target.checked;
+    if (event.target.checked) {
+      // Ensure the spoken tutorial cannot be enabled at the same time.
+      state.accessibilityPrefs.tutorialSpoken = false;
+      // Keep the toggle and open condition consistent.
+      state.showTutorialOnStart = true;
+    }
+    syncAccessibilityControls();
+    applyAccessibilityPrefs();
+    window.saveGuiaSession?.();
+  });
+
+  tutorialSpokenInput?.addEventListener('change', (event) => {
+    // Spoken tutorial
+    state.accessibilityPrefs.tutorialSpoken = event.target.checked;
+    if (event.target.checked) {
+      state.showTutorialOnStart = false;
+    }
+    syncAccessibilityControls();
+    applyAccessibilityPrefs();
+    window.saveGuiaSession?.();
+  });
+
+  // Settings panel tutorial checkboxes (mutually exclusive)
+  const settingsTutorialInput = el('settings-start-tutorial');
+  const settingsTutorialSpokenInput = el('settings-tutorial-spoken');
+
+  settingsTutorialInput?.addEventListener('change', (event) => {
+    // Visual tutorial in settings
+    state.showTutorialOnStart = event.target.checked;
+    if (event.target.checked) {
+      // Ensure the spoken tutorial cannot be enabled at the same time.
+      state.accessibilityPrefs.tutorialSpoken = false;
+      // Close settings panel and open tutorial
+      const doneBtn = el('settings-done-btn');
+      if (doneBtn) doneBtn.click();
+      window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
+    }
+    syncSettingsControls();
     syncAccessibilityControls();
     window.saveGuiaSession?.();
   });
+
+  settingsTutorialSpokenInput?.addEventListener('change', (event) => {
+    // Spoken tutorial in settings
+    state.accessibilityPrefs.tutorialSpoken = event.target.checked;
+    if (event.target.checked) {
+      state.showTutorialOnStart = false;
+      // Close settings panel and open spoken tutorial
+      const doneBtn = el('settings-done-btn');
+      if (doneBtn) doneBtn.click();
+      window.setTimeout(() => window.guiaOpenSpokenTutorial?.(0), 150);
+    }
+    syncSettingsControls();
+    syncAccessibilityControls();
+    window.saveGuiaSession?.();
+  });
+
 }
 
 function bindOnboardingFlow() {
@@ -704,8 +783,10 @@ function bindOnboardingFlow() {
     applyAppTranslations();
     applyAccessibilityPrefs();
     syncAccessibilityControls();
+    // Ensure audio is muted when spokenAudio is disabled
+    window.guiaUpdateSpokenAudio?.();
     const startsTutorial = state.showTutorialOnStart;
-    const deferAppShellAccessibility = state.accessibilityPrefs.spokenAudio && !startsTutorial;
+    const deferAppShellAccessibility = false;
     hideOnboarding({ deferAppShellAccessibility });
     window.saveGuiaSession?.();
     if (state.deferredSpokenAudioChange) {
@@ -713,12 +794,30 @@ function bindOnboardingFlow() {
       state.deferredSpokenAudioChange = null;
       window.guiaHandleNarrationPreferenceChange?.(wasEnabled, isEnabled);
     }
-    // The tutorial announces its own content. Narrate the welcome after it closes.
-    if (startsTutorial) {
-      window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
-    } else {
-      window.setTimeout(() => window.guiaSpeakInitialWelcome?.(), 300);
+    // Open selected tutorial (visual or spoken) after onboarding closes.
+    // Use the real UI checkbox states to avoid inconsistencies from a previously persisted session.
+    const wantsVisualTutorial = !!state.showTutorialOnStart;
+    const wantsSpokenTutorial = !!state.accessibilityPrefs.tutorialSpoken;
+
+    const shouldShowSpokenTutorial = wantsSpokenTutorial;
+    const shouldShowVisualTutorial =
+      wantsVisualTutorial && !shouldShowSpokenTutorial;
+    // Ensure visual tutorial opens even if the body attribute isn't fully set yet.
+    if (shouldShowSpokenTutorial) {
+      window.setTimeout(() => window.guiaOpenSpokenTutorial?.(0), 150);
+      return;
     }
+
+    if (shouldShowVisualTutorial) {
+      window.setTimeout(() => {
+        window.guiaOpenTutorial?.();
+      }, 150);
+      return;
+    }
+
+
+    window.setTimeout(() => window.guiaSpeakInitialWelcome?.(), 300);
+
   }
 
   bindAccessibilityPreference('opt-large-text', 'largeText');
@@ -727,14 +826,34 @@ function bindOnboardingFlow() {
   bindAccessibilityPreference('opt-spoken-audio', 'spokenAudio');
   bindAccessibilityPreference('opt-more-time', 'moreTime');
   bindAccessibilityPreference('opt-visual-descriptions', 'audioDescription');
+
+  // Tutorials (mutually exclusive)
   el('opt-start-tutorial')?.addEventListener('change', (event) => {
+    // Visual tutorial
     state.showTutorialOnStart = event.target.checked;
+    if (event.target.checked) {
+      state.accessibilityPrefs.tutorialSpoken = false;
+    }
     syncAccessibilityControls();
+    applyAccessibilityPrefs();
     window.saveGuiaSession?.();
   });
+
+  el('opt-tutorial-spoken')?.addEventListener('change', (event) => {
+    // Spoken tutorial
+    state.accessibilityPrefs.tutorialSpoken = event.target.checked;
+    if (event.target.checked) {
+      state.showTutorialOnStart = true;
+    }
+    syncAccessibilityControls();
+    applyAccessibilityPrefs();
+    window.saveGuiaSession?.();
+  });
+
   bindSettingsPanel();
   initEnterToggleCheckboxes();
   syncAccessibilityControls();
+
 
   consent?.addEventListener('change', updateOnboardingButtons);
 

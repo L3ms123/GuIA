@@ -1,5 +1,22 @@
 {
   "en": {
+    "tutorialSpoken": {
+      "locationTitle": "Choose your location",
+      "locationBody": "At the top center you will find the location panel, which is open by default. Select the floor and room where you are. Once you confirm your location, GuIA will know which artworks surround you.",
+      "chatTitle": "Ask a question",
+      "chatBody": "At the bottom of the screen there is a text field. Write any question about the artworks, the room or the museum and press the send button on the right.",
+      "micTitle": "Voice input",
+      "micBody": "Next to the text field there is a microphone button. Press it to ask your question with your voice. Press it again to stop speaking. GuIA will transcribe what you say and you can review the text before sending it with the send button.",
+      "audioTitle": "Audio controls",
+      "audioBody": "At the top right you will find the audio controls panel. Here you can turn narration on or off, adjust the volume, change the reading speed, and replay the last answer.",
+      "settingsTitle": "Settings",
+      "settingsBody": "Press the settings button at the top left of the screen to change initial preferences like language or accessibility options.",
+      "previous": "Previous",
+      "next": "Next",
+      "done": "Got it",
+      "close": "Close",
+      "playAudio": "Play audio"
+    },
     "onboarding": {
       "eyebrow": "GuIA Museu del Renaixamen Guide",
       "title": "Choose your guide.",
@@ -19,9 +36,16 @@
     "continue": "Continue",
     "optional": "(optional)",
       "accessibility": "Accessibility options",
-      "tutorial": "Tutorial",
+      "tutorial": "Visual tutorial",
       "startTutorial": "Show help before I start",
-      "startTutorialHelp": "GuIA explains the main buttons before the visit starts. This option is already on.",
+      "startTutorialHelp": "GuIA explains the main buttons visually before the visit starts.",
+      "tutorialSpoken": "Spoken tutorial",
+      "tutorialSpokenHelp": "GuIA describes in audio the main buttons before the visit starts.",
+      "tutorialSpoken.welcomeTitle": "Welcome to GuIA",
+      "tutorialSpoken.welcomeBody": "GuIA is an AI guide that helps you explore the museum. First, choose your location by selecting floor and room. Then, ask any question about the artworks, rooms, or museum. GuIA will answer and read the response aloud. You can adjust the voice speed and other accessibility options in the settings.",
+      "tutorialSpoken.previous": "Previous",
+      "tutorialSpoken.next": "Next",
+      "tutorialSpoken.close": "Close",
       "largeText": "Large text",
       "largeTextHelp": "Makes the letters bigger.",
       "uppercaseText": "Capital letters",
@@ -92,12 +116,14 @@
       "chooseLocation": "Choose your location",
       "locationButton": "Location",
       "roomLabel": "Room",
+      "floorLabel": "Floor",
+      "floorHelp": "Select the floor where you are now.",
       "artworkLabel": "Artwork",
-      "roomHelp": "Select the room where you are now.",
+      "roomHelp": "Select the floor and room where you are now.",
       "artworkHelp": "Optionally select the artwork in front of you.",
       "qrScannerHelp": "The camera is active to scan a location QR code.",
       "confirmLocation": "Confirm location",
-      "contextError": "Please select a room so GuIA can guide you accurately.",
+      "contextError": "Please select a floor and room so GuIA can guide you accurately.",
       "artworkRequired": "Choose an artwork before continuing.",
       "contextSendError": "Could not update your location. Please try again.",
       "contextBusy": "Wait until the current response finishes before changing location.",
@@ -174,6 +200,8 @@
       "failed": "I couldn’t process the audio. Please try again."
     },
     "context": {
+      "selectFloor": "Select a floor",
+      "floorOptionLabel": "Floor",
       "selectRoom": "Select a room",
       "selectArtwork": "Select an artwork",
       "room1": "Room 1 – Early Renaissance",
@@ -224,20 +252,18 @@
         {
           "icon": "touch_app",
           "title": "Choose manually",
-          "body": "Press this button if you want to choose the room from a list.",
+          "body": "Press this button if you want to choose the floor and room from a list. First select the floor.",
           "target": "#manual-location-btn",
           "openPanel": "location",
           "group": "location"
         },
         {
-          "icon": "task_alt",
-          "title": "Select a place",
-          "body": "Choose a room and an artwork. Then press Confirm location.",
+          "icon": "stairs",
+          "title": "Select floor, room, and optionally an artwork",
+          "body": "Choose the floor, then the room, and optionally select an artwork.",
           "target": "#manual-location-panel",
-          "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
-          "group": "location",
-          "requireLocation": true
+          "group": "location"
         },
         {
           "icon": "info",
@@ -255,7 +281,7 @@
         {
           "icon": "keyboard_voice",
           "title": "Or speak your question",
-          "body": "You can also press the microphone and say one short question.",
+          "body": "You can also press the microphone and say a question. Press it again when you finish asking the question.",
           "target": "#mic-btn"
         },
         {
@@ -283,6 +309,23 @@
     }
   },
   "es": {
+    "tutorialSpoken": {
+      "locationTitle": "Elige tu ubicación",
+      "locationBody": "En la parte superior central encontrarás el panel de ubicación, que se abre por defecto. Selecciona la planta y la sala donde te encuentras. Una vez confirmes la ubicación, GuIA sabrá qué obras te rodean.",
+      "chatTitle": "Haz una pregunta",
+      "chatBody": "En la parte inferior de la pantalla hay un campo de texto. Escribe cualquier pregunta sobre las obras, la sala o el museo y pulsa el botón enviar a la derecha.",
+      "micTitle": "Entrada por voz",
+      "micBody": "Junto al campo de texto hay un botón de micrófono. Púlsalo para hacer tu pregunta con la voz. Púlsalo otra vez para dejar de hablar. GuIA transcribirá lo que digas y podrás revisar el texto antes de enviarlo con el botón enviar.",
+      "audioTitle": "Controles de audio",
+      "audioBody": "En la parte superior derecha encontrarás el panel de controles de audio. Aquí puedes activar o desactivar la narración, ajustar el volumen, cambiar la velocidad de lectura y reproducir la última respuesta.",
+      "settingsTitle": "Configuración",
+      "settingsBody": "Pulsa el botón de configuración en la parte superior izquierdade la pantalla para cambiar las preferencias iniciales como el idioma o las opciones de accesibilidad.",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "done": "Entendido",
+      "close": "Cerrar",
+      "playAudio": "Reproducir audio"
+    },
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Elige tu guia.",
@@ -303,8 +346,15 @@
       "optional": "(opcional)",
       "accessibility": "Opciones de accesibilidad",
       "tutorial": "Tutorial",
-      "startTutorial": "Ver ayuda antes de empezar",
-      "startTutorialHelp": "GuIA explica los botones principales antes de empezar. Esta opcion ya esta activada.",
+      "startTutorial": "Tutorial visual",
+      "startTutorialHelp": "GuIA explica los botones principales visualmente antes de empezar.",
+      "tutorialSpoken": "Tutorial hablado",
+      "tutorialSpokenHelp": "GuIA describe con audio los botones principales antes de empezar.",
+      "tutorialSpoken.welcomeTitle": "Bienvenido a GuIA",
+      "tutorialSpoken.welcomeBody": "GuIA es una guía de IA que te ayuda a explorar el museo. Primero, elige tu ubicación seleccionando planta y sala. Luego, haz cualquier pregunta sobre las obras, salas o museo. GuIA responderá y leerá la respuesta en voz alta. Puedes ajustar la velocidad de voz y otras opciones de accesibilidad en la configuración.",
+      "tutorialSpoken.previous": "Anterior",
+      "tutorialSpoken.next": "Siguiente",
+      "tutorialSpoken.close": "Cerrar",
       "largeText": "Texto grande",
       "largeTextHelp": "Hace las letras mas grandes.",
       "uppercaseText": "Texto en mayusculas",
@@ -375,12 +425,14 @@
       "chooseLocation": "Elige tu ubicación",
       "locationButton": "Ubicación",
       "roomLabel": "Sala",
+      "floorLabel": "Planta",
+      "floorHelp": "Selecciona la planta en la que estás ahora.",
       "artworkLabel": "Obra",
-      "roomHelp": "Selecciona la sala en la que estás ahora.",
+      "roomHelp": "Selecciona la planta y la sala en la que estás ahora.",
       "artworkHelp": "Opcionalmente, selecciona la obra que tienes delante.",
       "qrScannerHelp": "La cámara está activa para escanear un código QR de ubicación.",
       "confirmLocation": "Confirmar ubicación",
-      "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
+      "contextError": "Por favor selecciona una planta y una sala para que GuIA te guíe con precisión.",
       "artworkRequired": "Elige una obra antes de continuar.",
       "contextSendError": "No se ha podido actualizar tu ubicación. Inténtalo de nuevo.",
       "contextBusy": "Espera a que termine la respuesta actual antes de cambiar de ubicación.",
@@ -457,6 +509,8 @@
       "failed": "No he podido procesar el audio. Inténtalo de nuevo."
     },
     "context": {
+      "selectFloor": "Selecciona una planta",
+      "floorOptionLabel": "Planta",
       "selectRoom": "Selecciona una sala",
       "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renacimiento Temprano",
@@ -507,20 +561,18 @@
         {
           "icon": "touch_app",
           "title": "Selecciona manualmente",
-          "body": "Pulsa este botón si quieres elegir la sala desde una lista.",
+          "body": "Pulsa este botón si quieres elegir la planta y la sala desde una lista. Primero selecciona la planta.",
           "target": "#manual-location-btn",
           "openPanel": "location",
           "group": "location"
         },
         {
-          "icon": "task_alt",
-          "title": "Selecciona un lugar",
-          "body": "Elige una sala y una obra. Después pulsa Confirmar ubicación.",
+          "icon": "stairs",
+          "title": "Selecciona planta, sala y opcionalmente una obra",
+          "body": "Elige la planta, luego la sala, y opcionalmente selecciona una obra.",
           "target": "#manual-location-panel",
-          "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
-          "group": "location",
-          "requireLocation": true
+          "group": "location"
         },
         {
           "icon": "info",
@@ -538,7 +590,7 @@
         {
           "icon": "keyboard_voice",
           "title": "O di tu pregunta",
-          "body": "También puedes pulsar el micrófono y decir una pregunta corta.",
+          "body": "También puedes pulsar el micrófono y decir una pregunta. Púlsalo de nuevo cuando termines de hacer la pregunta.",
           "target": "#mic-btn"
         },
         {
@@ -566,6 +618,23 @@
     }
   },
   "ca": {
+    "tutorialSpoken": {
+      "locationTitle": "Tria la teva ubicació",
+      "locationBody": "A la part superior central trobaràs el panell d'ubicació, que s'obre per defecte. Selecciona la planta i la sala on et trobes. Un cop confirmis la ubicació, GuIA sabrà quines obres t'envolten.",
+      "chatTitle": "Fes una pregunta",
+      "chatBody": "A la part inferior de la pantalla hi ha un camp de text. Escriu qualsevol pregunta sobre les obres, la sala o el museu i prem el botó enviar a la dreta.",
+      "micTitle": "Entrada per veu",
+      "micBody": "Al costat del camp de text hi ha un botó de micròfon. Prem'l per fer la teva pregunta amb la veu. Prem'l una altra vegada per deixar de parlar. GuIA transcriurà el que diguis i podràs revisar el text abans d'enviar-lo amb el botó enviar.",
+      "audioTitle": "Controls d'àudio",
+      "audioBody": "A la part superior dreta trobaràs el panell de controls d'àudio. Aquí pots activar o desactivar la narració, ajustar el volum, canviar la velocitat de lectura i reproduir l'última resposta.",
+      "settingsTitle": "Configuració",
+      "settingsBody": "Prem el botó de configuració a la part superior esquerra de la pantalla per canviar les preferències inicials com l'idioma o les opcions d'accessibilitat.",
+      "previous": "Anterior",
+      "next": "Següent",
+      "done": "Entès",
+      "close": "Tancar",
+      "playAudio": "Reproduir àudio"
+    },
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Tria el teu guia.",
@@ -586,8 +655,15 @@
       "optional": "(opcional)",
       "accessibility": "Opcions d'accessibilitat",
       "tutorial": "Tutorial",
-      "startTutorial": "Veure ajuda abans de començar",
-      "startTutorialHelp": "GuIA explica els botons principals abans de començar. Aquesta opció ja està activada.",
+      "startTutorial": "Tutorial visual",
+      "startTutorialHelp": "GuIA explica els botons principals visualment abans de començar.",
+      "tutorialSpoken": "Tutorial amb veu",
+      "tutorialSpokenHelp": "GuIA explica els botons principals amb veu abans de començar.",
+      "tutorialSpoken.welcomeTitle": "Benvingut a GuIA",
+      "tutorialSpoken.welcomeBody": "GuIA és una guia d'IA que t'ajuda a explorar el museu. Primer, tria la teva ubicació seleccionant planta i sala. Després, fes qualsevol pregunta sobre les obres, sales o museu. GuIA respon i llegeix la resposta en veu alta. Pots ajustar la velocitat de veu i altres opcions d'accessibilitat a la configuració.",
+      "tutorialSpoken.previous": "Anterior",
+      "tutorialSpoken.next": "Següent",
+      "tutorialSpoken.close": "Tancar",
       "largeText": "Text gran",
       "largeTextHelp": "Fa les lletres més grans.",
       "uppercaseText": "Text en majúscules",
@@ -657,13 +733,15 @@
       "whereAmI": "On sóc?",
       "chooseLocation": "Tria la teva ubicació",
       "locationButton": "Ubicació",
+      "floorLabel": "Planta",
+      "floorHelp": "Selecciona la planta on ets ara.",
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
-      "roomHelp": "Selecciona la sala on ets ara.",
+      "roomHelp": "Selecciona la planta i la sala on ets ara.",
       "artworkHelp": "Opcionalment, selecciona l'obra que tens davant.",
       "qrScannerHelp": "La càmera està activa per escanejar un codi QR de la ubicació.",
       "confirmLocation": "Confirmar ubicació",
-      "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
+      "contextError": "Si us plau selecciona una planta i una sala perquè GuIA et pugui guiar amb precisió.",
       "artworkRequired": "Tria una obra abans de continuar.",
       "contextSendError": "No s'ha pogut actualitzar la ubicació. Torna-ho a provar.",
       "contextBusy": "Espera que acabi la resposta actual abans de canviar d'ubicació.",
@@ -740,6 +818,8 @@
     "failed": "No he pogut processar l’àudio. Torna-ho a provar."
   },
     "context": {
+      "selectFloor": "Selecciona una planta",
+      "floorOptionLabel": "Planta",
       "selectRoom": "Selecciona una sala",
       "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renaixement Primerenc",
@@ -790,20 +870,18 @@
         {
           "icon": "touch_app",
           "title": "Tria manualment",
-          "body": "Prem aquest botó si vols triar la sala des d'una llista.",
+          "body": "Prem aquest botó si vols triar la planta i la sala des d'una llista. Primer selecciona la planta.",
           "target": "#manual-location-btn",
           "openPanel": "location",
           "group": "location"
         },
         {
-          "icon": "task_alt",
-          "title": "Selecciona un lloc",
-          "body": "Tria una sala i una obra. Després prem Confirmar ubicació.",
+          "icon": "stairs",
+          "title": "Selecciona planta, sala i opcionalment una obra",
+          "body": "Tria la planta, després la sala, i opcionalment selecciona una obra.",
           "target": "#manual-location-panel",
-          "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
-          "group": "location",
-          "requireLocation": true
+          "group": "location"
         },
         {
           "icon": "info",
@@ -821,7 +899,7 @@
         {
           "icon": "keyboard_voice",
           "title": "O digues la pregunta",
-          "body": "També pots prémer el micròfon i dir una pregunta curta.",
+          "body": "També pots prémer el micròfon i dir una pregunta. Prem-lo de nou quan acabis de fer la pregunta.",
           "target": "#mic-btn"
         },
         {
