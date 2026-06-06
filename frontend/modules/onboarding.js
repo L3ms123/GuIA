@@ -432,7 +432,15 @@ function showOnboardingStep(step) {
   updateOnboardingButtons();
   window.setTimeout(() => {
     if (step === 3) {
-      // Focus the privacy notice text so screen readers announce the full content
+      // Announce the full privacy notice text automatically once
+      const srStatus = el('sr-status');
+      const privacyText = el('privacy-notice-text');
+      if (srStatus && privacyText && !state.privacyNoticeAnnounced) {
+        const fullText = privacyText.textContent;
+        srStatus.textContent = fullText;
+        state.privacyNoticeAnnounced = true;
+      }
+      // Focus the privacy notice text so screen readers can navigate it
       el('privacy-notice-text')?.focus();
       return;
     }

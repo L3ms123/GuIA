@@ -219,11 +219,15 @@ function initSpokenTutorial(audio) {
     titleNode.textContent = step.title;
     bodyNode.textContent = step.body;
 
-    // Force screenreader to announce the new content
-    bodyNode.setAttribute('aria-live', 'off');
-    window.setTimeout(() => {
-      bodyNode.setAttribute('aria-live', 'polite');
-    }, 10);
+    // Force screenreader to announce the new content by removing and re-adding the node
+    const parent = bodyNode.parentNode;
+    const newBodyNode = bodyNode.cloneNode(true);
+    parent.replaceChild(newBodyNode, bodyNode);
+    bodyNode = newBodyNode;
+    bodyNode.id = 'tutorial-spoken-body';
+    bodyNode.className = 'tutorial-spoken-body';
+    bodyNode.setAttribute('aria-live', 'polite');
+    bodyNode.setAttribute('aria-atomic', 'true');
 
     updateNavigation();
 
