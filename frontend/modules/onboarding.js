@@ -135,11 +135,13 @@ function hideSettingsPanel() {
   const { modal } = settingsEls();
   if (!modal) return;
 
+  // Move focus back to the last focused element before hiding the modal
+  requestAnimationFrame(() => state.lastFocusedElement?.focus?.());
+
   modal.setAttribute('aria-hidden', 'true');
   modal.setAttribute('hidden', '');
   modal.hidden = true;
   document.body.removeAttribute('data-settings-open');
-  requestAnimationFrame(() => state.lastFocusedElement?.focus?.());
 }
 
 function applyOnboardingTranslations() {
@@ -431,16 +433,14 @@ function showOnboardingStep(step) {
 
   updateOnboardingButtons();
   window.setTimeout(() => {
+    if (step === 1) {
+      // Focus the intro text so screen readers announce it automatically via aria-live
+      el('label-personality-intro')?.focus();
+      return;
+    }
+
     if (step === 3) {
-      // Announce the full privacy notice text automatically once
-      const srStatus = el('sr-status');
-      const privacyText = el('privacy-notice-text');
-      if (srStatus && privacyText && !state.privacyNoticeAnnounced) {
-        const fullText = privacyText.textContent;
-        srStatus.textContent = fullText;
-        state.privacyNoticeAnnounced = true;
-      }
-      // Focus the privacy notice text so screen readers can navigate it
+      // Focus the privacy notice text so screen readers announce it automatically via aria-live
       el('privacy-notice-text')?.focus();
       return;
     }
@@ -566,6 +566,7 @@ function syncAccessibilityControls() {
   const tutorialSpokenInput = el('opt-tutorial-spoken');
   if (tutorialSpokenInput) {
     tutorialSpokenInput.checked = !!state.accessibilityPrefs.tutorialSpoken;
+    tutorialSpokenInput.setAttribute('aria-label', t('onboarding.tutorialSpoken', 'Screen reader compatible tutorial and with voice option'));
   }
 
   syncSettingsControls();
@@ -638,7 +639,18 @@ function bindSettingsPanel() {
   if (!modal) return;
 
   closeBtn?.addEventListener('click', hideSettingsPanel);
-  doneBtn?.addEventListener('click', hideSettingsPanel);
+  doneBtn?.addEventListener('click', () => {
+    // Check if tutorial should be opened
+    if (state.showTutorialOnStart) {
+      hideSettingsPanel();
+      window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
+    } else if (state.accessibilityPrefs.tutorialSpoken) {
+      hideSettingsPanel();
+      window.setTimeout(() => window.guiaOpenSpokenTutorial?.(0), 150);
+    } else {
+      hideSettingsPanel();
+    }
+  });
   resetBtn?.addEventListener('click', () => {
     hideSettingsPanel();
     window.restartGuiaSession?.();
@@ -747,10 +759,6 @@ function bindSettingsPanel() {
     if (event.target.checked) {
       // Ensure the spoken tutorial cannot be enabled at the same time.
       state.accessibilityPrefs.tutorialSpoken = false;
-      // Close settings panel and open tutorial
-      const doneBtn = el('settings-done-btn');
-      if (doneBtn) doneBtn.click();
-      window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
     }
     syncSettingsControls();
     syncAccessibilityControls();
@@ -762,10 +770,6 @@ function bindSettingsPanel() {
     state.accessibilityPrefs.tutorialSpoken = event.target.checked;
     if (event.target.checked) {
       state.showTutorialOnStart = false;
-      // Close settings panel and open spoken tutorial
-      const doneBtn = el('settings-done-btn');
-      if (doneBtn) doneBtn.click();
-      window.setTimeout(() => window.guiaOpenSpokenTutorial?.(0), 150);
     }
     syncSettingsControls();
     syncAccessibilityControls();

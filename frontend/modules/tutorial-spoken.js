@@ -219,20 +219,24 @@ function initSpokenTutorial(audio) {
     titleNode.textContent = step.title;
     bodyNode.textContent = step.body;
 
-    // Force screenreader to announce the new content by removing and re-adding the node
-    const parent = bodyNode.parentNode;
-    const newBodyNode = bodyNode.cloneNode(true);
-    parent.replaceChild(newBodyNode, bodyNode);
-    bodyNode = newBodyNode;
-    bodyNode.id = 'tutorial-spoken-body';
-    bodyNode.className = 'tutorial-spoken-body';
-    bodyNode.setAttribute('aria-live', 'polite');
-    bodyNode.setAttribute('aria-atomic', 'true');
+    // Force screenreader to announce the new content by toggling aria-live
+    bodyNode.setAttribute('aria-live', 'off');
+    window.setTimeout(() => {
+      bodyNode.setAttribute('aria-live', 'polite');
+    }, 10);
 
     updateNavigation();
 
     overlay.hidden = false;
     isOpen = true;
+
+    // Hide background content from screenreaders
+    const chatThread = q('.chat-thread');
+    const chatPanel = q('.chat-panel');
+    const contextColumn = q('.context-column');
+    if (chatThread) chatThread.setAttribute('aria-hidden', 'true');
+    if (chatPanel) chatPanel.setAttribute('aria-hidden', 'true');
+    if (contextColumn) contextColumn.setAttribute('aria-hidden', 'true');
 
     nextBtn.onclick = currentIndex >= allSteps.length - 1
       ? closeSpokenTutorial

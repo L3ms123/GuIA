@@ -33,7 +33,7 @@
  
         <div class="step-meta">
           <div class="step-header">
-            <p id="step-count">Pas 1 de 3 - Selecciona l'idioma, com ajuda el guia i la franja d'edat.</p>
+            <p id="step-count" aria-live="polite" aria-atomic="true">Pas 1 de 3 - Selecciona l'idioma, com ajuda el guia i la franja d'edat.</p>
           </div>
 
           <div class="step-bar">
@@ -254,7 +254,7 @@
               </label>
               
               <label class="toggle-row">
-                <input type="checkbox" id="opt-tutorial-spoken" aria-label="Tutorial amb veu" aria-describedby="opt-tutorial-spoken-help" />
+                <input type="checkbox" id="opt-tutorial-spoken" aria-label="Tutorial adaptat per a lector de pantalla i compatible amb veu" aria-describedby="opt-tutorial-spoken-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
                 <div class="toggle-content">
                   <span>Tutorial adaptat per a lector de pantalla i compatible amb veu</span>
@@ -275,9 +275,9 @@
               class="info-block"
               role="region"
               tabindex="-1"
-              aria-labelledby="privacy-notice-title"
+              aria-describedby="privacy-notice-text"
             >
-              <div id="privacy-notice-text" tabindex="0">
+              <div id="privacy-notice-text" tabindex="0" aria-live="polite" aria-atomic="true">
               <p>Estàs parlant amb una audioguia de museu que utilitza IA.</p>
               <p>La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.</p>
               <p>Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.</p>
