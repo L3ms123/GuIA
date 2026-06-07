@@ -13,20 +13,21 @@ async function loadLocations() {
 
 function parseRoomFloor(room) {
   const normalizedValue = normalizeLocationValue(room.id || room.label);
-  const match = normalizedValue.match(/\bp(?:alau)?\s*(\d+)/i);
-  return match ? String(Number(match[1])) : '';
+  const match = normalizedValue.match(/\bp(?:alau)?\s*([a-z0-9]+)/i);
+  if (!match) return '';
+  return /^\d+$/.test(match[1]) ? String(Number(match[1])) : match[1].toUpperCase();
 }
 
 function parseRoomNumbers(room) {
   const value = normalizeLocationValue(room.id || room.label);
   if (!value) return null;
 
-  const fullMatch = value.match(/\bp(?:alau)?\s*(\d+)[\s\-,:]*s(?:ala)?\s*(\d+)\b/);
+  const fullMatch = value.match(/\bp(?:alau)?\s*([a-z0-9]+)[\s\-,:]*s(?:ala)?\s*([a-z0-9]+)\b/);
   if (fullMatch) {
     return { floor: fullMatch[1], room: fullMatch[2] };
   }
 
-  const roomOnly = value.match(/\bs(?:ala)?\s*(\d+)\b/);
+  const roomOnly = value.match(/\bs(?:ala)?\s*([a-z0-9]+)\b/);
   if (roomOnly) {
     return { room: roomOnly[1] };
   }
@@ -44,7 +45,19 @@ function getRoomLabelText(room) {
   if (!parsed) return room.label || room.id;
 
   const roomLabel = t('app.roomLabel', 'Room');
-  return `${roomLabel} ${parsed.room}`;
+  return `${roomLabel} ${String(parsed.room).toUpperCase()}`;
+}
+
+function getRoomContextText(room) {
+  if (!room) return '';
+  return room.label || room.id || '';
+}
+
+function findLocationRoomById(roomId) {
+  const normalizedRoom = normalizeLocationValue(roomId);
+  return (state.locationData.rooms || []).find((room) => {
+    return normalizeLocationValue(room.id) === normalizedRoom;
+  });
 }
 
 function getRoomsByFloor() {
@@ -56,6 +69,12 @@ function getRoomsByFloor() {
   }, {});
 }
 
+function floorSortKey(floor) {
+  const floorText = String(floor || '');
+  const numberMatch = floorText.match(/\d+/);
+  return numberMatch ? [0, Number(numberMatch[0]), floorText] : [1, 999, floorText];
+}
+
 function renderLocationSelects() {
   const floorSelect = el('floor-select');
   const roomSelect = el('room-select');
@@ -64,7 +83,11 @@ function renderLocationSelects() {
   const selectedFloor = floorSelect.value;
   const selectedRoom = roomSelect.value;
   const roomsByFloor = getRoomsByFloor();
-  const floors = Object.keys(roomsByFloor).sort((a, b) => Number(a) - Number(b));
+  const floors = Object.keys(roomsByFloor).sort((a, b) => {
+    const aKey = floorSortKey(a);
+    const bKey = floorSortKey(b);
+    return aKey[0] - bKey[0] || aKey[1] - bKey[1] || aKey[2].localeCompare(bKey[2]);
+  });
 
   floorSelect.innerHTML = '';
   floorSelect.appendChild(new Option(t('context.selectFloor', 'Select a floor'), ''));

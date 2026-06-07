@@ -1069,13 +1069,35 @@ def load_neo4j_query_table_data() -> dict[str, Any]:
 
 
 def parse_museum_location(value: Optional[str]) -> Optional[dict[str, str]]:
-    """Parse museum room labels like P1-S2 into Neo4j Sala properties."""
+    """Parse UI room labels like P1-S2 into Neo4j Sala properties."""
     if not value:
         return None
 
-    match = re.search(r"\bP(?:alau)?\s*(?P<palau>\d+)\s*[-, ]+\s*S(?:ala)?\s*(?P<sala>\d+)\b", value, flags=re.IGNORECASE)
+    location_value = str(value)
+    part_pattern = r"[A-Za-z0-9]+"
+    match = re.search(
+        rf"\bP(?:alau)?\s*(?P<palau>{part_pattern})\s*[-, ]+\s*S(?:ala)?\s*(?P<sala>{part_pattern})\b",
+        location_value,
+        flags=re.IGNORECASE,
+    )
     if not match:
-        match = re.search(r"\bPalau\s*(?P<palau>\d+).*?\bSala\s*(?P<sala>\d+)\b", value, flags=re.IGNORECASE)
+        match = re.search(
+            rf"\bPalau\s*(?P<palau>{part_pattern}).*?\bSala\s*(?P<sala>{part_pattern})\b",
+            location_value,
+            flags=re.IGNORECASE,
+        )
+    if not match:
+        match = re.search(
+            rf"\bPlanta\s*(?P<palau>{part_pattern}).*?\bSala\s*(?P<sala>{part_pattern})\b",
+            location_value,
+            flags=re.IGNORECASE,
+        )
+    if not match:
+        match = re.search(
+            rf"\bSala\s*(?P<sala>{part_pattern}).*?\b(?:Planta|Palau)\s*(?P<palau>{part_pattern})\b",
+            location_value,
+            flags=re.IGNORECASE,
+        )
     if not match:
         return None
 
@@ -1090,6 +1112,20 @@ def room_sort_key(room: str) -> tuple[int, int, str]:
     floor = numbers[0] if numbers else 999
     sala = numbers[1] if len(numbers) > 1 else floor
     return floor, sala, room
+
+
+def normalize_graph_location_part(value: Any, prefixes: tuple[str, ...] = ()) -> str:
+    text = str(value or "").strip()
+    if not text or text.lower() == "none":
+        return ""
+
+    cleaned = text
+    for prefix in prefixes:
+        cleaned = re.sub(rf"\b{re.escape(prefix)}\b", "", cleaned, flags=re.IGNORECASE)
+    cleaned = cleaned.strip(" -_,:")
+
+    match = re.search(r"[A-Za-z0-9]+", cleaned)
+    return match.group(0) if match else ""
 
 
 def load_locations_from_excel() -> dict[str, Any]:
@@ -1150,6 +1186,88 @@ def load_locations_from_excel() -> dict[str, Any]:
     LOCATION_CACHE["mtime"] = mtime
     LOCATION_CACHE["data"] = data
     return data
+
+
+def format_graph_room_id(palau: Any, sala: Any) -> str:
+    palau_text = str(palau or "").strip()
+    sala_text = str(sala or "").strip()
+    if palau_text and sala_text:
+        return f"P{palau_text}-S{sala_text}"
+    return sala_text or palau_text
+
+
+def format_graph_room_label(palau: Any, sala: Any, fallback: Any = "") -> str:
+    palau_text = str(palau or "").strip()
+    sala_text = str(sala or "").strip()
+    if palau_text and sala_text:
+        return f"Planta {palau_text}, Sala {sala_text}"
+    return str(fallback or format_graph_room_id(palau, sala)).strip()
+
+
+def load_locations_from_neo4j() -> dict[str, Any]:
+    """Load room and artwork selector options from the live Neo4j knowledge graph."""
+    if not neo4j_is_configured():
+        return {"rooms": []}
+
+    rows = execute_query_api(
+        """
+        MATCH (s:Sala)
+        OPTIONAL MATCH (a:ArtPiece)-[:LOCATED_IN]->(s)
+        OPTIONAL MATCH (p:Planta)-[:HAS_SALA]-(s)
+        WITH s, p, a
+        ORDER BY s.palau, s.id, a.title
+        RETURN
+          elementId(s) AS room_key,
+          s.palau AS sala_palau,
+          s.id AS sala_id,
+          coalesce(s.name, s.label, '') AS room_name,
+          p.id AS planta_id,
+          p.name AS planta_name,
+          p.number AS planta_number,
+          p.planta AS planta_value,
+          collect(DISTINCT CASE
+            WHEN a IS NULL THEN null
+            ELSE {
+              id: coalesce(a.artwork_id, a.id, a.title),
+              title: coalesce(a.title, a.artwork_id, a.id)
+            }
+          END) AS artworks
+        """
+    )
+
+    rooms = []
+    for row in rows:
+        palau = (
+            normalize_graph_location_part(row.get("sala_palau"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_id"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_number"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_value"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_name"), ("planta", "palau", "p"))
+        )
+        sala = (
+            normalize_graph_location_part(row.get("sala_id"), ("sala", "s"))
+            or normalize_graph_location_part(row.get("room_name"), ("sala", "s"))
+        )
+        room_id = format_graph_room_id(palau, sala)
+        if not room_id:
+            continue
+
+        label = format_graph_room_label(palau, sala, row.get("room_name") or row.get("room_key"))
+        seen_artworks = set()
+        artworks = []
+        for artwork in row.get("artworks") or []:
+            if not artwork:
+                continue
+            artwork_id = str(artwork.get("id") or artwork.get("title") or "").strip()
+            title = str(artwork.get("title") or artwork_id).strip()
+            if not artwork_id or not title or artwork_id in seen_artworks:
+                continue
+            seen_artworks.add(artwork_id)
+            artworks.append({"id": artwork_id, "title": title})
+
+        rooms.append({"id": room_id, "label": label, "artworks": artworks})
+
+    return {"rooms": sorted(rooms, key=lambda item: room_sort_key(item["id"]))}
 
 
 # Conversation storage (simple in-memory for now)
@@ -2492,11 +2610,11 @@ def context_endpoint():
 
 @app.route("/locations", methods=["GET"])
 def locations_endpoint():
-    """Return room/artwork options loaded from the raw museum Excel file."""
+    """Return room/artwork options loaded from the live Neo4j knowledge graph."""
     try:
-        return jsonify(load_locations_from_excel()), 200
+        return jsonify(load_locations_from_neo4j()), 200
     except Exception as e:
-        app.logger.exception("Could not load locations from Excel")
+        app.logger.exception("Could not load locations from Neo4j")
         return jsonify({"error": str(e), "rooms": []}), 500
     
 @app.route("/reset", methods=["POST"])

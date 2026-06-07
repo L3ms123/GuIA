@@ -57,7 +57,8 @@ function initContextPanel() {
       return;
     }
 
-    const roomText = roomSelect.options[roomSelect.selectedIndex].text;
+    const selectedRoom = findLocationRoomById(roomSelect.value);
+    const roomText = getRoomContextText(selectedRoom) || roomSelect.value;
     const artworkText = artworkSelect.value
       ? artworkSelect.options[artworkSelect.selectedIndex].text
       : '';
