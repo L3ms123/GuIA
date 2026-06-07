@@ -110,6 +110,12 @@ function settingsEls() {
   };
 }
 
+let pendingSettingsLang = null;
+
+function selectedSettingsLang() {
+  return pendingSettingsLang || state.selectedLang;
+}
+
 function showSettingsPanel() {
   const { modal } = settingsEls();
   if (!modal) return;
@@ -120,6 +126,7 @@ function showSettingsPanel() {
   document.body.removeAttribute('data-audio-settings-open');
   el('location-panel-btn')?.setAttribute('aria-expanded', 'false');
   el('audio-settings-btn')?.setAttribute('aria-expanded', 'false');
+  pendingSettingsLang = null;
   syncSettingsControls();
   applySettingsTranslations();
 
@@ -137,6 +144,7 @@ function hideSettingsPanel() {
 
   // Move focus back to the last focused element before hiding the modal
   requestAnimationFrame(() => state.lastFocusedElement?.focus?.());
+  pendingSettingsLang = null;
 
   modal.setAttribute('aria-hidden', 'true');
   modal.setAttribute('hidden', '');
@@ -574,8 +582,9 @@ function syncAccessibilityControls() {
 
 
 function syncSettingsControls() {
+  const settingsLang = selectedSettingsLang();
   qa('[data-settings-lang]').forEach((btn) => {
-    btn.setAttribute('aria-checked', btn.dataset.settingsLang === state.selectedLang ? 'true' : 'false');
+    btn.setAttribute('aria-checked', btn.dataset.settingsLang === settingsLang ? 'true' : 'false');
   });
 
   qa('[data-settings-persona]').forEach((btn) => {
@@ -639,7 +648,29 @@ function bindSettingsPanel() {
   if (!modal) return;
 
   closeBtn?.addEventListener('click', hideSettingsPanel);
-  doneBtn?.addEventListener('click', () => {
+  doneBtn?.addEventListener('click', async () => {
+    if (pendingSettingsLang && pendingSettingsLang !== state.selectedLang) {
+      if (state.chatGenerating || state.conversationTranslating) {
+        announce(t('chat.languageChangeBusy', 'Wait until the current response or translation finishes before changing language.'));
+        return;
+      }
+
+      const previousLang = state.selectedLang;
+      state.selectedLang = pendingSettingsLang;
+      pendingSettingsLang = null;
+      window.guiaTrack?.('option_changed', { field: 'lang', from: previousLang, to: state.selectedLang, where: 'settings' });
+      selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
+      syncSettingsControls();
+      doneBtn.disabled = true;
+      try {
+        await applyLanguageChange(previousLang);
+        applySettingsTranslations();
+        window.saveGuiaSession?.();
+      } finally {
+        doneBtn.disabled = false;
+      }
+    }
+
     // Check if tutorial should be opened
     if (state.showTutorialOnStart) {
       hideSettingsPanel();
@@ -664,20 +695,14 @@ function bindSettingsPanel() {
   });
 
   qa('[data-settings-lang]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      if (state.selectedLang === btn.dataset.settingsLang) return;
+    btn.addEventListener('click', () => {
+      if (selectedSettingsLang() === btn.dataset.settingsLang) return;
       if (state.chatGenerating || state.conversationTranslating) {
         announce(t('chat.languageChangeBusy', 'Wait until the current response or translation finishes before changing language.'));
         return;
       }
-      const previousLang = state.selectedLang;
-      state.selectedLang = btn.dataset.settingsLang;
-      window.guiaTrack?.('option_changed', { field: 'lang', from: previousLang, to: state.selectedLang, where: 'settings' });
-      selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
+      pendingSettingsLang = btn.dataset.settingsLang === state.selectedLang ? null : btn.dataset.settingsLang;
       syncSettingsControls();
-      await applyLanguageChange(previousLang);
-      applySettingsTranslations();
-      window.saveGuiaSession?.();
     });
   });
 
