@@ -973,7 +973,7 @@ select {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(220px, 0.9fr);
   gap: 1rem;
-  padding: 1rem var(--gutter) var(--bottom-bar-space);
+  padding: 1rem var(--gutter);
   min-height: 0;
 }
 
@@ -1847,7 +1847,6 @@ select:focus-visible,
   .main-layout {
     flex: 1 1 auto;
     overflow: hidden;
-    padding-bottom: 5.75rem;
   }
 
   .chat-panel {

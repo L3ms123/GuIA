@@ -569,12 +569,28 @@ function syncAccessibilityControls() {
   const tutorialInput = el('opt-start-tutorial');
   if (tutorialInput) {
     tutorialInput.checked = !!state.showTutorialOnStart;
+    const tutorialLabel = tutorialInput.parentElement.querySelector('.toggle-content span');
+    if (tutorialLabel) {
+      setText(tutorialLabel, t('onboarding.tutorial', 'Visual tutorial'));
+    }
+    const tutorialHelp = el('opt-start-tutorial-help');
+    if (tutorialHelp) {
+      setText(tutorialHelp, t('onboarding.startTutorialHelp', 'GuIA explains the main buttons visually before the visit starts.'));
+    }
   }
 
   const tutorialSpokenInput = el('opt-tutorial-spoken');
   if (tutorialSpokenInput) {
     tutorialSpokenInput.checked = !!state.accessibilityPrefs.tutorialSpoken;
     tutorialSpokenInput.setAttribute('aria-label', t('onboarding.tutorialSpoken', 'Screen reader compatible tutorial and with voice option'));
+    const tutorialSpokenLabel = tutorialSpokenInput.parentElement.querySelector('.toggle-content span');
+    if (tutorialSpokenLabel) {
+      setText(tutorialSpokenLabel, t('onboarding.tutorialSpoken', 'Screen reader compatible tutorial and with voice option'));
+    }
+    const tutorialSpokenHelp = el('opt-tutorial-spoken-help');
+    if (tutorialSpokenHelp) {
+      setText(tutorialSpokenHelp, t('onboarding.tutorialSpokenHelp', 'GuIA describes in audio the main buttons before the visit starts.'));
+    }
   }
 
   syncSettingsControls();
