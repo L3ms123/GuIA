@@ -43,6 +43,11 @@
   --shadow-strong: 0 1px 3px rgba(0, 0, 0, 0.615);
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body[data-mode="regular"] {
   --scale: 1;
 }
@@ -65,6 +70,7 @@ body.surface {
   color: var(--on-surface);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  height: auto;
 }
 
 body[data-onboarding-open] {
@@ -1763,7 +1769,8 @@ select:focus-visible,
 
 @media (min-width: 1301px) {
   body.surface {
-    height: 100dvh;
+    min-height: 100dvh;
+    height: auto;
     overflow: hidden;
   }
 
@@ -1862,16 +1869,17 @@ select:focus-visible,
   }
 
   body.surface {
-    height: 100dvh;
+    min-height: 100dvh;
     min-width: 0;
+    height: auto;
     overflow-x: hidden;
   }
 
   .app-shell {
     width: 100%;
     max-width: 100%;
-    height: 100dvh;
-    min-height: 0;
+    min-height: 100dvh;
+    height: auto;
     display: flex;
     flex-direction: column;
     overflow: hidden;
