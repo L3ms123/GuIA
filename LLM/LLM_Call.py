@@ -52,7 +52,7 @@ LANGUAGE_RULES = {
     "spanish": "Answer strictly in Spanish.",
     "english": "Answer strictly in English.",
 }
-PERSONA_RULES = {
+EXPLAINATION_RULES = {
     "artist": "explain how the artwork was made, using simple words for colors, materials, and techniques",
     "storyteller": "explain the visit like a clear, simple story",
     "explorer": "act as a normal museum guide and explain the most important information first",
@@ -149,7 +149,7 @@ def get_language_rule(language: str) -> str:
 
 def get_persona_rule(personality: str) -> str:
     key = (personality or "explorer").strip().lower()
-    return PERSONA_RULES.get(key, personality or PERSONA_RULES["explorer"])
+    return EXPLAINATION_RULES.get(key, personality or EXPLAINATION_RULES["explorer"])
 
 
 def normalize_easy_word(value: str) -> str:
@@ -1274,7 +1274,7 @@ def load_locations_from_neo4j() -> dict[str, Any]:
 SESSION_CONTEXTS = {}
 
 # Guide style descriptions to add to the prompt.
-PERSONALITY_DESCRIPTIONS = PERSONA_RULES
+PERSONALITY_DESCRIPTIONS = EXPLAINATION_RULES
 AGE_DESCRIPTIONS = {
     "Young 10-18 years old": "You use a engaging, relatable and energetic style suitable for younger visitors.",
     "Adult 19-60 years old": "You use a mature and informative style. Full depth as defined by persona",

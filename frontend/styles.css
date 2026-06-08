@@ -983,13 +983,14 @@ select {
   padding: 1rem 1.1rem 0.9rem;
   display: flex;
   flex-direction: column;
-  min-height: 300px;
-  max-height: calc(100vh - 210px);
+  min-height: 0;
+  max-height: none;
   min-width: 0;
 }
 
 .chat-thread {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: 0.15rem 0.4rem 0.15rem 0;
 }
@@ -1634,18 +1635,12 @@ body[data-tutorial-open] .input-shell.tutorial-target {
 
 /* bottom bar */
 .bottom-bar { 
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
+  flex: 0 0 auto;
   width: 100%;
   max-width: none;
   padding: 0.4rem var(--gutter) calc(0.6rem + env(safe-area-inset-bottom));
-  background: linear-gradient(
-    to top,
-    rgba(249, 249, 247, 1) 78%,
-    rgba(249, 249, 247, 0)
-  );
+  background: var(--surface);
+  border-top: 1px solid var(--outline-soft);
 }
 
 .helper-text {
@@ -1869,7 +1864,7 @@ select:focus-visible,
   body.surface {
     height: 100dvh;
     min-width: 0;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   .app-shell {
@@ -2083,7 +2078,7 @@ select:focus-visible,
     flex-direction: column;
     gap: 0.55rem;
     overflow: hidden;
-    padding: 0.55rem var(--gutter) calc(7.5rem + env(safe-area-inset-bottom));
+    padding: 0.55rem var(--gutter) 0.55rem;
   }
 
   .context-column,
@@ -2167,13 +2162,8 @@ select:focus-visible,
   }
 
   .bottom-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
     flex: 0 0 auto;
-    transform: none;
+    width: 100%;
     max-width: none;
     padding: 0.55rem var(--gutter) calc(0.65rem + env(safe-area-inset-bottom));
     border-top: 1px solid var(--outline-soft);
