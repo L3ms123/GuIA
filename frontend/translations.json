@@ -202,6 +202,7 @@
     "context": {
       "selectFloor": "Select a floor",
       "floorOptionLabel": "Floor",
+      "floorB": "Ground floor",
       "selectRoom": "Select a room",
       "selectArtwork": "Select an artwork",
       "room1": "Room 1 – Early Renaissance",
@@ -511,6 +512,7 @@
     "context": {
       "selectFloor": "Selecciona una planta",
       "floorOptionLabel": "Planta",
+      "floorB": "Planta baja",
       "selectRoom": "Selecciona una sala",
       "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renacimiento Temprano",
@@ -820,6 +822,7 @@
     "context": {
       "selectFloor": "Selecciona una planta",
       "floorOptionLabel": "Planta",
+      "floorB": "Planta baixa",
       "selectRoom": "Selecciona una sala",
       "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renaixement Primerenc",
