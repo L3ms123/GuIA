@@ -46,6 +46,8 @@
 html,
 body {
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body[data-mode="regular"] {
@@ -1873,28 +1875,39 @@ select:focus-visible,
     min-width: 0;
     height: auto;
     overflow-x: hidden;
+    /* Prevent body from being scrollable on mobile */
+    overflow-y: hidden;
   }
 
   .app-shell {
+    /* position:fixed anchors the shell to the visual viewport —
+       it stays put when the virtual keyboard opens/closes,
+       and the body can never be scrolled underneath it. */
+    position: fixed;
+    inset: 0;
     width: 100%;
-    max-width: 100%;
-    min-height: 100dvh;
-    height: auto;
+    height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    /* Respect safe areas (notch, home bar) */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
   }
 
   .top-bar {
-    position: static;
     flex: 0 0 auto;
     display: grid;
     grid-template-columns: 2.75rem 2.75rem minmax(0, 1fr) minmax(0, 1fr);
     align-items: center;
     gap: 0.4rem;
-    padding: calc(0.75rem + env(safe-area-inset-top)) var(--gutter) 0.55rem;
+    /* Remove safe-area-inset-top here — handled by app-shell padding-top */
+    padding: 0.75rem var(--gutter) 0.55rem;
     border-bottom: 1px solid var(--outline-soft);
     background: var(--surface);
+    overflow: hidden;
+    min-height: 0;
   }
 
   .top-left {
@@ -2080,7 +2093,7 @@ select:focus-visible,
   }
 
   .main-layout {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -2149,16 +2162,23 @@ select:focus-visible,
   }
 
   .chat-panel {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     max-height: none;
     min-height: 0;
     padding: 0.75rem;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .chat-thread {
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 0;
+    /* Smooth scroll for auto-scroll-to-bottom */
+    scroll-behavior: auto;
   }
 
   .msg-bubble {
@@ -2173,7 +2193,8 @@ select:focus-visible,
     flex: 0 0 auto;
     width: 100%;
     max-width: none;
-    padding: 0.55rem var(--gutter) calc(0.65rem + env(safe-area-inset-bottom));
+    /* No safe-area-inset-bottom here — handled by app-shell padding-bottom */
+    padding: 0.55rem var(--gutter) 0.65rem;
     border-top: 1px solid var(--outline-soft);
     background: var(--surface);
   }
@@ -2195,6 +2216,9 @@ select:focus-visible,
     min-height: 2.65rem;
     font-size: calc(0.95rem * var(--scale));
     text-overflow: ellipsis;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .input-shell .icon-btn {
@@ -2560,16 +2584,19 @@ select:focus-visible,
   }
 
   body[data-tutorial-open] .app-shell {
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
+    /* Keep shell fixed even during tutorial — the tutorial panel
+       is position:fixed itself so it doesn't need the shell to scroll */
+    position: fixed;
+    inset: 0;
+    height: 100%;
+    overflow: hidden;
   }
 
   body[data-tutorial-open] .main-layout {
-    flex: 0 0 auto;
-    min-height: auto;
-    overflow: visible;
-    padding-bottom: calc(37dvh + 1rem + env(safe-area-inset-bottom));
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 0.55rem;
   }
 
   body[data-tutorial-open][data-tutorial-placement="top"] .main-layout {
@@ -2581,8 +2608,8 @@ select:focus-visible,
   }
 
   body[data-tutorial-open] .context-box {
-    max-height: none;
-    overflow: visible;
+    max-height: 50dvh;
+    overflow-y: auto;
   }
 
   .tutorial-overlay[data-placement="top"] {
