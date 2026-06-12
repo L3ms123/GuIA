@@ -277,6 +277,7 @@ function applyOnboardingTranslations() {
   setText(privacyParagraphs[2], t('onboarding.privacyIntro3'));
   setText(privacyParagraphs[3], t('onboarding.privacyIntro4'));
   setText(privacyParagraphs[4], t('onboarding.privacyIntro5'));
+  setText(privacyParagraphs[5], t('onboarding.privacyIntro6'));
 
   const consentLabel = q('#privacy-consent')?.closest('label')?.querySelector('span');
   setText(consentLabel, t('onboarding.privacyConsent'));
