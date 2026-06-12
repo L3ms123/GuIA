@@ -21,7 +21,7 @@
       "eyebrow": "GuIA Museu del Renaixamen Guide",
       "title": "Choose your guide.",
       "description": "Choose how GuIA should help you in the museum.",
-      "personalityIntro": "GuIA is an audioguide that uses artificial intelligence to explain the museum in the style and with the accessibility options you choose. You can ask it questions about artworks, and get personalized explanations. It can explain artworks in different ways: as a story, with artistic details about colors and materials, or in a standard style.",
+      "personalityIntro": "GuIA is an audioguide that uses artificial intelligence to explain the museum in the style and with the accessibility options you choose. You can ask it questions about artworks, and get personalized explanations. It can explain artworks in different ways: as a story, with artistic details about colors and materials, or in a standard style. Ask museum staff if you'd prefer a human guide or if you have any questions about using GuIA.",
       "language": "Select language",
       "personality": "Select explanation style",
       "visitor": "Select age range",
@@ -63,11 +63,12 @@
       "auditory": "Auditory / multimedia accessibility",
       "privacy": "AI and privacy notice",
       "privacyIntro1": "You are talking to an AI museum audioguide.",
-      "privacyIntro2": "The AI may make mistakes, so important information should be verified with museum staff.",
-      "privacyIntro3": "To improve the experience, the system may process your selected language, guide preferences, artwork interactions, and responses.",
-      "privacyIntro4": "No personal data is collected or stored.",
-      "privacyIntro5": "If you speak to the AI, audio may be processed to understand speech and generate spoken replies.",
-      "privacyConsent": "I understand that I am speaking with an AI and I have read how my information is used."
+      "privacyIntro2": "The AI may make mistakes, please verify important information with museum staff.",
+      "privacyIntro3": "To improve your experience, the system processes your selected language, guide preferences, artwork interactions, and the AI's responses.",
+      "privacyIntro4": "We do not intentionally collect or store personal information.",
+      "privacyIntro5": "If you use the microphone, your recording is sent to our transcription service to convert it to text, then discarded.",
+      "privacyIntro6": "Anything you type or say may be temporarily stored by our AI provider (Cohere) for up to 30 days. Please avoid sharing sensitive personal information with the AI.",
+      "privacyConsent": "I understand I am speaking with an AI and have read how my information is used."
     },
     "personas": {
       "artist": {
@@ -331,7 +332,7 @@
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Elige tu guia.",
       "description": "Elige como quieres que GuIA te ayude en el museo.",
-      "personalityIntro": "GuIA es una audioguía que usa inteligencia artificial para explicar el museo en el estilo y con las opciones de accesibilidad que elijas. Puedes hacerle preguntas sobre las obras y obtener explicaciones personalizadas. Puede explicar las obras de diferentes formas: como una historia, con detalles artísticos sobre colores y materiales, o en un estilo estándar.",
+      "personalityIntro": "GuIA es una audioguía que usa inteligencia artificial para explicar el museo en el estilo y con las opciones de accesibilidad que elijas. Puedes hacerle preguntas sobre las obras y obtener explicaciones personalizadas. Puede explicar las obras de diferentes formas: como una historia, con detalles artísticos sobre colores y materiales, o en un estilo estándar. Pregunta al personal del museo si prefieres un guía humano o si tienes alguna pregunta sobre cómo usar GuIA.",
       "language": "Selecciona el idioma",
       "personality": "Selecciona el estilo de explicación",
       "visitor": "Selecciona el rango de edad",
@@ -372,12 +373,13 @@
       "cognitive": "Accesibilidad cognitiva",
       "auditory": "Accesibilidad auditiva / multimedia",
       "privacy": "Aviso de IA y privacidad",
-      "privacyIntro1": "Estás hablando con un audioguía de museo que utiliza IA.",
-      "privacyIntro2": "La IA puede cometer errores, por lo que la información importante debe ser verificada con el personal del museo.",
-      "privacyIntro3": "Para mejorar la experiencia, el sistema puede procesar tu idioma seleccionado, preferencias del guía, interacciones con las obras y respuestas.",
-      "privacyIntro4": "No se recopila ni almacena información personal.",
-      "privacyIntro5": "Si hablas con la IA, el audio puede ser procesado para entender el discurso y generar respuestas habladas.",
-      "privacyConsent": "Entiendo que estoy hablando con una IA y he leído cómo se utiliza mi información."
+      "privacyIntro1": "Estás hablando con una audioguía de museo basada en IA.",
+      "privacyIntro2": "La IA puede cometer errores, verifica la información importante con el personal del museo.",
+      "privacyIntro3": "Para mejorar tu experiencia, el sistema procesa el idioma seleccionado, tus preferencias de guía, las interacciones con las obras y las respuestas de la IA.",
+      "privacyIntro4": "No recopilamos ni almacenamos información personal de forma intencionada.",
+      "privacyIntro5": "Si usas el micrófono, tu grabación se envía a nuestro servicio de transcripción para convertirla en texto y luego se elimina.",
+      "privacyIntro6": "Cualquier información que escribas o digas puede almacenarse temporalmente, hasta 30 días, por nuestro proveedor de IA (Cohere). Por favor, evita compartir información personal sensible con la IA.",
+      "privacyConsent": "Entiendo que estoy hablando con una IA y he leído cómo se usa mi información."
     },
     "personas": {
       "artist": {
@@ -641,7 +643,7 @@
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Tria el teu guia.",
       "description": "Tria com vols que GuIA t'ajudi al museu.",
-      "personalityIntro": "GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil y amb las opcions de accessibilitat que tu triis. Pots fer-li preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard.",
+      "personalityIntro": "GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil y amb las opcions de accessibilitat que tu triis. Pots fer-li preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard. Pregunta al personal del museu si prefereixes un guia humà o si tens alguna pregunta sobre com usar GuIA.",
       "language": "Selecciona l’idioma ",
       "personality": "Selecciona l’estil d’explicació",
       "visitor": "Selecciona la franja d'edat",
@@ -682,12 +684,13 @@
       "cognitive": "Accessibilitat cognitiva",
       "auditory": "Accessibilitat auditiva / multimèdia",
       "privacy": "Avís d'IA i privacitat",
-      "privacyIntro1": "Estàs parlant amb una audioguia de museu que utilitza IA.",
-      "privacyIntro2": "La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.",
-      "privacyIntro3": "Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.",
-      "privacyIntro4": "No es recullen ni emmagatzemen dades personals.",
-      "privacyIntro5": "Si parles amb l'IA, l'àudio pot ser processat per entendre la parla i generar respostes parlades.",
-      "privacyConsent": "Entenc que estic parlant amb un IA i he llegit com es utilitza la meva informació."
+      "privacyIntro1": "Estàs parlant amb una audioguia de museu basada en IA.",
+      "privacyIntro2": "La IA pot cometre errors, verifica la informació important amb el personal del museu.",
+      "privacyIntro3": "Per millorar la teva experiència, el sistema processa l'idioma seleccionat, les teves preferències de guia, les interaccions amb les obres i les respostes de la IA.",
+      "privacyIntro4": "No recopilem ni emmagatzemem informació personal de manera intencionada.",
+      "privacyIntro5": "Si utilitzes el micròfon, la teva gravació s'envia al nostre servei de transcripció per convertir-la en text i després s'elimina.",
+      "privacyIntro6": "Qualsevol informació que escriguis o diguis pot ser emmagatzemada temporalment, fins a 30 dies, pel nostre proveïdor d'IA (Cohere). Si us plau, evita compartir informació personal sensible amb la IA.",
+      "privacyConsent": "Entenc que estic parlant amb una IA i he llegit com s'utilitza la meva informació."
     },
     "personas": {
       "artist": {
