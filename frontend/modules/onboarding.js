@@ -263,10 +263,10 @@ function applyOnboardingTranslations() {
   setText(optAudioDescriptionHelp, t('onboarding.audioDescriptionHelp'));
 
   setText(el('label-tutorial-choice'), t('onboarding.tutorial'));
-  const optStartTutorialLabel = q('#opt-start-tutorial')?.closest('label')?.querySelector('.toggle-content > span');
-  setText(optStartTutorialLabel, t('onboarding.startTutorial'));
-  const optStartTutorialHelp = q('#opt-start-tutorial')?.closest('label')?.querySelector('.card-subtitle');
-  setText(optStartTutorialHelp, t('onboarding.startTutorialHelp'));
+  const optVisualTutorialLabel = q('#opt-start-tutorial')?.closest('label')?.querySelector('.toggle-content > span');
+  setText(optVisualTutorialLabel, t('onboarding.startTutorial'));
+  const optvisualTutorialHelp = q('#opt-start-tutorial')?.closest('label')?.querySelector('.card-subtitle');
+  setText(optvisualTutorialHelp, t('onboarding.visualTutorialHelp'));
 
   const privacyHeading = el('privacy-notice-title') || q('.onboarding-step[data-step="3"] .section-label');
   setText(privacyHeading, t('onboarding.privacy'));
@@ -355,8 +355,8 @@ function applySettingsTranslations() {
     setText(q(`[data-settings-help="${preference}"]`), t(keys[1]));
   });
 
-  setText(el('settings-start-tutorial-label'), t('onboarding.startTutorial'));
-  setText(el('settings-start-tutorial-help'), t('onboarding.startTutorialHelp'));
+  setText(el('settings-start-tutorial-label'), t('onboarding.visualTutorial'));
+  setText(el('settings-start-tutorial-help'), t('onboarding.visualTutorialHelp'));
   setText(el('settings-tutorial-spoken-label'), t('onboarding.tutorialSpoken'));
   setText(el('settings-tutorial-spoken-help'), t('onboarding.tutorialSpokenHelp'));
   enhanceSettingsAccessibility();
@@ -572,11 +572,11 @@ function syncAccessibilityControls() {
     tutorialInput.checked = !!state.showTutorialOnStart;
     const tutorialLabel = tutorialInput.parentElement.querySelector('.toggle-content span');
     if (tutorialLabel) {
-      setText(tutorialLabel, t('onboarding.tutorial', 'Visual tutorial'));
+      setText(tutorialLabel, t('onboarding.visualTutorial', 'Visual tutorial'));
     }
     const tutorialHelp = el('opt-start-tutorial-help');
     if (tutorialHelp) {
-      setText(tutorialHelp, t('onboarding.startTutorialHelp', 'GuIA explains the main buttons visually before the visit starts.'));
+      setText(tutorialHelp, t('onboarding.visualTutorialHelp', 'GuIA explains the main buttons visually before the visit starts.'));
     }
   }
 
