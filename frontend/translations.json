@@ -90,7 +90,7 @@
     },
     "ages": {
         "young": {
-            "title": "Child/Teenager",
+            "title": "Child / Teenager",
             "subtitle": "(12-17 years old)"
             },
         "youngAdult": {
@@ -401,7 +401,7 @@
     },
     "ages": {
         "young": {
-            "title": "Niño/Adolescente",
+            "title": "Niño / Adolescente",
             "subtitle": "(12-17 años)"
             },
         "youngAdult": {
@@ -712,7 +712,7 @@
     },
     "ages": {
         "young": {
-            "title": "Nen/Adolescent",
+            "title": "Nen / Adolescent",
             "subtitle": "(12-17 anys)"
             },
         "youngAdult": {
