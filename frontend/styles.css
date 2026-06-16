@@ -19,7 +19,7 @@
   --chat-user: #f7e6a8;
   --chat-user-border: #d1b95f;
   --outline-variant: #6f7773;
-  --outline-soft: rgba(173, 179, 176, 0.35);
+  --outline-soft: #939594;
   --outline-muted: rgba(173, 179, 176, 0.25);
   --outline-grid: rgba(173, 179, 176, 0.2);
   --outline-medium: rgba(173, 179, 176, 0.45);
@@ -961,7 +961,7 @@ select {
   color: var(--on-surface-variant);
   border-radius: 2rem;
   transition: background 0.15s, color 0.15s;
-  border: none;
+  border: 1px solid var(--outline-soft);
   cursor: pointer;
 }
 
@@ -1207,6 +1207,9 @@ select {
 
 .manual-location-panel {
   margin-top: 0.8rem;
+}
+.manual-location-panel select{
+  border: 1px solid var(--outline-soft);
 }
 
 .manual-location-panel[hidden],
@@ -2051,6 +2054,10 @@ select:focus-visible,
 
   .volume-slider {
     width: 100%;
+  }
+
+  .volume-slider::-webkit-slider-thumb {
+    border: 1px solid var(--outline-soft);
   }
 
   .speed-group {
