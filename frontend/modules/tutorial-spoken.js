@@ -286,8 +286,7 @@ function initSpokenTutorial(audio) {
       closeSpokenTutorial();
       return;
     }
-
-
+  }
 
   function openSpokenTutorial(initialStep = 0) {
     if (!state.accessibilityPrefs.tutorialSpoken) return;
