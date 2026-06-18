@@ -576,15 +576,10 @@ function setPreferredSpeechSpeed(speed) {
 function bindAccessibilityPreference(id, preference) {
   el(id)?.addEventListener('change', (event) => {
     const wasSpokenAudio = state.accessibilityPrefs.spokenAudio;
-    const previous = state.accessibilityPrefs[preference];
 
     state.accessibilityPrefs[preference] = event.target.checked;
-    window.guiaTrack?.('option_changed', {
-      field: `pref:${preference}`,
-      from: previous,
-      to: event.target.checked,
-      where: 'onboarding'
-    });
+    // Accessibility preferences are intentionally not sent to analytics
+    // (compliance: special-category / sensitive data must not be logged).
 
     syncAccessibilityControls();
     applyAccessibilityPrefs();
@@ -667,9 +662,9 @@ function bindSettingsPanel() {
     input.addEventListener('change', (event) => {
       const preference = event.target.dataset.settingsPref;
       const wasSpokenAudio = state.accessibilityPrefs.spokenAudio;
-      const previous = state.accessibilityPrefs[preference];
       state.accessibilityPrefs[preference] = event.target.checked;
-      window.guiaTrack?.('option_changed', { field: `pref:${preference}`, from: previous, to: event.target.checked, where: 'settings' });
+      // Accessibility preferences are intentionally not sent to analytics
+      // (compliance: special-category / sensitive data must not be logged).
       syncAccessibilityControls();
       applyAccessibilityPrefs();
       window.saveGuiaSession?.();
@@ -698,8 +693,9 @@ function bindOnboardingFlow() {
     window.guiaTrack?.('onboarding_completed', {
       lang: state.selectedLang,
       persona: state.selectedPersona,
-      age: state.selectedAge,
-      prefs: { ...state.accessibilityPrefs }
+      age: state.selectedAge
+      // Accessibility preferences are intentionally omitted from analytics
+      // (compliance: special-category / sensitive data must not be logged).
     });
     applyAppTranslations();
     applyAccessibilityPrefs();

@@ -927,9 +927,9 @@ def log_answer_completed(
             "lang": language_code(language),
             "respLen": len(response or ""),
             "generator": generator,
-            "simpleLanguage": bool(simple_language),
-            "visualDescriptions": bool(visual_descriptions),
-            "moreTime": bool(more_time),
+            # Accessibility preferences (simpleLanguage / visualDescriptions /
+            # moreTime) are intentionally not logged here for compliance:
+            # special-category / sensitive data must not be persisted to analytics.
             "dontKnow": dont_know,
             "retrievalEmpty": retrieval_empty,
             "roomId": room,

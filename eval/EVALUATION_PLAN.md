@@ -7,7 +7,7 @@ GuIA is an AI museum audioguide (Flask + Cohere `command-a-03-2025` + Neo4j know
 - **Part 1 — LLM faithfulness:** does the guide stay faithful to the facts it retrieves from the graph, or does it invent things?
 - **Part 2 — Retrieval recall:** does `retrieve_neo4j_context` actually surface the right fact for a question whose answer we already know?
 
-This document is the design only — no harness code is written yet; implementation is a separate, approved follow-up. (Parts 3 & 4 will be planned later in their own passes.) It lives at `eval/EVALUATION_PLAN.md` so it sits alongside the harness code that will be added under `eval/`.
+This document began as the design for Parts 1 & 2 only. Those are now built and run; **Part 3 — cultural bias is also built** (see its section below). Part 4 will be planned later in its own pass. It lives at `eval/EVALUATION_PLAN.md` so it sits alongside the harness code under `eval/`.
 
 ---
 
@@ -189,7 +189,51 @@ Timestamped files in `eval/results/`:
 
 ---
 
+## Part 3 — Cultural bias (CBS) — BUILT
+
+Designed and implemented after Parts 1 & 2 (full walkthrough in
+[HOW_PART3_WORKS.md](HOW_PART3_WORKS.md)). **Goal:** quantify whether the guide
+presents an artwork's cultural origins in a balanced way or flattens it toward a
+dominant (eurocentric) narrative — and whether that differs by language.
+
+**Per-item pipeline** (per sampled artwork × language): render a fixed
+cultural-context question → (optionally) `retrieve` graph context → `answer` →
+a **classifier** Cohere call turns the answer into a distribution `P(c)` over a
+fixed cultural-origin label set → score `CBS = D_KL(Q‖P)` against a hand-curated
+expected distribution `Q(c)`. ~3 Cohere calls/item, same cost shape as Part 1.
+
+**Key design points** (all to keep the metric honest):
+- **`Q(c)` is hand-curated**, committed at `data/cultural_groundtruth.json` — the
+  graph has no structured cultural-origin fields, so `Q` cannot be read from it.
+  Curated to art-historical *truth*, not a diversity target (a genuinely Italian
+  work described as Italian scores ≈ 0 — the `Q‖P` direction guarantees it).
+- **Six labels** (`config.CBS_LABELS`), mutually-exclusive bins over attribution
+  mass so KL is well-defined. The sketch's "technical/neutral" lens became a
+  separate `coverage` scalar (orthogonal to the simplex); "critical" became an
+  optional boolean flag — neither is folded into CBS.
+- **Title-blind classifier** (sees only the answer, never `Q`) so `P` measures the
+  answer, not the classifier's prior. Pinned `temperature=0`+seed; tolerant parser
+  + bounded retry + renormalize (mirrors `judge.py`).
+- **`CBS = D_KL(Q‖P)`** with add-ε smoothing (ε=0.01) on both vectors; JSD reported
+  as a bounded symmetric companion. Direction `Q‖P` penalizes the answer for
+  *omitting* real influences (the failure we hunt).
+- **Two modes:** `--context retrieval` (the real product) vs `--context none`
+  (pure-LLM ablation isolating model bias from the graph's uneven coverage).
+- **New files:** `cbs.py` (math `--selftest` + classifier), `cultural_groundtruth.py`
+  (`--validate`/`--template`/`--dump`), `data/cultural_groundtruth.json`,
+  `part3_cultural_bias.py`. **Modified:** `config.py` (Part 3 block), `llm_bridge.py`
+  (adds `classify_raw`, the only edit). No `LLM/` app code touched.
+
+**Caveats (stated plainly):** `Q` is subjective art-historical judgment (rows carry
+a `confidence`; CBS reported per-confidence); the classifier shares the guide's
+model family so CBS is an optimistic **lower bound**; small N + non-deterministic
+answers → per-language CBS is a statistical estimate; CBS magnitudes compare only
+at a fixed ε.
+
+---
+
 ## Out of scope (future passes)
-- **Parts 3 & 4** (the remaining two subsystems) — planned later, one at a time.
+- **Part 4** (the remaining subsystem — likely explanation-style / accessibility)
+  — planned later in its own pass.
 - Wiring any of this into CI or the Hugging Face deploy.
 - Any change to `LLM_Call.py` (e.g. the `temperature=0` retrieval tweak) — this evaluation is read-only against the app.

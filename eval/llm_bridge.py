@@ -160,3 +160,24 @@ def judge_raw(system: str, user: str) -> str:
         # SDK does not accept temperature/seed on chat(); fall back to plain call.
         response = _chat_with_backoff(**base)
     return response.text
+
+
+# --- Cultural-bias classifier (Part 3) --------------------------------------
+def classify_raw(system: str, user: str) -> str:
+    """Stateless cultural-narrative classifier call. Same shape as judge_raw.
+
+    Pins temperature (and seed if configured) so the classification of a given
+    answer is as reproducible as the SDK allows — the classifier is, like the
+    judge, a Cohere call the harness fully controls. Falls back to a plain call
+    if a future SDK rejects those kwargs.
+    """
+    base = dict(model=config.CLASSIFIER_MODEL, preamble=system, message=user)
+    try:
+        kwargs = dict(base)
+        kwargs["temperature"] = config.CLASSIFIER_TEMPERATURE
+        if config.CLASSIFIER_SEED is not None:
+            kwargs["seed"] = config.CLASSIFIER_SEED
+        response = _chat_with_backoff(**kwargs)
+    except TypeError:
+        response = _chat_with_backoff(**base)
+    return response.text
