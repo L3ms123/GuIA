@@ -19,13 +19,13 @@
   --chat-user: #f7e6a8;
   --chat-user-border: #d1b95f;
   --outline-variant: #6f7773;
-  --outline-soft: rgba(173, 179, 176, 0.35);
+  --outline-soft: #939594;
   --outline-muted: rgba(173, 179, 176, 0.25);
   --outline-grid: rgba(173, 179, 176, 0.2);
   --outline-medium: rgba(173, 179, 176, 0.45);
   --control-fill: rgba(173, 179, 176, 0.5);
   --track: rgba(173, 179, 176, 0.75);
-  --error: #9f403d;
+  --error: #913E3B; /*Meets the 7:1 AAA WCAG standard*/
 
   /* Typography */
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -41,6 +41,13 @@
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.16);
   --shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.15);
   --shadow-strong: 0 1px 3px rgba(0, 0, 0, 0.615);
+}
+
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body[data-mode="regular"] {
@@ -65,6 +72,7 @@ body.surface {
   color: var(--on-surface);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  height: auto;
 }
 
 body[data-onboarding-open] {
@@ -80,8 +88,13 @@ body[data-settings-open] {
 }
 
 .app-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
   min-height: 100dvh;
   font-size: calc(1rem * var(--scale));
+  display: flex;
+  flex-direction: column;
 }
 
 html[data-uppercase-text],
@@ -321,9 +334,10 @@ select {
 /* chips for age */
 .chip {
   display: flex;
-  flex-direction: column; 
-  align-items: flex-start;
-  gap: 8px; 
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   background: var(--surface-lowest);
   padding: 0.8rem;
   border: none;
@@ -339,34 +353,15 @@ select {
   background: var(--surface-low);
 }
 
-/* SVG flag in lang cards */
-.flag svg {
-  width: 2.2rem;
-  height: 1.5rem;
-  display: block;
-  margin-bottom: 0.35rem;
+.chip .age-title,
+.chip .card-subtitle {
+  display: inline-block;
+  margin: 0;
 }
 
-/* SVG icons in persona cards */
-.card-icon {
-  width: 3.2rem;
-  height: 3.2rem;
-  color: var(--on-surface-variant);
-  margin-bottom: 0.35rem;
-  display: block;
-}
 
 .radio-card[aria-checked="true"] .card-icon {
   color: var(--primary);
-}
-
-/* SVG icons in age chips */
-.chip-icon {
-  width: 2.2rem;
-  height: 2.2rem;
-  color: var(--on-surface-variant);
-  margin-bottom: 0.2rem;
-  display: inline-block;
 }
 
 .age-title {
@@ -639,16 +634,6 @@ select {
   width: 100%;
 }
 
-/* App shell */
-.app-shell {
-  width: 100%;
-  max-width: none;
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Top bar */
 .top-bar {
   position: sticky;
@@ -706,7 +691,7 @@ select {
   color: inherit;
   cursor: pointer;
   text-align: left;
-  order: 1;
+  order: 0;
 }
 
 .help-btn {
@@ -720,6 +705,7 @@ select {
   color: inherit;
   cursor: pointer;
   font-weight: 700;
+  order: 1;
 }
 
 .help-btn .material-symbols-outlined {
@@ -975,7 +961,7 @@ select {
   color: var(--on-surface-variant);
   border-radius: 2rem;
   transition: background 0.15s, color 0.15s;
-  border: none;
+  border: 1px solid var(--outline-soft);
   cursor: pointer;
 }
 
@@ -995,7 +981,7 @@ select {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(220px, 0.9fr);
   gap: 1rem;
-  padding: 1rem var(--gutter) var(--bottom-bar-space);
+  padding: 1rem var(--gutter);
   min-height: 0;
 }
 
@@ -1005,13 +991,14 @@ select {
   padding: 1rem 1.1rem 0.9rem;
   display: flex;
   flex-direction: column;
-  min-height: 300px;
-  max-height: calc(100vh - 210px);
+  min-height: 0;
+  max-height: none;
   min-width: 0;
 }
 
 .chat-thread {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: 0.15rem 0.4rem 0.15rem 0;
 }
@@ -1220,6 +1207,9 @@ select {
 
 .manual-location-panel {
   margin-top: 0.8rem;
+}
+.manual-location-panel select{
+  border: 1px solid var(--outline-soft);
 }
 
 .manual-location-panel[hidden],
@@ -1448,20 +1438,220 @@ body[data-tutorial-open] .input-shell.tutorial-target {
   }
 }
 
-/* bottom bar */
-.bottom-bar {
+/* Spoken tutorial */
+#tutorial-spoken-overlay {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(12, 15, 14, 0.75);
+  color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+#tutorial-spoken-overlay[hidden] {
+  display: none;
+}
+
+.tutorial-spoken-panel {
+  width: min(100%, 44rem);
+  max-width: 44rem;
+  background: var(--surface-lowest);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 1.75rem 1.5rem 1.5rem;
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tutorial-spoken-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tutorial-spoken-icon {
+  font-size: 1.6rem;
+  color: var(--primary);
+  flex-shrink: 0;
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+}
+
+.tutorial-spoken-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  color: var(--on-surface);
+}
+
+.tutorial-spoken-progress {
+  font-size: 0.8rem;
+  color: var(--on-surface-variant);
+  opacity: 0.55;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tutorial-spoken-body {
+  font-size: 1.1rem;
+  line-height: 1.65;
+  margin: 0;
+  color: var(--on-surface);
+  opacity: 0.85;
+}
+
+.tutorial-spoken-top-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  align-self: flex-end;
+}
+
+.tutorial-spoken-top-controls button {
+  border: 1px solid var(--outline-soft);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  min-width: 3rem;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutorial-spoken-top-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tutorial-spoken-bottom-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.tutorial-spoken-bottom-controls button {
+  width: 100%;
+  border: 1px solid var(--outline-soft);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.tutorial-spoken-bottom-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tutorial-spoken-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  padding-top: 0.25rem;
+}
+
+.tutorial-spoken-controls button {
+  width: 100%;
+}
+
+.tutorial-spoken-controls button {
+  border: 1px solid var(--outline-soft);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.tutorial-spoken-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tutorial-spoken-audio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.tutorial-spoken-audio--off {
+  opacity: 0.5;
+}
+
+.tutorial-spoken-audio--off:hover {
+  opacity: 0.7;
+}
+
+.tutorial-spoken-audio--on {
+  opacity: 1;
+}
+
+.tutorial-spoken-close {
+  background: var(--surface-low);
+  margin-right: auto;
+}
+
+.tutorial-spoken-prev {
+  background: var(--surface-low);
+  opacity: 0.85;
+}
+
+.tutorial-spoken-next {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
+.tutorial-spoken-done {
+  background: #16a34a;
+  color: white;
+  border-color: #16a34a;
+}
+
+@media (max-width: 480px) {
+  .tutorial-spoken-panel {
+    width: 100%;
+    padding: 1.25rem 1.1rem 1.1rem;
+    border-radius: 0.8rem;
+  }
+}
+
+/* bottom bar */
+.bottom-bar { 
+  flex: 0 0 auto;
   width: 100%;
   max-width: none;
   padding: 0.4rem var(--gutter) calc(0.6rem + env(safe-area-inset-bottom));
-  background: linear-gradient(
-    to top,
-    rgba(249, 249, 247, 1) 78%,
-    rgba(249, 249, 247, 0)
-  );
+  background: var(--surface);
+  border-top: 1px solid var(--outline-soft);
 }
 
 .helper-text {
@@ -1584,7 +1774,8 @@ select:focus-visible,
 
 @media (min-width: 1301px) {
   body.surface {
-    height: 100dvh;
+    min-height: 100dvh;
+    height: auto;
     overflow: hidden;
   }
 
@@ -1609,11 +1800,6 @@ select:focus-visible,
 
   .onboarding-body {
     gap: 1rem;
-  }
-
-  .onb-section {
-    gap: 0.55rem;
-    margin-bottom: 0;
   }
 
   .toggle-list {
@@ -1668,7 +1854,6 @@ select:focus-visible,
   .main-layout {
     flex: 1 1 auto;
     overflow: hidden;
-    padding-bottom: 5.75rem;
   }
 
   .chat-panel {
@@ -1689,37 +1874,47 @@ select:focus-visible,
   }
 
   body.surface {
-    height: 100dvh;
+    min-height: 100dvh;
     min-width: 0;
-    overflow: hidden;
+    height: auto;
+    overflow-x: hidden;
+    /* Prevent body from being scrollable on mobile */
+    overflow-y: hidden;
   }
 
   .app-shell {
+    /* position:fixed anchors the shell to the visual viewport —
+       it stays put when the virtual keyboard opens/closes,
+       and the body can never be scrolled underneath it. */
+    position: fixed;
+    inset: 0;
     width: 100%;
-    max-width: 100%;
-    height: 100dvh;
-    min-height: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    /* Respect safe areas (notch, home bar) */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--surface);
   }
 
   .top-bar {
-    position: static;
     flex: 0 0 auto;
     display: grid;
     grid-template-columns: 2.75rem 2.75rem minmax(0, 1fr) minmax(0, 1fr);
     align-items: center;
     gap: 0.4rem;
-    padding: calc(0.75rem + env(safe-area-inset-top)) var(--gutter) 0.55rem;
+    /* Remove safe-area-inset-top here — handled by app-shell padding-top */
+    padding: 0.75rem var(--gutter) 0.55rem;
     border-bottom: 1px solid var(--outline-soft);
     background: var(--surface);
+    overflow: hidden;
+    min-height: 0;
   }
 
   .top-left {
     display: contents;
-    margin: 0;
-    min-width: 0;
   }
 
   .app-title {
@@ -1861,6 +2056,10 @@ select:focus-visible,
     width: 100%;
   }
 
+  .volume-slider::-webkit-slider-thumb {
+    border: 1px solid var(--outline-soft);
+  }
+
   .speed-group {
     grid-column: 1 / -1;
     width: 100%;
@@ -1901,13 +2100,13 @@ select:focus-visible,
   }
 
   .main-layout {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
     overflow: hidden;
-    padding: 0.55rem var(--gutter) calc(7.5rem + env(safe-area-inset-bottom));
+    padding: 0.55rem var(--gutter) 0.55rem;
   }
 
   .context-column,
@@ -1970,16 +2169,23 @@ select:focus-visible,
   }
 
   .chat-panel {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     max-height: none;
     min-height: 0;
     padding: 0.75rem;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .chat-thread {
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 0;
+    /* Smooth scroll for auto-scroll-to-bottom */
+    scroll-behavior: auto;
   }
 
   .msg-bubble {
@@ -1991,15 +2197,11 @@ select:focus-visible,
   }
 
   .bottom-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
     flex: 0 0 auto;
-    transform: none;
+    width: 100%;
     max-width: none;
-    padding: 0.55rem var(--gutter) calc(0.65rem + env(safe-area-inset-bottom));
+    /* No safe-area-inset-bottom here — handled by app-shell padding-bottom */
+    padding: 0.55rem var(--gutter) 0.65rem;
     border-top: 1px solid var(--outline-soft);
     background: var(--surface);
   }
@@ -2021,6 +2223,9 @@ select:focus-visible,
     min-height: 2.65rem;
     font-size: calc(0.95rem * var(--scale));
     text-overflow: ellipsis;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .input-shell .icon-btn {
@@ -2108,6 +2313,24 @@ select:focus-visible,
   .settings-grid.age-grid {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .lang-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .lang-card .card-title,
+  .lang-card .card-subtitle {
+    margin: 0;
+    display: inline-block;
+  }
+
+  .lang-card .card-subtitle {
+    color: var(--on-surface-variant);
+    font-size: 0.95rem;
   }
 
   .settings-panel {
@@ -2368,16 +2591,19 @@ select:focus-visible,
   }
 
   body[data-tutorial-open] .app-shell {
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
+    /* Keep shell fixed even during tutorial — the tutorial panel
+       is position:fixed itself so it doesn't need the shell to scroll */
+    position: fixed;
+    inset: 0;
+    height: 100%;
+    overflow: hidden;
   }
 
   body[data-tutorial-open] .main-layout {
-    flex: 0 0 auto;
-    min-height: auto;
-    overflow: visible;
-    padding-bottom: calc(37dvh + 1rem + env(safe-area-inset-bottom));
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 0.55rem;
   }
 
   body[data-tutorial-open][data-tutorial-placement="top"] .main-layout {
@@ -2389,8 +2615,8 @@ select:focus-visible,
   }
 
   body[data-tutorial-open] .context-box {
-    max-height: none;
-    overflow: visible;
+    max-height: 50dvh;
+    overflow-y: auto;
   }
 
   .tutorial-overlay[data-placement="top"] {

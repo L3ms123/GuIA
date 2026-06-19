@@ -59,7 +59,7 @@ function initTutorial() {
   }
 
   function locationReadyForTutorial() {
-    return !!el('artwork-select')?.value;
+    return !!el('floor-select')?.value && !!el('room-select')?.value;
   }
 
   function questionReady() {
@@ -386,10 +386,10 @@ function initTutorial() {
 
     requestAnimationFrame(() => lastFocus?.focus?.());
 
+    // Reproduce el último mensaje de GuIA al cerrar el tutorial
     window.setTimeout(() => {
       if (!document.body.hasAttribute('data-onboarding-open')) {
-        window.guiaSuppressAppShellForWelcome?.();
-        window.guiaSpeakInitialWelcome?.();
+        window.guiaReplayLastAssistantSpeech?.();
       }
     }, 0);
   }
@@ -401,6 +401,16 @@ function initTutorial() {
 
     if ((item.qrAction || item.target === '#scan-qr-btn') && event.target.closest?.('#close-qr-btn')) {
       advanceAfterAction();
+      return;
+    }
+
+    if (item.waitForSend && event.target.closest?.('#send-btn')) {
+      if (questionReady()) advanceAfterAction();
+      else {
+        const index = questionStepIndex();
+        if (index >= 0) goToStep(index);
+        el('chat-input')?.focus();
+      }
       return;
     }
 
@@ -418,13 +428,15 @@ function initTutorial() {
     }
 
     if (item.requireLocation && event.target.closest?.('#set-context-btn')) {
-      const artworkSelected = !!el('artwork-select')?.value;
-      if (!artworkSelected) {
+      const floorSelected = !!el('floor-select')?.value;
+      const roomSelected = !!el('room-select')?.value;
+      if (!floorSelected || !roomSelected) {
         event.preventDefault();
         event.stopPropagation();
         const error = el('context-error');
-        if (error) error.textContent = t('app.artworkRequired', 'Choose an artwork before continuing.');
-        el('artwork-select')?.focus();
+        if (error) error.textContent = t('app.contextError');
+        if (!floorSelected) el('floor-select')?.focus();
+        else el('room-select')?.focus();
         return;
       }
       return;
@@ -433,16 +445,6 @@ function initTutorial() {
     if (item.requireLocation) return;
 
     if (item.waitForVoice && event.target.closest?.('#mic-btn')) return;
-
-    if (item.waitForSend && event.target.closest?.('#send-btn')) {
-      if (questionReady()) advanceAfterAction();
-      else {
-        const index = questionStepIndex();
-        if (index >= 0) goToStep(index);
-        el('chat-input')?.focus();
-      }
-      return;
-    }
 
     if (targetContainsEvent(item, event.target) || targetContainsEvent({ targets: INTERACTIVE_TARGETS }, event.target)) {
       if (currentStep >= totalSteps() - 1) window.setTimeout(closeTutorial, 250);
@@ -454,7 +456,7 @@ function initTutorial() {
     if (!isOpen()) return;
 
     const item = itemAt();
-    if (item.requireLocation && locationReadyForTutorial() && state.currentArtwork) {
+    if (item.requireLocation && locationReadyForTutorial()) {
       advanceAfterAction(() => goToStep(firstStepAfterLocationGroup()));
     }
   }
@@ -520,7 +522,16 @@ function initTutorial() {
   }
 
   modal.addEventListener('keydown', handleModalKeydown);
-  openBtn.addEventListener('click', openTutorial);
+  openBtn.addEventListener('click', () => {
+    // If the user selected the spoken tutorial in onboarding, open it instead.
+    // If the user selected the visual tutorial (or nothing), open visual.
+    if (state?.accessibilityPrefs?.tutorialSpoken) {
+      window.guiaOpenSpokenTutorial?.(0);
+      return;
+    }
+    openTutorial();
+  });
+
   closeBtn?.addEventListener('click', closeTutorial);
   doneBtn?.addEventListener('click', closeTutorial);
   prevBtn?.addEventListener('click', () => {
@@ -532,11 +543,13 @@ function initTutorial() {
   document.addEventListener('guia:location-selected', handleLocationSelected);
   el('chat-input')?.addEventListener('input', handleQuestionInput);
 
-  window.guiaOpenTutorial = openTutorial;
+  
   window.guiaApplyTutorialTranslations = renderCurrentStep;
+  window.guiaOpenTutorial = openTutorial;
   renderCurrentStep();
 }
 
 function renderTutorial() {
   window.guiaApplyTutorialTranslations?.();
 }
+

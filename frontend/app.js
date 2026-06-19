@@ -115,6 +115,7 @@ function initApp() {
 
   warmTranscriptionModel();
   initTutorial();
+  initSpokenTutorial(audio);
   initInitialWelcomeSpeech(audio);
   initContextPanel();
   initChat(audio, voice);

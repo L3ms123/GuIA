@@ -141,6 +141,40 @@ def answer(
     )
 
 
+def answer_with_prompt(system_prompt: str, message: str) -> str:
+    """Generate a guide answer from a FULLY-FORMED system prompt — Part 4's path.
+
+    Part 4 treats the prompt itself as the independent variable: it builds prompt
+    VARIANTS (see prompt_variants.py) and needs to send each one verbatim, so this
+    bypasses build_system_prompt entirely and passes ``system_prompt`` straight
+    through as the Cohere preamble. Two deliberate differences from the shipped
+    call_cohere_guide path (LLM_Call.py:2813-2818):
+
+    * **No conversation_id.** The shipped path passes ``conversation_id=guia_<sid>``
+      so Cohere accumulates multi-turn memory. Part 4 fires the SAME question
+      across many variants x repeats back-to-back; a shared conversation_id would
+      let one variant's answer leak into the next and contaminate the divergence
+      with conversation history instead of prompt differences. The judge and
+      classifier bridges omit it for the same isolation reason.
+    * **No temperature/seed pin.** judge_raw / classify_raw pin temperature=0
+      because they are reproducible graders. The guide answer is the opposite:
+      its natural run-to-run sampling variance is the NOISE FLOOR Part 4 measures
+      the prompt effect against, so we must sample exactly as the product does.
+
+    Routed through ``_chat_with_backoff`` for the same 429 protection as every
+    other Cohere call, and post-processed with the backend's ``format_chat_text``
+    for parity with the delivered answer surface (deterministic, so it injects no
+    divergence of its own). Only model/preamble/message are passed, so there is no
+    unsupported-kwarg TypeError surface and no fallback is needed.
+    """
+    response = _chat_with_backoff(
+        model=_LLM.MODEL_USED,
+        preamble=system_prompt,
+        message=message,
+    )
+    return _LLM.format_chat_text(response.text)
+
+
 # --- Judge ------------------------------------------------------------------
 def judge_raw(system: str, user: str) -> str:
     """Stateless judge call: no conversation_id; temperature/seed for determinism.

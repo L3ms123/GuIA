@@ -3,8 +3,8 @@ function showOnboarding() {
   state.lastFocusedElement = document.activeElement;
   state.onboardingStep = 1;
   if (!state.chatStarted) {
-    state.showTutorialOnStart = true;
-    state.accessibilityPrefs.spokenAudio = true;
+    state.showTutorialOnStart = false;
+    state.accessibilityPrefs.spokenAudio = false;
   }
   window.guiaResetSpeechQueue?.();
   syncAccessibilityControls();
@@ -105,8 +105,15 @@ function settingsEls() {
     closeBtn: el('settings-close-btn'),
     doneBtn: el('settings-done-btn'),
     resetBtn: el('settings-reset-btn'),
-    tutorialInput: el('settings-start-tutorial')
+    tutorialInput: el('settings-start-tutorial'),
+    tutorialSpokenInput: el('settings-tutorial-spoken')
   };
+}
+
+let pendingSettingsLang = null;
+
+function selectedSettingsLang() {
+  return pendingSettingsLang || state.selectedLang;
 }
 
 function showSettingsPanel() {
@@ -119,6 +126,7 @@ function showSettingsPanel() {
   document.body.removeAttribute('data-audio-settings-open');
   el('location-panel-btn')?.setAttribute('aria-expanded', 'false');
   el('audio-settings-btn')?.setAttribute('aria-expanded', 'false');
+  pendingSettingsLang = null;
   syncSettingsControls();
   applySettingsTranslations();
 
@@ -134,11 +142,14 @@ function hideSettingsPanel() {
   const { modal } = settingsEls();
   if (!modal) return;
 
+  // Move focus back to the last focused element before hiding the modal
+  requestAnimationFrame(() => state.lastFocusedElement?.focus?.());
+  pendingSettingsLang = null;
+
   modal.setAttribute('aria-hidden', 'true');
   modal.setAttribute('hidden', '');
   modal.hidden = true;
   document.body.removeAttribute('data-settings-open');
-  requestAnimationFrame(() => state.lastFocusedElement?.focus?.());
 }
 
 function applyOnboardingTranslations() {
@@ -252,10 +263,10 @@ function applyOnboardingTranslations() {
   setText(optAudioDescriptionHelp, t('onboarding.audioDescriptionHelp'));
 
   setText(el('label-tutorial-choice'), t('onboarding.tutorial'));
-  const optStartTutorialLabel = q('#opt-start-tutorial')?.closest('label')?.querySelector('.toggle-content > span');
-  setText(optStartTutorialLabel, t('onboarding.startTutorial'));
-  const optStartTutorialHelp = q('#opt-start-tutorial')?.closest('label')?.querySelector('.card-subtitle');
-  setText(optStartTutorialHelp, t('onboarding.startTutorialHelp'));
+  const optVisualTutorialLabel = q('#opt-start-tutorial')?.closest('label')?.querySelector('.toggle-content > span');
+  setText(optVisualTutorialLabel, t('onboarding.startTutorial'));
+  const optvisualTutorialHelp = q('#opt-start-tutorial')?.closest('label')?.querySelector('.card-subtitle');
+  setText(optvisualTutorialHelp, t('onboarding.visualTutorialHelp'));
 
   const privacyHeading = el('privacy-notice-title') || q('.onboarding-step[data-step="3"] .section-label');
   setText(privacyHeading, t('onboarding.privacy'));
@@ -266,6 +277,7 @@ function applyOnboardingTranslations() {
   setText(privacyParagraphs[2], t('onboarding.privacyIntro3'));
   setText(privacyParagraphs[3], t('onboarding.privacyIntro4'));
   setText(privacyParagraphs[4], t('onboarding.privacyIntro5'));
+  setText(privacyParagraphs[5], t('onboarding.privacyIntro6'));
 
   const consentLabel = q('#privacy-consent')?.closest('label')?.querySelector('span');
   setText(consentLabel, t('onboarding.privacyConsent'));
@@ -343,8 +355,10 @@ function applySettingsTranslations() {
     setText(q(`[data-settings-help="${preference}"]`), t(keys[1]));
   });
 
-  setText(el('settings-start-tutorial-label'), t('onboarding.startTutorial'));
-  setText(el('settings-start-tutorial-help'), t('onboarding.startTutorialHelp'));
+  setText(el('settings-start-tutorial-label'), t('onboarding.visualTutorial'));
+  setText(el('settings-start-tutorial-help'), t('onboarding.visualTutorialHelp'));
+  setText(el('settings-tutorial-spoken-label'), t('onboarding.tutorialSpoken'));
+  setText(el('settings-tutorial-spoken-help'), t('onboarding.tutorialSpokenHelp'));
   enhanceSettingsAccessibility();
 }
 
@@ -381,6 +395,12 @@ function enhanceSettingsAccessibility() {
   if (tutorialInput) {
     tutorialInput.setAttribute('aria-labelledby', 'settings-start-tutorial-label');
     tutorialInput.setAttribute('aria-describedby', 'settings-start-tutorial-help');
+  }
+
+  const tutorialSpokenInput = el('settings-tutorial-spoken');
+  if (tutorialSpokenInput) {
+    tutorialSpokenInput.setAttribute('aria-labelledby', 'settings-tutorial-spoken-label');
+    tutorialSpokenInput.setAttribute('aria-describedby', 'settings-tutorial-spoken-help');
   }
 }
 
@@ -421,15 +441,21 @@ function showOnboardingStep(step) {
   nextBtn.textContent = step === state.totalSteps || (state.privacyAccepted && step === 2) ? 'Start' : 'Continue';
 
   updateOnboardingButtons();
+
+  // Focus the step-count element in the header to trigger aria-live announcement
   window.setTimeout(() => {
-    if (step === 3) {
-      // Focus the privacy notice text so screen readers announce the full content
-      el('privacy-notice-text')?.focus();
-      return;
+    const stepCount = el('step-count');
+    if (!stepCount) return;
+
+    if (step === 1) {
+      stepCount.setAttribute('aria-describedby', 'label-personality-intro');
+    } else {
+      stepCount.removeAttribute('aria-describedby');
     }
 
-    focusFirstAvailable(steps.find((section) => !section.hidden));
-  }, 0);
+    stepCount.focus();
+  }, 50);
+
 }
 
 function updateBackButtonState(backBtn, isFirstStep) {
@@ -540,14 +566,42 @@ function syncAccessibilityControls() {
     if (input) input.checked = !!state.accessibilityPrefs[preference];
   });
 
+  // Tutorials (mutually exclusive)
   const tutorialInput = el('opt-start-tutorial');
-  if (tutorialInput) tutorialInput.checked = !!state.showTutorialOnStart;
+  if (tutorialInput) {
+    tutorialInput.checked = !!state.showTutorialOnStart;
+    const tutorialLabel = tutorialInput.parentElement.querySelector('.toggle-content span');
+    if (tutorialLabel) {
+      setText(tutorialLabel, t('onboarding.visualTutorial', 'Visual tutorial'));
+    }
+    const tutorialHelp = el('opt-start-tutorial-help');
+    if (tutorialHelp) {
+      setText(tutorialHelp, t('onboarding.visualTutorialHelp', 'GuIA explains the main buttons visually before the visit starts.'));
+    }
+  }
+
+  const tutorialSpokenInput = el('opt-tutorial-spoken');
+  if (tutorialSpokenInput) {
+    tutorialSpokenInput.checked = !!state.accessibilityPrefs.tutorialSpoken;
+    tutorialSpokenInput.setAttribute('aria-label', t('onboarding.tutorialSpoken', 'Screen reader compatible tutorial and with voice option'));
+    const tutorialSpokenLabel = tutorialSpokenInput.parentElement.querySelector('.toggle-content span');
+    if (tutorialSpokenLabel) {
+      setText(tutorialSpokenLabel, t('onboarding.tutorialSpoken', 'Screen reader compatible tutorial and with voice option'));
+    }
+    const tutorialSpokenHelp = el('opt-tutorial-spoken-help');
+    if (tutorialSpokenHelp) {
+      setText(tutorialSpokenHelp, t('onboarding.tutorialSpokenHelp', 'GuIA describes in audio the main buttons before the visit starts.'));
+    }
+  }
+
   syncSettingsControls();
 }
 
+
 function syncSettingsControls() {
+  const settingsLang = selectedSettingsLang();
   qa('[data-settings-lang]').forEach((btn) => {
-    btn.setAttribute('aria-checked', btn.dataset.settingsLang === state.selectedLang ? 'true' : 'false');
+    btn.setAttribute('aria-checked', btn.dataset.settingsLang === settingsLang ? 'true' : 'false');
   });
 
   qa('[data-settings-persona]').forEach((btn) => {
@@ -564,6 +618,9 @@ function syncSettingsControls() {
 
   const tutorialInput = el('settings-start-tutorial');
   if (tutorialInput) tutorialInput.checked = !!state.showTutorialOnStart;
+
+  const tutorialSpokenInput = el('settings-tutorial-spoken');
+  if (tutorialSpokenInput) tutorialSpokenInput.checked = !!state.accessibilityPrefs.tutorialSpoken;
 }
 
 function setPreferredSpeechSpeed(speed) {
@@ -603,7 +660,40 @@ function bindSettingsPanel() {
   if (!modal) return;
 
   closeBtn?.addEventListener('click', hideSettingsPanel);
-  doneBtn?.addEventListener('click', hideSettingsPanel);
+  doneBtn?.addEventListener('click', async () => {
+    if (pendingSettingsLang && pendingSettingsLang !== state.selectedLang) {
+      if (state.chatGenerating || state.conversationTranslating) {
+        announce(t('chat.languageChangeBusy', 'Wait until the current response or translation finishes before changing language.'));
+        return;
+      }
+
+      const previousLang = state.selectedLang;
+      state.selectedLang = pendingSettingsLang;
+      pendingSettingsLang = null;
+      window.guiaTrack?.('option_changed', { field: 'lang', from: previousLang, to: state.selectedLang, where: 'settings' });
+      selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
+      syncSettingsControls();
+      doneBtn.disabled = true;
+      try {
+        await applyLanguageChange(previousLang);
+        applySettingsTranslations();
+        window.saveGuiaSession?.();
+      } finally {
+        doneBtn.disabled = false;
+      }
+    }
+
+    // Check if tutorial should be opened
+    if (state.showTutorialOnStart) {
+      hideSettingsPanel();
+      window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
+    } else if (state.accessibilityPrefs.tutorialSpoken) {
+      hideSettingsPanel();
+      window.setTimeout(() => window.guiaOpenSpokenTutorial?.(0), 150);
+    } else {
+      hideSettingsPanel();
+    }
+  });
   resetBtn?.addEventListener('click', () => {
     hideSettingsPanel();
     window.restartGuiaSession?.();
@@ -617,20 +707,14 @@ function bindSettingsPanel() {
   });
 
   qa('[data-settings-lang]').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      if (state.selectedLang === btn.dataset.settingsLang) return;
+    btn.addEventListener('click', () => {
+      if (selectedSettingsLang() === btn.dataset.settingsLang) return;
       if (state.chatGenerating || state.conversationTranslating) {
         announce(t('chat.languageChangeBusy', 'Wait until the current response or translation finishes before changing language.'));
         return;
       }
-      const previousLang = state.selectedLang;
-      state.selectedLang = btn.dataset.settingsLang;
-      window.guiaTrack?.('option_changed', { field: 'lang', from: previousLang, to: state.selectedLang, where: 'settings' });
-      selectRadio(qa('#language-group [data-lang]'), q(`#language-group [data-lang="${state.selectedLang}"]`));
+      pendingSettingsLang = btn.dataset.settingsLang === state.selectedLang ? null : btn.dataset.settingsLang;
       syncSettingsControls();
-      await applyLanguageChange(previousLang);
-      applySettingsTranslations();
-      window.saveGuiaSession?.();
     });
   });
 
@@ -675,11 +759,60 @@ function bindSettingsPanel() {
     });
   });
 
+  const tutorialSpokenInput = el('opt-tutorial-spoken');
+
   tutorialInput?.addEventListener('change', (event) => {
+    // Visual tutorial
     state.showTutorialOnStart = event.target.checked;
+    if (event.target.checked) {
+      // Ensure the spoken tutorial cannot be enabled at the same time.
+      state.accessibilityPrefs.tutorialSpoken = false;
+      // Keep the toggle and open condition consistent.
+      state.showTutorialOnStart = true;
+    }
+    syncAccessibilityControls();
+    applyAccessibilityPrefs();
+    window.saveGuiaSession?.();
+  });
+
+  tutorialSpokenInput?.addEventListener('change', (event) => {
+    // Spoken tutorial
+    state.accessibilityPrefs.tutorialSpoken = event.target.checked;
+    if (event.target.checked) {
+      state.showTutorialOnStart = false;
+    }
+    syncAccessibilityControls();
+    applyAccessibilityPrefs();
+    window.saveGuiaSession?.();
+  });
+
+  // Settings panel tutorial checkboxes (mutually exclusive)
+  const settingsTutorialInput = el('settings-start-tutorial');
+  const settingsTutorialSpokenInput = el('settings-tutorial-spoken');
+
+  settingsTutorialInput?.addEventListener('change', (event) => {
+    // Visual tutorial in settings
+    state.showTutorialOnStart = event.target.checked;
+    if (event.target.checked) {
+      // Ensure the spoken tutorial cannot be enabled at the same time.
+      state.accessibilityPrefs.tutorialSpoken = false;
+    }
+    syncSettingsControls();
     syncAccessibilityControls();
     window.saveGuiaSession?.();
   });
+
+  settingsTutorialSpokenInput?.addEventListener('change', (event) => {
+    // Spoken tutorial in settings
+    state.accessibilityPrefs.tutorialSpoken = event.target.checked;
+    if (event.target.checked) {
+      state.showTutorialOnStart = false;
+    }
+    syncSettingsControls();
+    syncAccessibilityControls();
+    window.saveGuiaSession?.();
+  });
+
 }
 
 function bindOnboardingFlow() {
@@ -700,21 +833,44 @@ function bindOnboardingFlow() {
     applyAppTranslations();
     applyAccessibilityPrefs();
     syncAccessibilityControls();
+    // Ensure audio is muted when spokenAudio is disabled
+    window.guiaUpdateSpokenAudio?.();
     const startsTutorial = state.showTutorialOnStart;
-    const deferAppShellAccessibility = state.accessibilityPrefs.spokenAudio && !startsTutorial;
+    const deferAppShellAccessibility = false;
     hideOnboarding({ deferAppShellAccessibility });
+    // Reopen location panel after onboarding
+    document.body.toggleAttribute('data-location-panel-open', true);
+    el('location-panel-btn')?.setAttribute('aria-expanded', 'true');
     window.saveGuiaSession?.();
     if (state.deferredSpokenAudioChange) {
       const { wasEnabled, isEnabled } = state.deferredSpokenAudioChange;
       state.deferredSpokenAudioChange = null;
       window.guiaHandleNarrationPreferenceChange?.(wasEnabled, isEnabled);
     }
-    // The tutorial announces its own content. Narrate the welcome after it closes.
-    if (startsTutorial) {
-      window.setTimeout(() => window.guiaOpenTutorial?.(), 150);
-    } else {
-      window.setTimeout(() => window.guiaSpeakInitialWelcome?.(), 300);
+    // Open selected tutorial (visual or spoken) after onboarding closes.
+    // Use the real UI checkbox states to avoid inconsistencies from a previously persisted session.
+    const wantsVisualTutorial = !!state.showTutorialOnStart;
+    const wantsSpokenTutorial = !!state.accessibilityPrefs.tutorialSpoken;
+
+    const shouldShowSpokenTutorial = wantsSpokenTutorial;
+    const shouldShowVisualTutorial =
+      wantsVisualTutorial && !shouldShowSpokenTutorial;
+    // Ensure visual tutorial opens even if the body attribute isn't fully set yet.
+    if (shouldShowSpokenTutorial) {
+      window.setTimeout(() => window.guiaOpenSpokenTutorial?.(0), 150);
+      return;
     }
+
+    if (shouldShowVisualTutorial) {
+      window.setTimeout(() => {
+        window.guiaOpenTutorial?.();
+      }, 150);
+      return;
+    }
+
+
+    window.setTimeout(() => window.guiaSpeakInitialWelcome?.(), 300);
+
   }
 
   bindAccessibilityPreference('opt-large-text', 'largeText');
@@ -723,14 +879,34 @@ function bindOnboardingFlow() {
   bindAccessibilityPreference('opt-spoken-audio', 'spokenAudio');
   bindAccessibilityPreference('opt-more-time', 'moreTime');
   bindAccessibilityPreference('opt-visual-descriptions', 'audioDescription');
+
+  // Tutorials (mutually exclusive)
   el('opt-start-tutorial')?.addEventListener('change', (event) => {
+    // Visual tutorial
     state.showTutorialOnStart = event.target.checked;
+    if (event.target.checked) {
+      state.accessibilityPrefs.tutorialSpoken = false;
+    }
     syncAccessibilityControls();
+    applyAccessibilityPrefs();
     window.saveGuiaSession?.();
   });
+
+  el('opt-tutorial-spoken')?.addEventListener('change', (event) => {
+    // Spoken tutorial
+    state.accessibilityPrefs.tutorialSpoken = event.target.checked;
+    if (event.target.checked) {
+      state.showTutorialOnStart = true;
+    }
+    syncAccessibilityControls();
+    applyAccessibilityPrefs();
+    window.saveGuiaSession?.();
+  });
+
   bindSettingsPanel();
   initEnterToggleCheckboxes();
   syncAccessibilityControls();
+
 
   consent?.addEventListener('change', updateOnboardingButtons);
 

@@ -29,10 +29,17 @@ function initChat(audio, voice) {
     }
   }
 
+  function scrollToBottom() {
+    // Use rAF to ensure the DOM has painted the new text before measuring
+    requestAnimationFrame(() => {
+      chatThread.scrollTop = chatThread.scrollHeight;
+    });
+  }
+
   function appendToBubble(bubble, text) {
     setBubbleText(bubble, getBubbleText(bubble) + text, 'assistant');
     updateBubbleAccessibilityLabel(bubble, 'assistant');
-    chatThread.scrollTop = chatThread.scrollHeight;
+    scrollToBottom();
   }
 
   function extractCompleteSentences(buffer) {
@@ -88,6 +95,11 @@ function initChat(audio, voice) {
     let ttftMs = null;
     let streamErrored = false;
 
+    // Disable aria-live during streaming to prevent screenreader from announcing each update
+    const chatPanel = q('.chat-panel');
+    const originalAriaLive = chatPanel?.getAttribute('aria-live');
+    if (chatPanel) chatPanel.setAttribute('aria-live', 'off');
+
     try {
       const res = await fetch(API_ENDPOINTS.chatStream, {
         method: 'POST',
@@ -139,7 +151,7 @@ function initChat(audio, voice) {
           updateBubbleAccessibilityLabel(assistantBubble, 'assistant');
           fullAssistantText = text;
           sentenceBuffer = '';
-          chatThread.scrollTop = chatThread.scrollHeight;
+          scrollToBottom();
 
         } else if (event.type === 'error') {
           streamErrored = true;
@@ -182,6 +194,24 @@ function initChat(audio, voice) {
       throw err;
     } finally {
       setThinkingIndicator(false);
+      // Restore aria-live after streaming is complete
+      if (chatPanel && originalAriaLive) {
+        chatPanel.setAttribute('aria-live', originalAriaLive);
+      } else if (chatPanel) {
+        // If spokenAudio is enabled, keep it off; otherwise restore to polite
+        syncChatLiveRegionWithNarration();
+      }
+      // Announce that the response is complete for screen readers
+      if (assistantBubble && !state.accessibilityPrefs.spokenAudio) {
+        // Use a small delay to ensure the DOM is updated
+        setTimeout(() => {
+          const srStatus = el('sr-status');
+          if (srStatus) {
+            srStatus.textContent = t('chat.assistantMessageLabel', 'GuIA') + ': ' + fullAssistantText;
+            setTimeout(() => { srStatus.textContent = ''; }, 1000);
+          }
+        }, 100);
+      }
       window.guiaTrack?.('answer_timing', {
         clientReqId: payload.client_req_id || null,
         ttftMs,
@@ -350,6 +380,14 @@ function initChat(audio, voice) {
 
   setThinkingIndicator(false);
   initSuggestionButtons();
+
+  // When the virtual keyboard opens or closes (visualViewport resize),
+  // scroll the thread to the bottom so the latest message stays visible.
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      scrollToBottom();
+    });
+  }
 
   sendBtn.addEventListener('click', handleSend);
   chatInput.addEventListener('keydown', (e) => {

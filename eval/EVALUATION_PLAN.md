@@ -7,7 +7,7 @@ GuIA is an AI museum audioguide (Flask + Cohere `command-a-03-2025` + Neo4j know
 - **Part 1 — LLM faithfulness:** does the guide stay faithful to the facts it retrieves from the graph, or does it invent things?
 - **Part 2 — Retrieval recall:** does `retrieve_neo4j_context` actually surface the right fact for a question whose answer we already know?
 
-This document began as the design for Parts 1 & 2 only. Those are now built and run; **Part 3 — cultural bias is also built** (see its section below). Part 4 will be planned later in its own pass. It lives at `eval/EVALUATION_PLAN.md` so it sits alongside the harness code under `eval/`.
+This document began as the design for Parts 1 & 2 only. Those are now built and run; **Part 3 — cultural bias and Part 4 — prompt sensitivity are also built** (see their sections below). It lives at `eval/EVALUATION_PLAN.md` so it sits alongside the harness code under `eval/`.
 
 ---
 
@@ -232,8 +232,69 @@ at a fixed ε.
 
 ---
 
+## Part 4 — Prompt sensitivity — BUILT
+
+Designed and implemented after Part 3 (full walkthrough in
+[HOW_PART4_WORKS.md](HOW_PART4_WORKS.md)). It absorbs what was originally sketched
+as "explanation-style evaluation" and reframes it per reviewer feedback: because
+GuIA personalizes by **prompting**, we must evaluate how the output changes as a
+function of the prompt. Inspired by *"The Prompt Report: A Systematic Survey of
+Prompting Techniques"*, which warns performance varies with prompt wording,
+few-shot example order, and the position of the context block (RAG before vs after
+the rules). **Goal:** for each prompt condition, compare ≥2 variants on the same
+fixed benchmark and report **mean and variance** (not a single run), separating
+real personalization from prompt fragility.
+
+**Per-item pipeline** (per grounded question × language): `retrieve` graph context
+**once and freeze it** → for each variant (a baseline + one treatment per axis),
+build the system prompt and generate the answer `R` times via a new stateless
+`answer_with_prompt` bridge → score pairwise **surface divergence** (token Jaccard,
+network-free, no judge). ~`1 + V·R` Cohere calls/item (default 13).
+
+**The metric.** `within`-variant divergence = mean±std over a variant's `R` repeats
+(the **noise floor**); `between`-variant divergence = mean±std over the `R×R`
+treatment×baseline cross pairs (the **signal**); **sensitivity ratio = between /
+within_pooled**. Reported per axis × per language.
+
+**Key design points** (all to keep the metric honest):
+- **Freeze retrieval** (one retrieve per item, reused for every variant/run) so the
+  prompt is the *only* thing that changes — retrieval is itself nondeterministic.
+- **Do NOT pin the answer temperature** — the run-to-run sampling variance *is* the
+  noise floor (contrast the judge/classifier, which pin temp=0). `--runs ≥ 3`
+  required; `--runs 1` → ratio undefined (warned). No `conversation_id` either, so
+  variants can't leak into each other via multi-turn memory.
+- **Two axis kinds, opposite reading:** ROBUSTNESS axes (`fewshot` on/off,
+  `rag_position` before/after the rules) want ratio ≈ 1 (a fact-neutral change must
+  not move the answer); SEMANTIC axes (`persona` explorer→scholar; `age`) want
+  ratio ≫ 1 (personalization is real). Verdict thresholds
+  `PROMPT_ROBUST_RATIO_WARN` / `PROMPT_SEMANTIC_RATIO_MIN`. Axes are an extensible
+  registry (`age`/`example_order` registered, off by default).
+- **Grounded single-valued benchmark** so retrieval reliably returns rows
+  (`rag_position` is a no-op without rows → excluded per-item when empty/error).
+- **Byte-identity parity guard:** `prompt_variants --selftest` asserts the baseline
+  variant equals the live `build_system_prompt` output — catches drift in the
+  copied prompt literals after any backend prompt edit.
+- **New files:** `divergence.py` (surface-divergence math `--selftest`),
+  `prompt_variants.py` (parametrized builder + registry + parity `--selftest`),
+  `part4_prompt_sensitivity.py`. **Modified:** `config.py` (Part 4 block),
+  `llm_bridge.py` (adds `answer_with_prompt`, the only edit). No `LLM/` app code touched.
+
+**Caveats (stated plainly):** surface divergence ≠ semantic equivalence (a faithful
+paraphrase scores divergent — read the offenders); the noise floor depends on the
+model's hidden default temperature; ratios over ~12 items are estimates (reported
+with ±std and a noise floor, never a single number); parity is only as fresh as the
+last `--selftest`.
+
+> **Prerequisite:** the unresolved merge conflict in `LLM/LLM_Call.py` (around the
+> Cypher-gen prompt) makes `import LLM_Call` raise `SyntaxError`, which blocks every
+> Part 1–4 live path and the Part 4 parity selftest. The network-free checks
+> (`divergence --selftest`, `part4 --dry-run`) run regardless. Resolve the conflict
+> before any live run.
+
+---
+
 ## Out of scope (future passes)
-- **Part 4** (the remaining subsystem — likely explanation-style / accessibility)
-  — planned later in its own pass.
+- A **user evaluation** (human subjects) — the main remaining step before stronger
+  product claims.
 - Wiring any of this into CI or the Hugging Face deploy.
 - Any change to `LLM_Call.py` (e.g. the `temperature=0` retrieval tweak) — this evaluation is read-only against the app.

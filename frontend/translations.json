@@ -1,10 +1,27 @@
 {
   "en": {
+    "tutorialSpoken": {
+      "locationTitle": "Choose your location",
+      "locationBody": "At the top center you will find the location panel, which is open by default. Select the floor and room where you are. Once you confirm your location, GuIA will know which artworks surround you.",
+      "chatTitle": "Ask a question",
+      "chatBody": "At the bottom of the screen there is a text field. Write any question about the artworks, the room or the museum and press the send button on the right.",
+      "micTitle": "Voice input",
+      "micBody": "Next to the text field there is a microphone button. Press it to ask your question with your voice. Press it again to stop speaking. GuIA will transcribe what you say and you can review the text before sending it with the send button.",
+      "audioTitle": "Audio controls",
+      "audioBody": "At the top right you will find the audio controls panel. Here you can turn narration on or off, adjust the volume, change the reading speed, and replay the last answer.",
+      "settingsTitle": "Settings",
+      "settingsBody": "Press the settings button at the top left of the screen to change initial preferences like language or accessibility options.",
+      "previous": "Previous",
+      "next": "Next",
+      "done": "Got it",
+      "close": "Close",
+      "playAudio": "Play audio"
+    },
     "onboarding": {
       "eyebrow": "GuIA Museu del Renaixamen Guide",
       "title": "Choose your guide.",
       "description": "Choose how GuIA should help you in the museum.",
-      "personalityIntro": "GuIA is an audioguide that uses artificial intelligence to explain the museum in the style and with the accessibility options you choose. You can ask it questions about artworks, and get personalized explanations. It can explain artworks in different ways: as a story, with artistic details about colors and materials, or in a standard style.",
+      "personalityIntro": "GuIA is an audioguide that uses artificial intelligence to explain the museum in the style and with the accessibility options you choose. You can ask it questions about artworks, and get personalized explanations. It can explain artworks in different ways: as a story, with artistic details about colors and materials, or in a standard style. Ask museum staff if you'd prefer a human guide or if you have any questions about using GuIA.",
       "language": "Select language",
       "personality": "Select explanation style",
       "visitor": "Select age range",
@@ -20,8 +37,15 @@
     "optional": "(optional)",
       "accessibility": "Accessibility options",
       "tutorial": "Tutorial",
-      "startTutorial": "Show help before I start",
-      "startTutorialHelp": "GuIA explains the main buttons before the visit starts. This option is already on.",
+      "visualTutorial": "Visual Tutorial",
+      "visualTutorialHelp": "GuIA explains the main buttons visually before the visit starts.",
+      "tutorialSpoken": "Screen reader compatible tutorial with voice option",
+      "tutorialSpokenHelp": "GuIA describes in audio the main buttons before the visit starts.",
+      "tutorialSpoken.welcomeTitle": "Welcome to GuIA",
+      "tutorialSpoken.welcomeBody": "GuIA is an AI guide that helps you explore the museum. First, choose your location by selecting floor and room. Then, ask any question about the artworks, rooms, or museum. GuIA will answer and read the response aloud. You can adjust the voice speed and other accessibility options in the settings.",
+      "tutorialSpoken.previous": "Previous",
+      "tutorialSpoken.next": "Next",
+      "tutorialSpoken.close": "Close",
       "largeText": "Large text",
       "largeTextHelp": "Makes the letters bigger.",
       "uppercaseText": "Capital letters",
@@ -39,11 +63,12 @@
       "auditory": "Auditory / multimedia accessibility",
       "privacy": "AI and privacy notice",
       "privacyIntro1": "You are talking to an AI museum audioguide.",
-      "privacyIntro2": "The AI may make mistakes, so important information should be verified with museum staff.",
-      "privacyIntro3": "To improve the experience, the system may process your selected language, guide preferences, artwork interactions, and responses.",
-      "privacyIntro4": "No personal data is collected or stored.",
-      "privacyIntro5": "If you speak to the AI, audio may be processed to understand speech and generate spoken replies.",
-      "privacyConsent": "I understand that I am speaking with an AI and I have read how my information is used."
+      "privacyIntro2": "The AI may make mistakes, please verify important information with museum staff.",
+      "privacyIntro3": "To improve your experience, the system processes your selected language, guide preferences, artwork interactions, and the AI's responses.",
+      "privacyIntro4": "We do not intentionally collect or store personal information.",
+      "privacyIntro5": "If you use the microphone, your recording is sent to our transcription service to convert it to text, then discarded.",
+      "privacyIntro6": "Anything you type or say may be temporarily stored by our AI provider (Cohere) for up to 30 days. Please avoid sharing sensitive personal information with the AI.",
+      "privacyConsent": "I understand I am speaking with an AI and have read how my information is used."
     },
     "personas": {
       "artist": {
@@ -65,7 +90,7 @@
     },
     "ages": {
         "young": {
-            "title": "Child/Teenager",
+            "title": "Child / Teenager",
             "subtitle": "(12-17 years old)"
             },
         "youngAdult": {
@@ -92,12 +117,14 @@
       "chooseLocation": "Choose your location",
       "locationButton": "Location",
       "roomLabel": "Room",
+      "floorLabel": "Floor",
+      "floorHelp": "Select the floor where you are now.",
       "artworkLabel": "Artwork",
-      "roomHelp": "Select the room where you are now.",
+      "roomHelp": "Select the floor and room where you are now.",
       "artworkHelp": "Optionally select the artwork in front of you.",
       "qrScannerHelp": "The camera is active to scan a location QR code.",
       "confirmLocation": "Confirm location",
-      "contextError": "Please select a room so GuIA can guide you accurately.",
+      "contextError": "Please select a floor and room so GuIA can guide you accurately.",
       "artworkRequired": "Choose an artwork before continuing.",
       "contextSendError": "Could not update your location. Please try again.",
       "contextBusy": "Wait until the current response finishes before changing location.",
@@ -174,6 +201,9 @@
       "failed": "I couldn’t process the audio. Please try again."
     },
     "context": {
+      "selectFloor": "Select a floor",
+      "floorOptionLabel": "Floor",
+      "floorB": "Ground floor",
       "selectRoom": "Select a room",
       "selectArtwork": "Select an artwork",
       "room1": "Room 1 – Early Renaissance",
@@ -224,20 +254,18 @@
         {
           "icon": "touch_app",
           "title": "Choose manually",
-          "body": "Press this button if you want to choose the room from a list.",
+          "body": "Press this button if you want to choose the floor and room from a list. First select the floor.",
           "target": "#manual-location-btn",
           "openPanel": "location",
           "group": "location"
         },
         {
-          "icon": "task_alt",
-          "title": "Select a place",
-          "body": "Choose a room and an artwork. Then press Confirm location.",
+          "icon": "stairs",
+          "title": "Select floor, room, and optionally an artwork",
+          "body": "Choose the floor, then the room, and optionally select an artwork.",
           "target": "#manual-location-panel",
-          "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
-          "group": "location",
-          "requireLocation": true
+          "group": "location"
         },
         {
           "icon": "info",
@@ -255,7 +283,7 @@
         {
           "icon": "keyboard_voice",
           "title": "Or speak your question",
-          "body": "You can also press the microphone and say one short question.",
+          "body": "You can also press the microphone and say a question. Press it again when you finish asking the question.",
           "target": "#mic-btn"
         },
         {
@@ -283,11 +311,28 @@
     }
   },
   "es": {
+    "tutorialSpoken": {
+      "locationTitle": "Elige tu ubicación",
+      "locationBody": "En la parte superior central encontrarás el panel de ubicación, que se abre por defecto. Selecciona la planta y la sala donde te encuentras. Una vez confirmes la ubicación, GuIA sabrá qué obras te rodean.",
+      "chatTitle": "Haz una pregunta",
+      "chatBody": "En la parte inferior de la pantalla hay un campo de texto. Escribe cualquier pregunta sobre las obras, la sala o el museo y pulsa el botón enviar a la derecha.",
+      "micTitle": "Entrada por voz",
+      "micBody": "Junto al campo de texto hay un botón de micrófono. Púlsalo para hacer tu pregunta con la voz. Púlsalo otra vez para dejar de hablar. GuIA transcribirá lo que digas y podrás revisar el texto antes de enviarlo con el botón enviar.",
+      "audioTitle": "Controles de audio",
+      "audioBody": "En la parte superior derecha encontrarás el panel de controles de audio. Aquí puedes activar o desactivar la narración, ajustar el volumen, cambiar la velocidad de lectura y reproducir la última respuesta.",
+      "settingsTitle": "Configuración",
+      "settingsBody": "Pulsa el botón de configuración en la parte superior izquierdade la pantalla para cambiar las preferencias iniciales como el idioma o las opciones de accesibilidad.",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "done": "Entendido",
+      "close": "Cerrar",
+      "playAudio": "Reproducir audio"
+    },
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Elige tu guia.",
       "description": "Elige como quieres que GuIA te ayude en el museo.",
-      "personalityIntro": "GuIA es una audioguía que usa inteligencia artificial para explicar el museo en el estilo y con las opciones de accesibilidad que elijas. Puedes hacerle preguntas sobre las obras y obtener explicaciones personalizadas. Puede explicar las obras de diferentes formas: como una historia, con detalles artísticos sobre colores y materiales, o en un estilo estándar.",
+      "personalityIntro": "GuIA es una audioguía que usa inteligencia artificial para explicar el museo en el estilo y con las opciones de accesibilidad que elijas. Puedes hacerle preguntas sobre las obras y obtener explicaciones personalizadas. Puede explicar las obras de diferentes formas: como una historia, con detalles artísticos sobre colores y materiales, o en un estilo estándar. Pregunta al personal del museo si prefieres un guía humano o si tienes alguna pregunta sobre cómo usar GuIA.",
       "language": "Selecciona el idioma",
       "personality": "Selecciona el estilo de explicación",
       "visitor": "Selecciona el rango de edad",
@@ -303,8 +348,15 @@
       "optional": "(opcional)",
       "accessibility": "Opciones de accesibilidad",
       "tutorial": "Tutorial",
-      "startTutorial": "Ver ayuda antes de empezar",
-      "startTutorialHelp": "GuIA explica los botones principales antes de empezar. Esta opcion ya esta activada.",
+      "visualTutorial": "Tutorial visual",
+      "visualTutorialHelp": "GuIA explica los botones principales visualmente antes de empezar.",
+      "tutorialSpoken": "Tutorial adaptado para lector de pantalla y compatible con voz",
+      "tutorialSpokenHelp": "GuIA describe con audio los botones principales antes de empezar.",
+      "tutorialSpoken.welcomeTitle": "Bienvenido a GuIA",
+      "tutorialSpoken.welcomeBody": "GuIA es una guía de IA que te ayuda a explorar el museo. Primero, elige tu ubicación seleccionando planta y sala. Luego, haz cualquier pregunta sobre las obras, salas o museo. GuIA responderá y leerá la respuesta en voz alta. Puedes ajustar la velocidad de voz y otras opciones de accesibilidad en la configuración.",
+      "tutorialSpoken.previous": "Anterior",
+      "tutorialSpoken.next": "Siguiente",
+      "tutorialSpoken.close": "Cerrar",
       "largeText": "Texto grande",
       "largeTextHelp": "Hace las letras mas grandes.",
       "uppercaseText": "Texto en mayusculas",
@@ -321,12 +373,13 @@
       "cognitive": "Accesibilidad cognitiva",
       "auditory": "Accesibilidad auditiva / multimedia",
       "privacy": "Aviso de IA y privacidad",
-      "privacyIntro1": "Estás hablando con un audioguía de museo que utiliza IA.",
-      "privacyIntro2": "La IA puede cometer errores, por lo que la información importante debe ser verificada con el personal del museo.",
-      "privacyIntro3": "Para mejorar la experiencia, el sistema puede procesar tu idioma seleccionado, preferencias del guía, interacciones con las obras y respuestas.",
-      "privacyIntro4": "No se recopila ni almacena información personal.",
-      "privacyIntro5": "Si hablas con la IA, el audio puede ser procesado para entender el discurso y generar respuestas habladas.",
-      "privacyConsent": "Entiendo que estoy hablando con una IA y he leído cómo se utiliza mi información."
+      "privacyIntro1": "Estás hablando con una audioguía de museo basada en IA.",
+      "privacyIntro2": "La IA puede cometer errores, verifica la información importante con el personal del museo.",
+      "privacyIntro3": "Para mejorar tu experiencia, el sistema procesa el idioma seleccionado, tus preferencias de guía, las interacciones con las obras y las respuestas de la IA.",
+      "privacyIntro4": "No recopilamos ni almacenamos información personal de forma intencionada.",
+      "privacyIntro5": "Si usas el micrófono, tu grabación se envía a nuestro servicio de transcripción para convertirla en texto y luego se elimina.",
+      "privacyIntro6": "Cualquier información que escribas o digas puede almacenarse temporalmente, hasta 30 días, por nuestro proveedor de IA (Cohere). Por favor, evita compartir información personal sensible con la IA.",
+      "privacyConsent": "Entiendo que estoy hablando con una IA y he leído cómo se usa mi información."
     },
     "personas": {
       "artist": {
@@ -348,7 +401,7 @@
     },
     "ages": {
         "young": {
-            "title": "Niño/Adolescente",
+            "title": "Niño / Adolescente",
             "subtitle": "(12-17 años)"
             },
         "youngAdult": {
@@ -375,12 +428,14 @@
       "chooseLocation": "Elige tu ubicación",
       "locationButton": "Ubicación",
       "roomLabel": "Sala",
+      "floorLabel": "Planta",
+      "floorHelp": "Selecciona la planta en la que estás ahora.",
       "artworkLabel": "Obra",
-      "roomHelp": "Selecciona la sala en la que estás ahora.",
+      "roomHelp": "Selecciona la planta y la sala en la que estás ahora.",
       "artworkHelp": "Opcionalmente, selecciona la obra que tienes delante.",
       "qrScannerHelp": "La cámara está activa para escanear un código QR de ubicación.",
       "confirmLocation": "Confirmar ubicación",
-      "contextError": "Por favor selecciona una sala para que GuIA te guíe con precisión.",
+      "contextError": "Por favor selecciona una planta y una sala para que GuIA te guíe con precisión.",
       "artworkRequired": "Elige una obra antes de continuar.",
       "contextSendError": "No se ha podido actualizar tu ubicación. Inténtalo de nuevo.",
       "contextBusy": "Espera a que termine la respuesta actual antes de cambiar de ubicación.",
@@ -457,6 +512,9 @@
       "failed": "No he podido procesar el audio. Inténtalo de nuevo."
     },
     "context": {
+      "selectFloor": "Selecciona una planta",
+      "floorOptionLabel": "Planta",
+      "floorB": "Planta baja",
       "selectRoom": "Selecciona una sala",
       "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renacimiento Temprano",
@@ -507,20 +565,18 @@
         {
           "icon": "touch_app",
           "title": "Selecciona manualmente",
-          "body": "Pulsa este botón si quieres elegir la sala desde una lista.",
+          "body": "Pulsa este botón si quieres elegir la planta y la sala desde una lista. Primero selecciona la planta.",
           "target": "#manual-location-btn",
           "openPanel": "location",
           "group": "location"
         },
         {
-          "icon": "task_alt",
-          "title": "Selecciona un lugar",
-          "body": "Elige una sala y una obra. Después pulsa Confirmar ubicación.",
+          "icon": "stairs",
+          "title": "Selecciona planta, sala y opcionalmente una obra",
+          "body": "Elige la planta, luego la sala, y opcionalmente selecciona una obra.",
           "target": "#manual-location-panel",
-          "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
-          "group": "location",
-          "requireLocation": true
+          "group": "location"
         },
         {
           "icon": "info",
@@ -538,7 +594,7 @@
         {
           "icon": "keyboard_voice",
           "title": "O di tu pregunta",
-          "body": "También puedes pulsar el micrófono y decir una pregunta corta.",
+          "body": "También puedes pulsar el micrófono y decir una pregunta. Púlsalo de nuevo cuando termines de hacer la pregunta.",
           "target": "#mic-btn"
         },
         {
@@ -566,11 +622,28 @@
     }
   },
   "ca": {
+    "tutorialSpoken": {
+      "locationTitle": "Tria la teva ubicació",
+      "locationBody": "A la part superior central trobaràs el panell d'ubicació, que s'obre per defecte. Selecciona la planta i la sala on et trobes. Un cop confirmis la ubicació, GuIA sabrà quines obres t'envolten.",
+      "chatTitle": "Fes una pregunta",
+      "chatBody": "A la part inferior de la pantalla hi ha un camp de text. Escriu qualsevol pregunta sobre les obres, la sala o el museu i prem el botó enviar a la dreta.",
+      "micTitle": "Entrada per veu",
+      "micBody": "Al costat del camp de text hi ha un botó de micròfon. Prem'l per fer la teva pregunta amb la veu. Prem'l una altra vegada per deixar de parlar. GuIA transcriurà el que diguis i podràs revisar el text abans d'enviar-lo amb el botó enviar.",
+      "audioTitle": "Controls d'àudio",
+      "audioBody": "A la part superior dreta trobaràs el panell de controls d'àudio. Aquí pots activar o desactivar la narració, ajustar el volum, canviar la velocitat de lectura i reproduir l'última resposta.",
+      "settingsTitle": "Configuració",
+      "settingsBody": "Prem el botó de configuració a la part superior esquerra de la pantalla per canviar les preferències inicials com l'idioma o les opcions d'accessibilitat.",
+      "previous": "Anterior",
+      "next": "Següent",
+      "done": "Entès",
+      "close": "Tancar",
+      "playAudio": "Reproduir àudio"
+    },
     "onboarding": {
       "eyebrow": "GuIA del Museu del Renaixement",
       "title": "Tria el teu guia.",
       "description": "Tria com vols que GuIA t'ajudi al museu.",
-      "personalityIntro": "GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil y amb las opcions de accessibilitat que tu triis. Pots fer-li preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard.",
+      "personalityIntro": "GuIA és una audioguia que fa servir intel·ligència artificial per per explicar el museu en el estil y amb las opcions de accessibilitat que tu triis. Pots fer-li preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard. Pregunta al personal del museu si prefereixes un guia humà o si tens alguna pregunta sobre com usar GuIA.",
       "language": "Selecciona l’idioma ",
       "personality": "Selecciona l’estil d’explicació",
       "visitor": "Selecciona la franja d'edat",
@@ -586,8 +659,15 @@
       "optional": "(opcional)",
       "accessibility": "Opcions d'accessibilitat",
       "tutorial": "Tutorial",
-      "startTutorial": "Veure ajuda abans de començar",
-      "startTutorialHelp": "GuIA explica els botons principals abans de començar. Aquesta opció ja està activada.",
+      "visualTutorial": "Tutorial visual",
+      "visualTutorialHelp": "GuIA explica els botons principals visualment abans de començar.",
+      "tutorialSpoken": "Tutorial adaptat per a lector de pantalla i compatible amb veu",
+      "tutorialSpokenHelp": "GuIA explica els botons principals amb veu abans de començar.",
+      "tutorialSpoken.welcomeTitle": "Benvingut a GuIA",
+      "tutorialSpoken.welcomeBody": "GuIA és una guia d'IA que t'ajuda a explorar el museu. Primer, tria la teva ubicació seleccionant planta i sala. Després, fes qualsevol pregunta sobre les obres, sales o museu. GuIA respon i llegeix la resposta en veu alta. Pots ajustar la velocitat de veu i altres opcions d'accessibilitat a la configuració.",
+      "tutorialSpoken.previous": "Anterior",
+      "tutorialSpoken.next": "Següent",
+      "tutorialSpoken.close": "Tancar",
       "largeText": "Text gran",
       "largeTextHelp": "Fa les lletres més grans.",
       "uppercaseText": "Text en majúscules",
@@ -604,12 +684,13 @@
       "cognitive": "Accessibilitat cognitiva",
       "auditory": "Accessibilitat auditiva / multimèdia",
       "privacy": "Avís d'IA i privacitat",
-      "privacyIntro1": "Estàs parlant amb una audioguia de museu que utilitza IA.",
-      "privacyIntro2": "La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.",
-      "privacyIntro3": "Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.",
-      "privacyIntro4": "No es recullen ni emmagatzemen dades personals.",
-      "privacyIntro5": "Si parles amb l'IA, l'àudio pot ser processat per entendre la parla i generar respostes parlades.",
-      "privacyConsent": "Entenc que estic parlant amb un IA i he llegit com es utilitza la meva informació."
+      "privacyIntro1": "Estàs parlant amb una audioguia de museu basada en IA.",
+      "privacyIntro2": "La IA pot cometre errors, verifica la informació important amb el personal del museu.",
+      "privacyIntro3": "Per millorar la teva experiència, el sistema processa l'idioma seleccionat, les teves preferències de guia, les interaccions amb les obres i les respostes de la IA.",
+      "privacyIntro4": "No recopilem ni emmagatzemem informació personal de manera intencionada.",
+      "privacyIntro5": "Si utilitzes el micròfon, la teva gravació s'envia al nostre servei de transcripció per convertir-la en text i després s'elimina.",
+      "privacyIntro6": "Qualsevol informació que escriguis o diguis pot ser emmagatzemada temporalment, fins a 30 dies, pel nostre proveïdor d'IA (Cohere). Si us plau, evita compartir informació personal sensible amb la IA.",
+      "privacyConsent": "Entenc que estic parlant amb una IA i he llegit com s'utilitza la meva informació."
     },
     "personas": {
       "artist": {
@@ -631,7 +712,7 @@
     },
     "ages": {
         "young": {
-            "title": "Nen/Adolescent",
+            "title": "Nen / Adolescent",
             "subtitle": "(12-17 anys)"
             },
         "youngAdult": {
@@ -657,13 +738,15 @@
       "whereAmI": "On sóc?",
       "chooseLocation": "Tria la teva ubicació",
       "locationButton": "Ubicació",
+      "floorLabel": "Planta",
+      "floorHelp": "Selecciona la planta on ets ara.",
       "roomLabel": "Sala",
       "artworkLabel": "Obra",
-      "roomHelp": "Selecciona la sala on ets ara.",
+      "roomHelp": "Selecciona la planta i la sala on ets ara.",
       "artworkHelp": "Opcionalment, selecciona l'obra que tens davant.",
       "qrScannerHelp": "La càmera està activa per escanejar un codi QR de la ubicació.",
       "confirmLocation": "Confirmar ubicació",
-      "contextError": "Si us plau selecciona una sala perquè GuIA et pugui guiar amb precisió.",
+      "contextError": "Si us plau selecciona una planta i una sala perquè GuIA et pugui guiar amb precisió.",
       "artworkRequired": "Tria una obra abans de continuar.",
       "contextSendError": "No s'ha pogut actualitzar la ubicació. Torna-ho a provar.",
       "contextBusy": "Espera que acabi la resposta actual abans de canviar d'ubicació.",
@@ -740,6 +823,9 @@
     "failed": "No he pogut processar l’àudio. Torna-ho a provar."
   },
     "context": {
+      "selectFloor": "Selecciona una planta",
+      "floorOptionLabel": "Planta",
+      "floorB": "Planta baixa",
       "selectRoom": "Selecciona una sala",
       "selectArtwork": "Selecciona una obra",
       "room1": "Sala 1 – Renaixement Primerenc",
@@ -790,20 +876,18 @@
         {
           "icon": "touch_app",
           "title": "Tria manualment",
-          "body": "Prem aquest botó si vols triar la sala des d'una llista.",
+          "body": "Prem aquest botó si vols triar la planta i la sala des d'una llista. Primer selecciona la planta.",
           "target": "#manual-location-btn",
           "openPanel": "location",
           "group": "location"
         },
         {
-          "icon": "task_alt",
-          "title": "Selecciona un lloc",
-          "body": "Tria una sala i una obra. Després prem Confirmar ubicació.",
+          "icon": "stairs",
+          "title": "Selecciona planta, sala i opcionalment una obra",
+          "body": "Tria la planta, després la sala, i opcionalment selecciona una obra.",
           "target": "#manual-location-panel",
-          "targets": ["#manual-location-panel", "#set-context-btn"],
           "openPanel": "manualLocation",
-          "group": "location",
-          "requireLocation": true
+          "group": "location"
         },
         {
           "icon": "info",
@@ -821,7 +905,7 @@
         {
           "icon": "keyboard_voice",
           "title": "O digues la pregunta",
-          "body": "També pots prémer el micròfon i dir una pregunta curta.",
+          "body": "També pots prémer el micròfon i dir una pregunta. Prem-lo de nou quan acabis de fer la pregunta.",
           "target": "#mic-btn"
         },
         {

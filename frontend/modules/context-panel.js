@@ -1,6 +1,7 @@
 // Context panel
 
 function initContextPanel() {
+  const floorSelect = el('floor-select');
   const roomSelect = el('room-select');
   const artworkSelect = el('artwork-select');
   const setContextBtn = el('set-context-btn');
@@ -9,6 +10,7 @@ function initContextPanel() {
   const manualLocationPanel = el('manual-location-panel');
 
   renderLocationSelects();
+  enableSelectEnterOpen(floorSelect);
   enableSelectEnterOpen(roomSelect);
   enableSelectEnterOpen(artworkSelect);
 
@@ -24,6 +26,9 @@ function initContextPanel() {
     }
   }
 
+  // Open location panel by default
+  setLocationPanelOpen(true);
+
   locationPanelBtn?.addEventListener('click', () => {
     const willOpen = !document.body.hasAttribute('data-location-panel-open');
     if (willOpen) {
@@ -31,6 +36,12 @@ function initContextPanel() {
       el('audio-settings-btn')?.setAttribute('aria-expanded', 'false');
     }
     setLocationPanelOpen(willOpen);
+  });
+
+  floorSelect?.addEventListener('change', () => {
+    floorSelect.removeAttribute('aria-invalid');
+    renderRoomSelect(getRoomsByFloor());
+    renderArtworkSelect();
   });
 
   roomSelect?.addEventListener('change', () => {
@@ -46,7 +57,8 @@ function initContextPanel() {
       return;
     }
 
-    const roomText = roomSelect.options[roomSelect.selectedIndex].text;
+    const selectedRoom = findLocationRoomById(roomSelect.value);
+    const roomText = getRoomContextText(selectedRoom) || roomSelect.value;
     const artworkText = artworkSelect.value
       ? artworkSelect.options[artworkSelect.selectedIndex].text
       : '';
@@ -62,7 +74,7 @@ function initContextPanel() {
       closeQRScanner({ announceClose: false });
       manualLocationPanel?.removeAttribute('hidden');
       announce(t('app.manualSelectionOpened', 'Manual location selection opened.'));
-      roomSelect?.focus();
+      floorSelect?.focus();
     } else {
       manualLocationPanel?.setAttribute('hidden', '');
       announce(t('app.manualSelectionClosed', 'Manual location selection closed.'));

@@ -85,7 +85,7 @@ function restartGuiaSession() {
   state.currentArtwork = null;
   state.privacyAccepted = false;
   state.chatStarted = false;
-  state.showTutorialOnStart = true;
+  state.showTutorialOnStart = false;
   state.deferredSpokenAudioChange = null;
   state.conversationTranslationRequestId = 0;
   state.chatGenerating = false;
@@ -95,9 +95,10 @@ function restartGuiaSession() {
     largeText: false,
     uppercaseText: false,
     simpleLanguage: false,
-    spokenAudio: true,
+    spokenAudio: false,
     moreTime: false,
-    audioDescription: false
+    audioDescription: false,
+    tutorialSpoken: false
   };
 
   const chatThread = el('chat-thread');

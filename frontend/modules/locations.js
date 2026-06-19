@@ -11,24 +11,134 @@ async function loadLocations() {
   }
 }
 
-function renderLocationSelects() {
-  const roomSelect = el('room-select');
-  if (!roomSelect) return;
+function parseRoomFloor(room) {
+  const normalizedValue = normalizeLocationValue(room.id || room.label);
+  const match = normalizedValue.match(/\bp(?:alau)?\s*([a-z0-9]+)/i);
+  if (!match) return '';
+  return /^\d+$/.test(match[1]) ? String(Number(match[1])) : match[1].toUpperCase();
+}
 
-  const selectedRoom = roomSelect.value;
-  roomSelect.innerHTML = '';
-  roomSelect.appendChild(new Option(t('context.selectRoom', 'Select a room'), ''));
+function parseRoomNumbers(room) {
+  const value = normalizeLocationValue(room.id || room.label);
+  if (!value) return null;
 
-  (state.locationData.rooms || []).forEach((room) => {
-    roomSelect.appendChild(new Option(room.label || room.id, room.id));
-  });
-
-  if ((state.locationData.rooms || []).some((room) => room.id === selectedRoom)) {
-    roomSelect.value = selectedRoom;
+  const fullMatch = value.match(/\bp(?:alau)?\s*([a-z0-9]+)[\s\-,:]*s(?:ala)?\s*([a-z0-9]+)\b/);
+  if (fullMatch) {
+    return { floor: fullMatch[1], room: fullMatch[2] };
   }
 
+  const roomOnly = value.match(/\bs(?:ala)?\s*([a-z0-9]+)\b/);
+  if (roomOnly) {
+    return { room: roomOnly[1] };
+  }
+
+  const numberOnly = value.match(/\b(\d+)\b/);
+  if (numberOnly) {
+    return { room: numberOnly[1] };
+  }
+
+  return null;
+}
+
+function getRoomLabelText(room) {
+  const parsed = parseRoomNumbers(room);
+  if (!parsed) return room.label || room.id;
+
+  const roomLabel = t('app.roomLabel', 'Room');
+  return `${roomLabel} ${String(parsed.room).toUpperCase()}`;
+}
+
+function getRoomContextText(room) {
+  if (!room) return '';
+  return room.label || room.id || '';
+}
+
+function findLocationRoomById(roomId) {
+  const normalizedRoom = normalizeLocationValue(roomId);
+  return (state.locationData.rooms || []).find((room) => {
+    return normalizeLocationValue(room.id) === normalizedRoom;
+  });
+}
+
+function getRoomsByFloor() {
+  return (state.locationData.rooms || []).reduce((groups, room) => {
+    const floor = parseRoomFloor(room) || '0';
+    if (!groups[floor]) groups[floor] = [];
+    groups[floor].push(room);
+    return groups;
+  }, {});
+}
+
+function floorSortKey(floor) {
+  const floorText = String(floor || '');
+  if (floorText.toUpperCase() === 'B') return [0, -1, floorText];
+  const numberMatch = floorText.match(/\d+/);
+  return numberMatch ? [0, Number(numberMatch[0]), floorText] : [1, 999, floorText];
+}
+
+function renderLocationSelects() {
+  const floorSelect = el('floor-select');
+  const roomSelect = el('room-select');
+  if (!floorSelect || !roomSelect) return;
+
+  const selectedFloor = floorSelect.value;
+  const selectedRoom = roomSelect.value;
+  const roomsByFloor = getRoomsByFloor();
+  const floors = Object.keys(roomsByFloor).sort((a, b) => {
+    const aKey = floorSortKey(a);
+    const bKey = floorSortKey(b);
+    return aKey[0] - bKey[0] || aKey[1] - bKey[1] || aKey[2].localeCompare(bKey[2]);
+  });
+
+  floorSelect.innerHTML = '';
+  floorSelect.appendChild(new Option(t('context.selectFloor', 'Select a floor'), ''));
+  floors.forEach((floor) => {
+    const floorLabel = floor.toUpperCase() === 'B' 
+      ? t('context.floorB', 'Ground floor')
+      : `${t('context.floorOptionLabel', 'Floor')} ${floor}`;
+    floorSelect.appendChild(new Option(floorLabel, floor));
+  });
+
+  let activeFloor = selectedFloor;
+  if (!activeFloor && selectedRoom) {
+    const currentRoom = (state.locationData.rooms || []).find((room) => room.id === selectedRoom);
+    if (currentRoom) {
+      activeFloor = getFloorForRoom(currentRoom);
+    }
+  }
+
+  if (activeFloor && floors.includes(activeFloor)) {
+    floorSelect.value = activeFloor;
+  }
+
+  renderRoomSelect(roomsByFloor);
   renderArtworkSelect();
   renderContextSuggestion();
+}
+
+function renderRoomSelect(roomsByFloor) {
+  const floorSelect = el('floor-select');
+  const roomSelect = el('room-select');
+  if (!floorSelect || !roomSelect) return;
+
+  const selectedRoom = roomSelect.value;
+  const rooms = roomsByFloor[floorSelect.value] || [];
+
+  roomSelect.innerHTML = '';
+  roomSelect.appendChild(new Option(t('context.selectRoom', 'Select a room'), ''));
+  roomSelect.disabled = rooms.length === 0;
+
+  rooms.forEach((room) => {
+    roomSelect.appendChild(new Option(getRoomLabelText(room), room.id));
+  });
+
+  if (rooms.some((room) => room.id === selectedRoom)) {
+    roomSelect.value = selectedRoom;
+  }
+}
+
+function getFloorForRoom(room) {
+  return parseRoomFloor(room) || '0';
 }
 
 function renderArtworkSelect() {
@@ -64,7 +174,7 @@ function renderContextSuggestion() {
 
   if (!firstRoom || !textNode) return;
 
-  const roomLabel = firstRoom.label || firstRoom.id;
+  const roomLabel = getRoomLabelText(firstRoom);
   const artworkLabel = firstArtwork?.title;
   const prefix = CONTEXT_SUGGESTION_PREFIX[state.selectedLang];
   textNode.textContent = artworkLabel
@@ -166,6 +276,13 @@ function applyLocationPayload(locationPayload, source = 'url') {
   const artworkText = artwork ? artwork.title : '';
 
   if (roomSelect) {
+    const floorSelect = el('floor-select');
+    const floor = getFloorForRoom(room);
+    if (floorSelect && floor) {
+      floorSelect.value = floor;
+    }
+
+    renderRoomSelect(getRoomsByFloor());
     roomSelect.value = room.id;
     roomSelect.removeAttribute('aria-invalid');
   }

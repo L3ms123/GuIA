@@ -33,7 +33,7 @@
  
         <div class="step-meta">
           <div class="step-header">
-            <p id="step-count">Pas 1 de 3 - Selecciona l'idioma, com ajuda el guia i la franja d'edat.</p>
+            <p id="step-count" aria-live="polite" aria-atomic="true" tabindex="-1">Pas 1 de 3 - Selecciona l'idioma, com ajuda el guia i la franja d'edat.</p>
           </div>
 
           <div class="step-bar">
@@ -47,7 +47,6 @@
  
         <!-- STEP 1: Preferences -->
         <section class="onboarding-step" data-step="1">
- 
           <p id="label-personality-intro" class="intro-text">GuIA és una audioguia que fa servir intel·ligència artificial per explicar el museu en el estil y amb las opcions de accessibilitat que tu triis. Pots fer-li preguntes sobre les obres i obtenir explicacions personalitzades. Pot explicar les obres de diferents formes: com una història, amb detalls artístics sobre colors i materials, o en un estil estàndard.</p>
 
           <!-- Llengua -->
@@ -143,7 +142,7 @@
             >
               <button type="button" class="chip radio-chip" data-age="young" role="radio" aria-checked="false">
                 <span class="material-symbols-outlined card-pictogram" aria-hidden="true">face</span>
-                <span class="age-title">Nen/Adolescent</span>
+                <span class="age-title">Nen / Adolescent</span>
                 <p class="card-subtitle">(12-17 anys)</p>
               </button>
 
@@ -242,14 +241,23 @@
           </div>
 
           <div class="onb-section">
-            <h2 id="label-tutorial-choice" class="section-label">Ajuda inicial</h2>
+            <h2 id="label-tutorial-choice" class="section-label">Ajuda inicial visual</h2>
             <div class="toggle-list">
               <label class="toggle-row">
-                <input type="checkbox" id="opt-start-tutorial" aria-label="Veure ajuda abans de començar" aria-describedby="opt-start-tutorial-help" checked />
+                <input type="checkbox" id="opt-start-tutorial" aria-label="Veure ajuda abans de començar" aria-describedby="opt-start-tutorial-help" />
                 <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
                 <div class="toggle-content">
-                  <span>Veure ajuda abans de començar</span>
-                  <p id="opt-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals abans de començar. Aquesta opció ja està activada.</p>
+                  <span>Tutorial visual</span>
+                  <p id="opt-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals visualment abans de començar.</p>
+                </div>
+              </label>
+              
+              <label class="toggle-row">
+                <input type="checkbox" id="opt-tutorial-spoken" aria-label="Tutorial adaptat per a lector de pantalla i compatible amb veu" aria-describedby="opt-tutorial-spoken-help" />
+                <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
+                <div class="toggle-content">
+                  <span>Tutorial adaptat per a lector de pantalla i compatible amb veu</span>
+                  <p id="opt-tutorial-spoken-help" class="card-subtitle">GuIA explica els botons principals amb veu abans de començar.</p>
                 </div>
               </label>
             </div>
@@ -264,17 +272,15 @@
             <div
               id="privacy-notice"
               class="info-block"
-              role="region"
-              tabindex="-1"
-              aria-labelledby="privacy-notice-title"
               aria-describedby="privacy-notice-text"
             >
-              <div id="privacy-notice-text" role="region" tabindex="0">
-              <p>Estàs parlant amb una audioguia de museu que utilitza IA.</p>
-              <p>La IA pot cometre errors, per tant, la informació important hauria de ser verificada amb el personal del museu.</p>
-              <p>Per millorar l'experiència, el sistema pot processar la teva llengua seleccionada, preferències del guia, interaccions amb les obres i respostes.</p>
-              <p>No es recullen ni emmagatzemen dades personals.</p>
-              <p>Si parles amb la IA, l'àudio pot ser processat per entendre la parla i generar respostes parlades.</p>
+              <div id="privacy-notice-text" tabindex="0" aria-live="polite" aria-atomic="true">
+              <p>Estàs parlant amb una audioguia de museu basada en IA.</p>
+              <p>La IA pot cometre errors, verifica la informació important amb el personal del museu.</p>
+              <p>Per millorar la teva experiència, el sistema processa l'idioma seleccionat, les teves preferències de guia, les interaccions amb les obres i les respostes de la IA.</p>
+              <p>No recopilem ni emmagatzemem informació personal de manera intencionada.</p>
+              <p>Si utilitzes el micròfon, la teva gravació s'envia al nostre servei de transcripció per convertir-la en text i després s'elimina..</p>
+              <p>Qualsevol informació que escriguis o diguis pot ser emmagatzemada temporalment, fins a 30 dies, pel nostre proveïdor d'IA (Cohere). Si us plau, evita compartir informació personal sensible amb la IA.</p>
               </div>
             </div>
  
@@ -444,11 +450,19 @@
               </div>
             </label>
             <label class="toggle-row">
-              <input type="checkbox" id="settings-start-tutorial" aria-label="Veure ajuda abans de començar" />
+              <input type="checkbox" id="settings-start-tutorial" aria-label="Veure ajuda visual abans de començar" />
               <span class="material-symbols-outlined option-pictogram" aria-hidden="true">help</span>
               <div class="toggle-content">
-                <span id="settings-start-tutorial-label">Veure ajuda abans de començar</span>
-                <p id="settings-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals abans de començar.</p>
+                <span id="settings-start-tutorial-label">Veure ajuda visual abans de començar</span>
+                <p id="settings-start-tutorial-help" class="card-subtitle">GuIA explica els botons principals visualment abans de començar.</p>
+              </div>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" id="settings-tutorial-spoken" aria-label="Tutorial amb veu" />
+              <span class="material-symbols-outlined option-pictogram" aria-hidden="true">volume_up</span>
+              <div class="toggle-content">
+                <span id="settings-tutorial-spoken-label">Screen reader compatible tutorial and with voice option</span>
+                <p id="settings-tutorial-spoken-help" class="card-subtitle">GuIA describes in audio the main buttons before the visit starts.</p>
               </div>
             </label>
           </div>
@@ -710,7 +724,17 @@
 
           <p id="camera-error" class="field-error" aria-live="assertive" hidden></p>
           <div id="manual-location-panel" class="manual-location-panel" hidden>
-            <label class="field-label" id="room" for="room-select">Sala</label>
+            <label class="field-label" id="floor" for="floor-select" data-i18n-key="app.floorLabel">Planta</label>
+            <select
+              id="floor-select"
+              class="field-select"
+              aria-describedby="floor-help"
+            >
+              <option value="">Selecciona una planta</option>
+            </select>
+            <p id="floor-help" class="sr-only" data-i18n-key="app.floorHelp">Selecciona la planta on ets ara.</p>
+
+            <label class="field-label" id="room" for="room-select" data-i18n-key="app.roomLabel">Sala</label>
             <select
               id="room-select"
               class="field-select"
@@ -718,7 +742,7 @@
             >
               <option value="">Selecciona una sala</option>
             </select>
-            <p id="room-help" class="sr-only" data-i18n-key="app.roomHelp">Selecciona la sala on ets ara.</p>
+            <p id="room-help" class="sr-only" data-i18n-key="app.roomHelp">Selecciona la planta i la sala on ets ara.</p>
 
             <label class="field-label" id="artwork" for="artwork-select">Obra</label>
             <select
@@ -847,6 +871,7 @@
   <script src="./modules/locations.js"></script>
   <script src="./app.js"></script>
   <script src="./modules/tutorial.js?v=20260524-tutorial-location"></script>
+  <script src="./modules/tutorial-spoken.js"></script>
   <script src="./modules/audio.js"></script>
   <script src="./modules/voice.js"></script>
   <script src="./modules/context-panel.js"></script>

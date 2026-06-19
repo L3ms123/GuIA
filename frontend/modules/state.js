@@ -28,7 +28,7 @@ const state = {
   lastFocusedElement: null,
   privacyAccepted: !!storedGuiaSession?.privacyAccepted,
   chatStarted: !!storedGuiaSession?.chatStarted,
-  showTutorialOnStart: storedGuiaSession?.showTutorialOnStart ?? true,
+  showTutorialOnStart: storedGuiaSession?.showTutorialOnStart ?? false,
   deferredSpokenAudioChange: null,
   conversationTranslationRequestId: 0,
   chatGenerating: false,
@@ -39,9 +39,10 @@ const state = {
     largeText: !!storedGuiaSession?.accessibilityPrefs?.largeText,
     uppercaseText: !!storedGuiaSession?.accessibilityPrefs?.uppercaseText,
     simpleLanguage: !!storedGuiaSession?.accessibilityPrefs?.simpleLanguage,
-    spokenAudio: storedGuiaSession?.accessibilityPrefs?.spokenAudio ?? true,
+    spokenAudio: storedGuiaSession?.accessibilityPrefs?.spokenAudio ?? false,
     moreTime: !!storedGuiaSession?.accessibilityPrefs?.moreTime,
-    audioDescription: !!storedGuiaSession?.accessibilityPrefs?.audioDescription
+    audioDescription: !!storedGuiaSession?.accessibilityPrefs?.audioDescription,
+    tutorialSpoken: !!storedGuiaSession?.accessibilityPrefs?.tutorialSpoken
 
   }
 };

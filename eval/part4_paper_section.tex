@@ -1,0 +1,61 @@
+% =============================================================================
+% Part 4 — LaTeX fragments to paste into the GuIA paper.
+% Three edits. Match the existing document style (no Markdown, enumerate lists,
+% figures-as-numbers, sober prose). Numbers verified against
+% eval/results/part4_20260618_115438.{json,summary.txt}.
+% =============================================================================
+
+
+% -----------------------------------------------------------------------------
+% EDIT 1 — Prompt Engineering section.
+% REPLACE the whole "\subsection{TODO: assessment}" block (the paragraph that
+% begins "The current implementation does not systematically evaluate prompt
+% variants...") with the following.
+% -----------------------------------------------------------------------------
+
+\subsection{Prompt Sensitivity Assessment}
+
+\citet{PromptSurvey2024} warn that prompt performance can shift substantially with small wording changes, exemplar ordering, or the position of the context block, and recommend comparing variants on a fixed benchmark rather than relying on a single manual trial. Because GuIA personalizes through prompting, the prompt is also the mechanism through which the system adapts to each visitor, so its stability is a property worth measuring directly. The fourth component of the evaluation framework (Section~\ref{sec:eval}) does this: it fixes the retrieved Knowledge Graph rows, changes one prompt component at a time, and measures how far the generated answer moves relative to the variation observed between identical runs. The results, reported in Section~\ref{sec:eval}, indicate that the few-shot examples are the most influential of the components tested, that the placement of the RAG context block is close to neutral, and that the guide-style instruction changes the answer only modestly.
+
+
+% -----------------------------------------------------------------------------
+% EDIT 2 — Evaluation and Testing section.
+% (a) Add a label to the section header so the references above resolve:
+%        \section{Evaluation and Testing}\label{sec:eval}
+% (b) In the "Evaluation Framework" subsection, change "three-component" to
+%     "four-component".
+% (c) INSERT the following subsection immediately AFTER "\subsection{Cultural Bias}"
+%     and BEFORE "\subsection{Interpretation and Remaining Components}".
+% -----------------------------------------------------------------------------
+
+\subsection{Explanation Style and Prompt Sensitivity}
+
+The previous components evaluate the content of an answer: whether it is grounded, whether the right fact was retrieved, and whether its cultural framing is balanced. The fourth component evaluates the prompt itself. GuIA personalizes by prompting, so the guide style, the visitor profile, the few-shot examples, and the order of the prompt blocks are all prompt choices. It is therefore useful to know how much each choice actually changes the answer, and whether that change is a real effect or only the model's run-to-run variation.
+
+The procedure fixes everything except the prompt. For each question the retrieval step is run once, and the resulting rows are reused for every prompt variant, so that retrieval variation cannot be mistaken for a prompt effect. A baseline prompt, verified to be identical to the one used by the deployed system, is then compared against three variants, each changing a single component: the few-shot examples are removed; the guide style is changed from explorer to scholar; and the RAG context block is moved from after the language rule to before it. Each prompt is generated three times. The variation between the three runs of the same prompt gives a noise floor, and the difference between a variant and the baseline is read against that floor. The resulting sensitivity ratio is the divergence between variant and baseline divided by the divergence between identical runs, where divergence is measured as the token overlap between answers rather than by a model judge, so the measurement is deterministic and requires no further model calls. A ratio near one means the change moved the answer no more than asking the same prompt twice would; a ratio well above one means the change had a real effect.
+
+The two kinds of change are read in opposite directions. Removing the few-shot examples or moving the context block should not change the facts of the answer, so a ratio near one is the desired outcome. Changing the guide style is a personalization choice that should change the answer, so a ratio well above one is desired. The full run covered 12 grounded questions in each language, each generated three times for the baseline and for the three variants. Across all languages the results were:
+\begin{enumerate}
+    \item few-shot examples: ratio 2.09, the largest effect;
+    \item guide style, explorer to scholar: ratio 1.28;
+    \item RAG context block position: ratio 1.38.
+\end{enumerate}
+The noise floor, the divergence between identical runs of the baseline, was 0.23.
+
+Two findings follow. First, the few-shot examples are not a neutral choice: removing them moves the answer about twice as much as resampling noise. The direction of the change is consistent, as answers produced with the examples are longer and more explanatory while answers produced without them are terser, often a single sentence. This indicates that the examples shape the length and register of the output, not only the refusal behaviour they were added to demonstrate. Second, and more relevant for a system whose value is personalization, changing the guide style from explorer to scholar moved the answer only slightly more than noise. The style instruction has a measurable but weak effect on the generated text, which suggests that the guide-style block is a candidate for strengthening if clearer differentiation between styles is desired. The placement of the RAG context block, by contrast, was close to neutral, which is the desired behaviour for a change that should not affect the facts.
+
+The per-language figures are reported over the answers that completed normally, with a small number of empty or degenerate generations set aside; such an answer differs completely from a normal one and would otherwise distort the affected figures. The cross-language ordering is consistent: restricting the comparison to English and Spanish preserves it, with the few-shot examples remaining the most influential component (ratio 1.84), the guide style the least (1.13), and the context block in between (1.43). Excluding the degenerate generations entirely leaves the same picture (few-shot 1.97, guide style 1.15, context block 1.54).
+
+A few limits apply. The divergence measure is based on word overlap, so it detects that an answer changed but not whether the change preserved meaning: a faithful rephrasing counts as a difference. The measure is therefore a test of stability and sensitivity, not of correctness. The noise floor depends on the model's own sampling, which is not exposed, so the ratios are relative to that hidden setting. The sample is small, twelve questions per language, so the figures are indicative rather than final, and they are reported with their spread for this reason.
+
+
+% -----------------------------------------------------------------------------
+% EDIT 3 — (optional) Limitations section.
+% The existing item "Final technical benchmarks and user-study results must still
+% be added." can be softened, since three of the four benchmarks are now run.
+% Suggested replacement item:
+% -----------------------------------------------------------------------------
+
+% \item The user study and the accessibility evaluation with intended users are
+%       still pending; the four automated benchmarks are run, but the human
+%       evaluation that is central to this kind of system has not yet been carried out.

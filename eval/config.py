@@ -148,6 +148,48 @@ SMOKE_CBS_PER_ORIGIN = 1
 # results/) — it is the contract this part scores against.
 CBS_GROUNDTRUTH_FILE = Path(__file__).resolve().parent / "data" / "cultural_groundtruth.json"
 
+# --- Part 4 (prompt sensitivity) --------------------------------------------
+# Part 4 holds the BENCHMARK and retrieval FIXED and varies only the prompt, then
+# measures how much the guide ANSWER moves. Two axis kinds, same metric, opposite
+# reading: ROBUSTNESS axes (few-shot on/off, RAG-block position) should NOT move
+# the facts (want sensitivity ratio ~= 1); SEMANTIC axes (persona, age — the
+# personalization test) SHOULD move the output (want ratio >> 1). See cbs.py's
+# sibling design and HOW_PART4_WORKS.md.
+
+# Default benchmark size: grounded single-valued questions (so retrieval reliably
+# returns rows — the rag_position axis is meaningless without them). Sampled
+# round-robin across the four single-valued categories, same items in every lang.
+PART4_N = 12
+SMOKE_PART4_N = 2
+
+# Repeats per variant. The within-variant spread across these repeats IS the
+# noise floor we divide the prompt effect by, so >=3 is the minimum that yields a
+# stable estimate (3 within-pairs, 9 between cross-pairs). 1 => ratio undefined
+# (the driver warns and reports only raw between-divergence).
+PROMPT_RUNS = 3
+
+# Axis vocabulary. "after" is the SHIPPED order (RAG block after the rules), so
+# the baseline variant byte-matches LLM_Call.build_system_prompt. Both personas
+# are valid EXPLAINATION_RULES keys (LLM_Call.py:55-60). PROMPT_DEFAULT_AGE
+# matches build_system_prompt's own default (LLM_Call.py:1436) so the baseline
+# variant reproduces the shipped prompt exactly (asserted by the parity selftest).
+PROMPT_RAG_POSITIONS = ("after", "before")
+PROMPT_PERSONAS = ("explorer", "scholar")
+PROMPT_DEFAULT_AGE = "Adult 20-60 years old"
+
+# Divergence tokenization (consumed by divergence.py). Lowercasing + accent
+# folding put en/es/ca answers on the same footing (mirrors normalization.py).
+DIVERGENCE_LOWERCASE = True
+DIVERGENCE_FOLD_ACCENTS = True
+
+# Verdict thresholds for the summary. A ROBUSTNESS axis whose mean ratio exceeds
+# the warn line moved the surface more than resampling noise -> flagged "not
+# robust". A SEMANTIC axis whose mean ratio falls below the min looks cosmetic.
+# Heuristics for triage, not hard pass/fail gates.
+PROMPT_ROBUST_RATIO_WARN = 2.0
+PROMPT_SEMANTIC_RATIO_MIN = 1.5
+
+
 # --- Output -----------------------------------------------------------------
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 

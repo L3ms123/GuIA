@@ -52,7 +52,7 @@ LANGUAGE_RULES = {
     "spanish": "Answer strictly in Spanish.",
     "english": "Answer strictly in English.",
 }
-PERSONA_RULES = {
+EXPLAINATION_RULES = {
     "artist": "explain how the artwork was made, using simple words for colors, materials, and techniques",
     "storyteller": "explain the visit like a clear, simple story",
     "explorer": "act as a normal museum guide and explain the most important information first",
@@ -149,7 +149,7 @@ def get_language_rule(language: str) -> str:
 
 def get_persona_rule(personality: str) -> str:
     key = (personality or "explorer").strip().lower()
-    return PERSONA_RULES.get(key, personality or PERSONA_RULES["explorer"])
+    return EXPLAINATION_RULES.get(key, personality or EXPLAINATION_RULES["explorer"])
 
 
 def normalize_easy_word(value: str) -> str:
@@ -920,6 +920,12 @@ def log_answer_completed(
             )
         except Exception as exc:
             app.logger.warning("Could not record unresolved question: %s", exc)
+    # Record only WHETHER any accessibility preference was active, never which
+    # one. The specific modes (simpleLanguage / visualDescriptions / moreTime)
+    # are special-category / sensitive data and must not be persisted to
+    # analytics; a single non-identifying boolean lets the museum see uptake of
+    # accessibility features without revealing an individual visitor's needs.
+    accessibility_used = bool(simple_language or visual_descriptions or more_time)
     analytics.log_event(
         "answer_completed",
         {
@@ -927,9 +933,7 @@ def log_answer_completed(
             "lang": language_code(language),
             "respLen": len(response or ""),
             "generator": generator,
-            # Accessibility preferences (simpleLanguage / visualDescriptions /
-            # moreTime) are intentionally not logged here for compliance:
-            # special-category / sensitive data must not be persisted to analytics.
+            "accessibilityUsed": accessibility_used,
             "dontKnow": dont_know,
             "retrievalEmpty": retrieval_empty,
             "roomId": room,
@@ -1069,13 +1073,35 @@ def load_neo4j_query_table_data() -> dict[str, Any]:
 
 
 def parse_museum_location(value: Optional[str]) -> Optional[dict[str, str]]:
-    """Parse museum room labels like P1-S2 into Neo4j Sala properties."""
+    """Parse UI room labels like P1-S2 into Neo4j Sala properties."""
     if not value:
         return None
 
-    match = re.search(r"\bP(?:alau)?\s*(?P<palau>\d+)\s*[-, ]+\s*S(?:ala)?\s*(?P<sala>\d+)\b", value, flags=re.IGNORECASE)
+    location_value = str(value)
+    part_pattern = r"[A-Za-z0-9]+"
+    match = re.search(
+        rf"\bP(?:alau)?\s*(?P<palau>{part_pattern})\s*[-, ]+\s*S(?:ala)?\s*(?P<sala>{part_pattern})\b",
+        location_value,
+        flags=re.IGNORECASE,
+    )
     if not match:
-        match = re.search(r"\bPalau\s*(?P<palau>\d+).*?\bSala\s*(?P<sala>\d+)\b", value, flags=re.IGNORECASE)
+        match = re.search(
+            rf"\bPalau\s*(?P<palau>{part_pattern}).*?\bSala\s*(?P<sala>{part_pattern})\b",
+            location_value,
+            flags=re.IGNORECASE,
+        )
+    if not match:
+        match = re.search(
+            rf"\bPlanta\s*(?P<palau>{part_pattern}).*?\bSala\s*(?P<sala>{part_pattern})\b",
+            location_value,
+            flags=re.IGNORECASE,
+        )
+    if not match:
+        match = re.search(
+            rf"\bSala\s*(?P<sala>{part_pattern}).*?\b(?:Planta|Palau)\s*(?P<palau>{part_pattern})\b",
+            location_value,
+            flags=re.IGNORECASE,
+        )
     if not match:
         return None
 
@@ -1085,11 +1111,98 @@ def parse_museum_location(value: Optional[str]) -> Optional[dict[str, str]]:
     }
 
 
+NAVIGATION_TERMS = (
+    "how do i go",
+    "how to go",
+    "how can i go",
+    "how do we go",
+    "how can we go",
+    "directions",
+    "navigate",
+    "navigation",
+    "route",
+    "path",
+    "way to",
+    "go from",
+    "get from",
+    "get to",
+    "where do i go",
+    "where should i go",
+    "com vaig",
+    "com anar",
+    "com puc anar",
+    "com arribar",
+    "camí",
+    "ruta",
+    "anar de",
+    "arribar a",
+    "cómo voy",
+    "como voy",
+    "cómo ir",
+    "como ir",
+    "cómo llegar",
+    "como llegar",
+    "ruta",
+    "camino",
+    "ir de",
+    "llegar a",
+)
+
+LOCATION_TERMS = (
+    "where is",
+    "where are",
+    "which room",
+    "which floor",
+    "what room",
+    "what floor",
+    "location of",
+    "ubicación",
+    "ubicacion",
+    "dónde está",
+    "donde esta",
+    "dónde están",
+    "donde estan",
+    "en qué sala",
+    "en que sala",
+    "en qué planta",
+    "en que planta",
+    "on és",
+    "on es",
+    "on són",
+    "on son",
+    "quina sala",
+    "quina planta",
+)
+
+
 def room_sort_key(room: str) -> tuple[int, int, str]:
     numbers = [int(match) for match in re.findall(r"\d+", room)]
     floor = numbers[0] if numbers else 999
     sala = numbers[1] if len(numbers) > 1 else floor
     return floor, sala, room
+
+
+def normalize_graph_location_part(value: Any, prefixes: tuple[str, ...] = ()) -> str:
+    text = str(value or "").strip()
+    if not text or text.lower() == "none":
+        return ""
+
+    cleaned = text
+    for prefix in prefixes:
+        cleaned = re.sub(rf"\b{re.escape(prefix)}\b", "", cleaned, flags=re.IGNORECASE)
+    cleaned = cleaned.strip(" -_,:")
+
+    match = re.search(r"[A-Za-z0-9]+", cleaned)
+    return match.group(0) if match else ""
+
+
+def normalized_location_key(value: Any) -> str:
+    text = str(value or "").strip()
+    return text.upper() if not text.isdigit() else str(int(text))
+
+
+def same_location_part(left: Any, right: Any) -> bool:
+    return normalized_location_key(left) == normalized_location_key(right)
 
 
 def load_locations_from_excel() -> dict[str, Any]:
@@ -1152,11 +1265,93 @@ def load_locations_from_excel() -> dict[str, Any]:
     return data
 
 
+def format_graph_room_id(palau: Any, sala: Any) -> str:
+    palau_text = str(palau or "").strip()
+    sala_text = str(sala or "").strip()
+    if palau_text and sala_text:
+        return f"P{palau_text}-S{sala_text}"
+    return sala_text or palau_text
+
+
+def format_graph_room_label(palau: Any, sala: Any, fallback: Any = "") -> str:
+    palau_text = str(palau or "").strip()
+    sala_text = str(sala or "").strip()
+    if palau_text and sala_text:
+        return f"Planta {palau_text}, Sala {sala_text}"
+    return str(fallback or format_graph_room_id(palau, sala)).strip()
+
+
+def load_locations_from_neo4j() -> dict[str, Any]:
+    """Load room and artwork selector options from the live Neo4j knowledge graph."""
+    if not neo4j_is_configured():
+        return {"rooms": []}
+
+    rows = execute_query_api(
+        """
+        MATCH (s:Sala)
+        OPTIONAL MATCH (a:ArtPiece)-[:LOCATED_IN]->(s)
+        OPTIONAL MATCH (p:Planta)-[:HAS_SALA]-(s)
+        WITH s, p, a
+        ORDER BY s.palau, s.id, a.title
+        RETURN
+          elementId(s) AS room_key,
+          s.palau AS sala_palau,
+          s.id AS sala_id,
+          coalesce(s.name, s.label, '') AS room_name,
+          p.id AS planta_id,
+          p.name AS planta_name,
+          p.number AS planta_number,
+          p.planta AS planta_value,
+          collect(DISTINCT CASE
+            WHEN a IS NULL THEN null
+            ELSE {
+              id: coalesce(a.artwork_id, a.id, a.title),
+              title: coalesce(a.title, a.artwork_id, a.id)
+            }
+          END) AS artworks
+        """
+    )
+
+    rooms = []
+    for row in rows:
+        palau = (
+            normalize_graph_location_part(row.get("sala_palau"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_id"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_number"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_value"), ("planta", "palau", "p"))
+            or normalize_graph_location_part(row.get("planta_name"), ("planta", "palau", "p"))
+        )
+        sala = (
+            normalize_graph_location_part(row.get("sala_id"), ("sala", "s"))
+            or normalize_graph_location_part(row.get("room_name"), ("sala", "s"))
+        )
+        room_id = format_graph_room_id(palau, sala)
+        if not room_id:
+            continue
+
+        label = format_graph_room_label(palau, sala, row.get("room_name") or row.get("room_key"))
+        seen_artworks = set()
+        artworks = []
+        for artwork in row.get("artworks") or []:
+            if not artwork:
+                continue
+            artwork_id = str(artwork.get("id") or artwork.get("title") or "").strip()
+            title = str(artwork.get("title") or artwork_id).strip()
+            if not artwork_id or not title or artwork_id in seen_artworks:
+                continue
+            seen_artworks.add(artwork_id)
+            artworks.append({"id": artwork_id, "title": title})
+
+        rooms.append({"id": room_id, "label": label, "artworks": artworks})
+
+    return {"rooms": sorted(rooms, key=lambda item: room_sort_key(item["id"]))}
+
+
 # Conversation storage (simple in-memory for now)
 SESSION_CONTEXTS = {}
 
 # Guide style descriptions to add to the prompt.
-PERSONALITY_DESCRIPTIONS = PERSONA_RULES
+PERSONALITY_DESCRIPTIONS = EXPLAINATION_RULES
 AGE_DESCRIPTIONS = {
     "Young 10-18 years old": "You use a engaging, relatable and energetic style suitable for younger visitors.",
     "Adult 19-60 years old": "You use a mature and informative style. Full depth as defined by persona",
@@ -1276,6 +1471,14 @@ def build_system_prompt(
         "If the graph returns many rows, summarize the most relevant 3 to 5 items unless the user asks for all of them. "
         "Do not mention missing fields, null values, NaN values, or unavailable details for individual items. "
         "\n\n"
+        "EXAMPLE A - factual single-artwork answer (when graph returns data):\n"
+        "Question: Who painted this work and when was it made?\n"
+        "Context: A row with title 'Portrait of a Man', artist 'Piero della Francesca', dating 'c. 1460-1465'\n"
+        "Answer: This painting is a portrait by Piero della Francesca. It was made around 1460 to 1465. Piero della Francesca was an Italian painter known for his precise geometric style and use of light.\n\n"
+        "EXAMPLE B - no-information answer (when graph returns no relevant rows):\n"
+        "Question: What international exhibitions has this painting travelled to?\n"
+        "Context: Empty rows or rows without exhibition history\n"
+        "Answer: I do not have information about international exhibitions for this painting. The available data does not include exhibition history.\n\n"
         f"LANGUAGE RULE: {language_rule} "
         "Do not answer in any other language unless the user explicitly asks you to change language (only english, spanish or catalan) in the current message."
         "\n\n"
@@ -1340,12 +1543,22 @@ def build_system_prompt(
             "Use these graph database results as factual context for the answer. "
             "If the rows do not answer the user's question, say that the graph does not contain enough information. "
             "Do not mechanically list every returned field. Prefer title, artist, dating, technique, and one concise interpretive detail when available. "
-            "If a row only has a title, include the title without apologizing for missing metadata."
+            "If a row only has a title, include the title without apologizing for missing metadata. "
+            "For navigation rows, use the 'directions' field as the route instruction. "
+            "If a navigation row has source and destination locations but no directions field, say the graph identifies the rooms but does not contain a route instruction. "
+            "For artwork_location rows, state the floor and room clearly."
         )
         if cypher:
             prompt += f"\nGenerated Cypher: {cypher}"
         prompt += "\nRows:\n"
         prompt += json.dumps(rows, ensure_ascii=False, indent=2)
+        
+        # Grounding instruction
+        prompt += (
+            "\n\nINTERNAL GROUNDING CHECK: "
+            "Before writing your answer, silently verify each factual claim against the retrieved rows above. "
+            "If a claim cannot be grounded in the provided context, omit it rather than inventing information."
+        )
 
     return prompt
 
@@ -1378,7 +1591,7 @@ def build_query_with_context(
             if parsed_location:
                 query += (
                     "\nNeo4j room fields: "
-                    f"Sala.palau = '{parsed_location['palau']}', "
+                    f"Sala floor = '{parsed_location['palau']}' from Sala.palau, Sala.floor, or linked Planta.id; "
                     f"Sala.id = '{parsed_location['sala']}'"
                 )
         if artwork:
@@ -1654,10 +1867,13 @@ def rewrite_combined_sala_id_filters(cypher: str) -> str:
         if not location:
             return match.group(0)
 
-        return f"{variable}.palau = '{location['palau']}' AND {variable}.id = '{location['sala']}'"
+        return (
+            f"coalesce({variable}.palau, {variable}.floor) = '{location['palau']}' "
+            f"AND {variable}.id = '{location['sala']}'"
+        )
 
     rewritten = re.sub(
-        r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\.id\s*=\s*['\"](?P<value>P\s*\d+\s*-\s*S\s*\d+)['\"]",
+        r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\.id\s*=\s*['\"](?P<value>P\s*[A-Za-z0-9]+\s*-\s*S\s*[A-Za-z0-9]+)['\"]",
         replace_exact_filter,
         cypher,
         flags=re.IGNORECASE,
@@ -1672,10 +1888,13 @@ def rewrite_combined_sala_id_filters(cypher: str) -> str:
         if not location:
             return match.group(0)
 
-        return f"{variable}.palau = '{location['palau']}' AND {variable}.id = '{location['sala']}'"
+        return (
+            f"coalesce({variable}.palau, {variable}.floor) = '{location['palau']}' "
+            f"AND {variable}.id = '{location['sala']}'"
+        )
 
     return re.sub(
-        r"\btoLower\(\s*(?P<var>[A-Za-z_][A-Za-z0-9_]*)\.id\s*\)\s*(?:=|CONTAINS)\s*['\"](?P<value>p\s*\d+\s*-\s*s\s*\d+)['\"]",
+        r"\btoLower\(\s*(?P<var>[A-Za-z_][A-Za-z0-9_]*)\.id\s*\)\s*(?:=|CONTAINS)\s*['\"](?P<value>p\s*[a-z0-9]+\s*-\s*s\s*[a-z0-9]+)['\"]",
         replace_lower_filter,
         rewritten,
         flags=re.IGNORECASE,
@@ -1872,6 +2091,287 @@ def clean_graph_rows(rows: list[dict[str, Any]], message: str) -> list[dict[str,
     if user_asked_for_all(message):
         return cleaned_rows
     return cleaned_rows[:5]
+
+
+def is_navigation_question(message: str) -> bool:
+    normalized = normalize_text_for_cypher(message)
+    return any(term in normalized for term in NAVIGATION_TERMS)
+
+
+def is_location_question(message: str) -> bool:
+    normalized = normalize_text_for_cypher(message)
+    return any(term in normalized for term in LOCATION_TERMS)
+
+
+def room_reference_matches(text: str) -> list[dict[str, str]]:
+    references = []
+    seen = set()
+    patterns = (
+        r"\bP(?:alau)?\s*(?P<floor>[A-Za-z0-9]+)\s*[-, ]+\s*S(?:ala)?\s*(?P<room>[A-Za-z0-9]+)\b",
+        r"\b(?:Planta|Palau)\s*(?P<floor>[A-Za-z0-9]+).*?\bSala\s*(?P<room>[A-Za-z0-9]+)\b",
+        r"\bSala\s*(?P<room>[A-Za-z0-9]+).*?\b(?:Planta|Palau)\s*(?P<floor>[A-Za-z0-9]+)\b",
+    )
+    for pattern in patterns:
+        for match in re.finditer(pattern, text or "", flags=re.IGNORECASE):
+            floor = normalized_location_key(match.group("floor"))
+            room = normalized_location_key(match.group("room"))
+            key = (floor, room, match.start())
+            if key in seen:
+                continue
+            seen.add(key)
+            references.append({"floor": floor, "room": room, "position": match.start()})
+
+    for match in re.finditer(r"\bSala\s*(?P<room>[A-Za-z0-9]+)\b", text or "", flags=re.IGNORECASE):
+        room = normalized_location_key(match.group("room"))
+        if any(ref["room"] == room and abs(ref["position"] - match.start()) < 20 for ref in references):
+            continue
+        references.append({"floor": "", "room": room, "position": match.start()})
+
+    return sorted(references, key=lambda item: item["position"])
+
+
+def location_row_from_room(room_value: Optional[str]) -> Optional[dict[str, Any]]:
+    parsed = parse_museum_location(room_value)
+    if not parsed:
+        return None
+
+    rows = execute_query_api(
+        """
+        MATCH (p:Planta)-[:HAS_SALA]->(s:Sala)
+        WHERE toString(s.id) = $sala
+          AND toString(coalesce(s.palau, s.floor, p.id, p.number, p.planta, p.name)) = $palau
+        RETURN
+          coalesce(s.palau, s.floor, p.id, p.number, p.planta, p.name) AS floor,
+          s.id AS room,
+          s.info AS room_info,
+          s.description AS room_description,
+          properties(s) AS room_properties
+        LIMIT 1
+        """,
+        {"palau": parsed["palau"], "sala": parsed["sala"]},
+    )
+    return rows[0] if rows else None
+
+
+def artwork_location_rows(artwork_value: Optional[str] = None) -> list[dict[str, Any]]:
+    statement = """
+        MATCH (a:ArtPiece)-[:LOCATED_IN]->(s:Sala)
+        OPTIONAL MATCH (p:Planta)-[:HAS_SALA]->(s)
+        OPTIONAL MATCH (a)-[:CREATED_BY]->(artist:Artist)
+        OPTIONAL MATCH (a)-[:USES_TECHNIQUE]->(technique:Technique)
+        RETURN
+          coalesce(a.artwork_id, a.id, a.title) AS artwork_id,
+          a.title AS title,
+          coalesce(artist.name, a.artist) AS artist,
+          coalesce(technique.name, a.technique) AS technique,
+          a.dating AS dating,
+          coalesce(s.palau, s.floor, p.id, p.number, p.planta, p.name) AS floor,
+          s.id AS room,
+          s.info AS room_info,
+          s.description AS room_description,
+          properties(s) AS room_properties
+        ORDER BY a.title
+        LIMIT 200
+    """
+    rows = execute_query_api(statement)
+    if not artwork_value:
+        return rows
+
+    normalized_artwork = normalize_text_for_cypher(artwork_value)
+    parsed_location = parse_museum_location(artwork_value)
+    matched = []
+    for row in rows:
+        if parsed_location and same_location_part(row.get("floor"), parsed_location["palau"]) and same_location_part(row.get("room"), parsed_location["sala"]):
+            matched.append(row)
+            continue
+        for field in ("artwork_id", "title"):
+            value = normalize_text_for_cypher(str(row.get(field) or ""))
+            if value and (value == normalized_artwork or normalized_artwork in value or value in normalized_artwork):
+                matched.append(row)
+                break
+    return matched
+
+
+def score_artwork_reference(row: dict[str, Any], normalized_message: str) -> tuple[int, int]:
+    title = str(row.get("title") or "")
+    terms = significant_title_terms(title)
+    if not terms:
+        return (0, 999999)
+
+    matches = [term for term in terms if term in normalized_message]
+    minimum = 1 if len(terms) <= 2 else 2
+    if len(matches) < minimum:
+        return (0, 999999)
+
+    positions = [normalized_message.find(term) for term in matches if normalized_message.find(term) >= 0]
+    return (len(matches), min(positions) if positions else 999999)
+
+
+def artwork_references_from_message(message: str) -> list[dict[str, Any]]:
+    normalized_message = normalize_text_for_cypher(message)
+    scored = []
+    for row in artwork_location_rows():
+        score, position = score_artwork_reference(row, normalized_message)
+        if score:
+            scored.append((position, -score, row))
+    scored.sort(key=lambda item: (item[0], item[1]))
+
+    deduped = []
+    seen = set()
+    for _, _, row in scored:
+        key = row.get("artwork_id") or row.get("title")
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped
+
+
+def resolve_room_reference(reference: dict[str, str], current_room: Optional[str] = None) -> Optional[dict[str, Any]]:
+    if reference.get("floor"):
+        return location_row_from_room(f"P{reference['floor']}-S{reference['room']}")
+
+    current_location = parse_museum_location(current_room)
+    if current_location:
+        same_floor = location_row_from_room(f"P{current_location['palau']}-S{reference['room']}")
+        if same_floor:
+            return same_floor
+
+    rows = execute_query_api(
+        """
+        MATCH (p:Planta)-[:HAS_SALA]->(s:Sala)
+        WHERE toString(s.id) = $sala
+        RETURN
+          coalesce(s.palau, s.floor, p.id, p.number, p.planta, p.name) AS floor,
+          s.id AS room,
+          s.info AS room_info,
+          s.description AS room_description,
+          properties(s) AS room_properties
+        ORDER BY floor, room
+        LIMIT 1
+        """,
+        {"sala": reference["room"]},
+    )
+    return rows[0] if rows else None
+
+
+def route_property_name(destination_room: Any) -> str:
+    destination = normalize_graph_location_part(destination_room, ("sala", "s")).lower()
+    return f"path_to_sala_{destination}" if destination else ""
+
+
+def build_navigation_context(
+    message: str,
+    room: Optional[str] = None,
+    artwork: Optional[str] = None,
+) -> Optional[dict[str, Any]]:
+    if not is_navigation_question(message):
+        return None
+
+    room_refs = room_reference_matches(message)
+
+    source = None
+    destination = None
+    destination_artwork = None
+
+    if len(room_refs) >= 2:
+        source = resolve_room_reference(room_refs[0], room)
+        destination = resolve_room_reference(room_refs[-1], room)
+    else:
+        artwork_refs = artwork_references_from_message(message)
+        if len(artwork_refs) >= 2:
+            source = artwork_refs[0]
+            destination = artwork_refs[-1]
+            destination_artwork = destination.get("title")
+        else:
+            current_artwork_locations = artwork_location_rows(artwork) if artwork else []
+            source = current_artwork_locations[0] if current_artwork_locations else location_row_from_room(room)
+            if room_refs:
+                destination = resolve_room_reference(room_refs[-1], room)
+            elif artwork_refs:
+                destination = artwork_refs[-1]
+                destination_artwork = destination.get("title")
+
+    if not source or not destination:
+        return None
+
+    source_floor = normalized_location_key(source.get("floor"))
+    source_room = normalized_location_key(source.get("room"))
+    destination_floor = normalized_location_key(destination.get("floor"))
+    destination_room = normalized_location_key(destination.get("room"))
+    path_key = route_property_name(destination_room)
+    directions = ""
+    source_properties = source.get("room_properties") or {}
+    if path_key:
+        directions = str(source_properties.get(path_key) or "").strip()
+
+    rows = [{
+        "intent": "navigation",
+        "source_floor": source_floor,
+        "source_room": source_room,
+        "destination_floor": destination_floor,
+        "destination_room": destination_room,
+        "destination_artwork": destination_artwork,
+        "path_property": path_key,
+        "directions": directions,
+        "source_room_info": source.get("room_info") or source.get("room_description"),
+        "destination_room_info": destination.get("room_info") or destination.get("room_description"),
+    }]
+
+    cypher = (
+        "MATCH (p:Planta)-[:HAS_SALA]->(source:Sala) "
+        f"WHERE coalesce(source.palau, source.floor, p.id) = {cypher_string_literal(source_floor)} "
+        f"AND source.id = {cypher_string_literal(source_room)} "
+        f"RETURN source.{path_key} AS directions"
+        if path_key else "deterministic navigation lookup"
+    )
+    return {"message": message, "cypher": cypher, "rows": clean_graph_rows(rows, message)}
+
+
+def build_location_context(
+    message: str,
+    room: Optional[str] = None,
+    artwork: Optional[str] = None,
+) -> Optional[dict[str, Any]]:
+    if not is_location_question(message):
+        return None
+
+    candidates = artwork_references_from_message(message)
+    if not candidates and artwork:
+        candidates = artwork_location_rows(artwork)
+    if not candidates and room and is_location_question(message):
+        current_room = location_row_from_room(room)
+        if current_room:
+            rows = [{
+                "intent": "current_location",
+                "floor": normalized_location_key(current_room.get("floor")),
+                "room": normalized_location_key(current_room.get("room")),
+                "room_info": current_room.get("room_info") or current_room.get("room_description"),
+            }]
+            return {"message": message, "cypher": "deterministic current room lookup", "rows": clean_graph_rows(rows, message)}
+
+    if not candidates:
+        return None
+
+    rows = []
+    for candidate in candidates[:5]:
+        rows.append({
+            "intent": "artwork_location",
+            "artwork_id": candidate.get("artwork_id"),
+            "title": candidate.get("title"),
+            "artist": candidate.get("artist"),
+            "technique": candidate.get("technique"),
+            "dating": candidate.get("dating"),
+            "floor": normalized_location_key(candidate.get("floor")),
+            "room": normalized_location_key(candidate.get("room")),
+            "room_info": candidate.get("room_info") or candidate.get("room_description"),
+        })
+
+    return {
+        "message": message,
+        "cypher": "deterministic artwork location lookup",
+        "rows": clean_graph_rows(rows, message),
+    }
 
 
 TITLE_STOP_WORDS = {
@@ -2099,10 +2599,12 @@ def generate_query_api_cypher(query: str) -> str:
         "Always include a reasonable LIMIT unless the question asks for a count. "
         "Artwork titles in the graph are often Catalan even when the visitor asks in Spanish or English. "
         "Do not translate title literals to English. Prefer case-insensitive partial matching with CONTAINS for titles and names. "
-        "For room questions, match the graph's separate room fields: Sala.palau is the Palau number and Sala.id is the Sala number. "
-        "If the context contains a UI location like P1-S2, query it as s.palau = '1' AND s.id = '2', never as s.id = 'P1-S2'. "
+        "For room questions, match the graph's separate room fields: Sala.id is the Sala number, and the floor can be Sala.palau, Sala.floor, or linked Planta.id. "
+        "If the context contains a UI location like P1-S2 or PB-S1, query it as coalesce(s.palau, s.floor, p.id) = '1' AND s.id = '2', never as s.id = 'P1-S2'. "
+        "Room route instructions are stored on Sala nodes as properties named path_to_sala_1, path_to_sala_2, etc.; use those exact properties for navigation questions. "
         "Example: MATCH (a:ArtPiece)-[:LOCATED_IN]->(s:Sala) "
-        "WHERE toLower(a.title) CONTAINS 'anunciació' AND s.palau = '1' AND s.id = '3' RETURN a.title, a.description LIMIT 5. "
+        "OPTIONAL MATCH (p:Planta)-[:HAS_SALA]->(s) "
+        "WHERE toLower(a.title) CONTAINS 'anunciació' AND coalesce(s.palau, s.floor, p.id) = '1' AND s.id = '3' RETURN a.title, a.description LIMIT 5. "
         "For artist/author questions about a specific artwork, read the ArtPiece.artist property: every ArtPiece has an `artist` "
         "property, but the (:Artist) node and the (:ArtPiece)-[:CREATED_BY]->(:Artist) relationship exist ONLY for non-anonymous "
         "authors (anonymous works such as 'Anònim, ...' carry the value on a.artist but have NO Artist node). So do NOT require the "
@@ -2138,6 +2640,18 @@ def retrieve_neo4j_context_query_api(
     """Fallback graph retrieval using Neo4j Query API over HTTPS."""
     if not neo4j_is_configured():
         return None
+
+    deterministic_context = (
+        build_navigation_context(message, room, artwork)
+        or build_location_context(message, room, artwork)
+    )
+    if deterministic_context and deterministic_context.get("rows"):
+        safe_console_print("\n--- NEO4J QUERY API DETERMINISTIC CONTEXT ---", flush=True)
+        safe_console_print(deterministic_context.get("cypher"), flush=True)
+        safe_console_print("--- NEO4J QUERY API ROWS ---", flush=True)
+        safe_console_print(json.dumps(deterministic_context.get("rows"), ensure_ascii=False, indent=2), flush=True)
+        safe_console_print("--- END NEO4J QUERY API DETERMINISTIC CONTEXT ---\n", flush=True)
+        return deterministic_context
 
     query = build_query_with_context(message, room, artwork, previous_graph_context, visual_descriptions)
     try:
@@ -2715,11 +3229,11 @@ def context_endpoint():
 
 @app.route("/locations", methods=["GET"])
 def locations_endpoint():
-    """Return room/artwork options loaded from the raw museum Excel file."""
+    """Return room/artwork options loaded from the live Neo4j knowledge graph."""
     try:
-        return jsonify(load_locations_from_excel()), 200
+        return jsonify(load_locations_from_neo4j()), 200
     except Exception as e:
-        app.logger.exception("Could not load locations from Excel")
+        app.logger.exception("Could not load locations from Neo4j")
         return jsonify({"error": str(e), "rooms": []}), 500
     
 @app.route("/reset", methods=["POST"])
