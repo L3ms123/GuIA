@@ -123,12 +123,102 @@ IDEM_MAX_CONTEXT_VALUE_CHARS = 700
 IDEM_MAX_QUESTION_CHARS = 500
 
 
+IDEM_ROW_FIELD_ALIASES = {
+    "title": ("title", "titol", "titulo"),
+    "artist": ("artist", "artista", "autor", "autoria", "creator", "created_by"),
+    "date": ("date", "data", "datacio", "dating", "year", "cronologia", "chronology"),
+    "material": ("material", "materials", "technique", "tecnica", "medium"),
+    "description": (
+        "description",
+        "descripcio",
+        "descripcion",
+        "biography",
+        "information",
+        "audio_description",
+        "visual_overview",
+        "room_description",
+        "room_info",
+    ),
+    "floor": ("floor", "palau", "planta"),
+    "room": ("room", "sala"),
+}
+
+
+def normalize_idem_row_key(key: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", str(key).lower()).strip("_")
+
+
+def clean_idem_row_value(value: Any, max_chars: int = IDEM_MAX_CONTEXT_VALUE_CHARS) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (list, tuple, set)):
+        text = ", ".join(clean_idem_row_value(item, max_chars=max_chars) for item in value)
+    elif isinstance(value, dict):
+        return ""
+    else:
+        text = str(value).strip()
+    if not text or text.lower() in {"nan", "none", "null", "not provided"}:
+        return ""
+    if len(text) > max_chars:
+        text = text[:max_chars].rsplit(" ", 1)[0].strip() + "..."
+    return text
+
+
+def idem_row_value(row: dict[str, Any], canonical_field: str) -> str:
+    aliases = IDEM_ROW_FIELD_ALIASES[canonical_field]
+
+    for key, value in row.items():
+        normalized_key = normalize_idem_row_key(key)
+        key_parts = normalized_key.split("_")
+        if normalized_key in aliases or any(part in aliases for part in key_parts):
+            cleaned = clean_idem_row_value(value)
+            if cleaned:
+                return cleaned
+
+    for value in row.values():
+        if isinstance(value, dict):
+            cleaned = idem_row_value(value, canonical_field)
+            if cleaned:
+                return cleaned
+
+    return ""
+
+
+def explicit_idem_row_value(row: dict[str, Any], keys: tuple[str, ...]) -> str:
+    for key, value in row.items():
+        if normalize_idem_row_key(key) in keys:
+            cleaned = clean_idem_row_value(value)
+            if cleaned:
+                return cleaned
+    return ""
+
+
+def canonicalize_idem_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Add stable field names expected by the iDEM Easy Read grounding path."""
+    canonical = {}
+    for field in ("title", "artist", "date", "material", "description"):
+        value = idem_row_value(row, field)
+        if value:
+            canonical[field] = value
+
+    floor = idem_row_value(row, "floor") or explicit_idem_row_value(
+        row, ("s_palau", "s_floor", "p_id", "p_number", "p_planta")
+    )
+    room_number = idem_row_value(row, "room") or explicit_idem_row_value(row, ("s_id", "sala_id"))
+    if floor and room_number:
+        canonical["room"] = f"Planta {floor}, Sala {room_number}"
+    elif room_number:
+        canonical["room"] = room_number
+
+    return {**canonical, **row}
+
+
 def compact_idem_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Keep iDEM prompts small enough to be usable on free CPU Spaces."""
     compact_rows = []
     for row in (rows or [])[:IDEM_MAX_CONTEXT_ROWS]:
         compact_row = {}
-        for key, value in row.items():
+        for key, value in canonicalize_idem_row(row).items():
             if value is None:
                 continue
             text = str(value).strip()
@@ -234,6 +324,34 @@ def parse_idem_answer(output_text: str) -> str:
         lines.append(cleaned)
 
     return format_chat_text("\n".join(lines) if lines else sanitize_chat_text(output_text))
+
+
+def normalize_repetition_text(text: str) -> list[str]:
+    """Tokenize text for detecting model loops without changing displayed output."""
+    normalized = text.lower()
+    normalized = re.sub(r"[^\w\s'-]", " ", normalized, flags=re.UNICODE)
+    return re.findall(r"[\w'-]+", normalized, flags=re.UNICODE)
+
+
+def has_repetitive_model_output(text: str) -> bool:
+    """Flag degenerate LLM loops such as the same short phrase repeated many times."""
+    words = normalize_repetition_text(text)
+    if len(words) < 24:
+        return False
+
+    unique_ratio = len(set(words)) / len(words)
+    if len(words) >= 40 and unique_ratio < 0.22:
+        return True
+
+    for size in (2, 3, 4, 5):
+        grams = [tuple(words[index:index + size]) for index in range(len(words) - size + 1)]
+        if not grams:
+            continue
+        most_common = max(grams.count(gram) for gram in set(grams))
+        if most_common >= 6 and most_common * size >= len(words) * 0.35:
+            return True
+
+    return False
 
 
 @lru_cache(maxsize=1)
@@ -434,6 +552,9 @@ def parse_idem_api_response(raw: str) -> str:
     if not answer:
         preview = re.sub(r"\s+", " ", raw).strip()[:500]
         raise RuntimeError(f"iDEM API returned an empty answer. Raw response preview: {preview}")
+    if has_repetitive_model_output(answer):
+        preview = re.sub(r"\s+", " ", answer).strip()[:180]
+        raise RuntimeError(f"iDEM API returned repetitive output. Preview: {preview}")
     return answer
 
 
@@ -553,7 +674,7 @@ def simplify_with_idem(text: str, language: str) -> str:
         rewritten = run_idem_local_rewrite(text, lang)
 
     rewritten = format_chat_text(rewritten)
-    if not rewritten or rewritten == text:
+    if not rewritten or rewritten == text or has_repetitive_model_output(rewritten):
         return ""
     return rewritten
 

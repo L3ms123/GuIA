@@ -543,6 +543,32 @@ def normalize_answer_text(text: str) -> str:
     return text.strip()
 
 
+def normalize_repetition_text(text: str) -> list[str]:
+    normalized = str(text or "").lower()
+    normalized = re.sub(r"[^\w\s'-]", " ", normalized, flags=re.UNICODE)
+    return re.findall(r"[\w'-]+", normalized, flags=re.UNICODE)
+
+
+def has_repetitive_model_output(text: str) -> bool:
+    words = normalize_repetition_text(text)
+    if len(words) < 24:
+        return False
+
+    unique_ratio = len(set(words)) / len(words)
+    if len(words) >= 40 and unique_ratio < 0.22:
+        return True
+
+    for size in (2, 3, 4, 5):
+        grams = [tuple(words[index:index + size]) for index in range(len(words) - size + 1)]
+        if not grams:
+            continue
+        most_common = max(grams.count(gram) for gram in set(grams))
+        if most_common >= 6 and most_common * size >= len(words) * 0.35:
+            return True
+
+    return False
+
+
 def build_grounded_answer(req: AnswerRequest, lang: str) -> str:
     rows = req.context or req.rows or []
     if not rows:
@@ -631,6 +657,8 @@ def simplify_grounded_answer(generator: IdemGenerator, req: AnswerRequest, lang:
     simplified = normalize_answer_text(clean_value(simplified, max_chars=3000))
     if introduces_unsupported_ownership(grounded_answer, simplified):
         simplified = grounded_answer
+    if has_repetitive_model_output(simplified):
+        return ""
     if not simplified or not text_matches_language(simplified, lang):
         return ""
     return simplified
@@ -744,6 +772,8 @@ def answer(req: AnswerRequest):
         _generation_lock.release()
 
     if not result:
+        result = FALLBACKS[lang]
+    elif has_repetitive_model_output(result):
         result = FALLBACKS[lang]
 
     return {"answer": normalize_answer_text(result), "source": source}
