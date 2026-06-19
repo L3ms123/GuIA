@@ -236,6 +236,34 @@ def parse_idem_answer(output_text: str) -> str:
     return format_chat_text("\n".join(lines) if lines else sanitize_chat_text(output_text))
 
 
+def normalize_repetition_text(text: str) -> list[str]:
+    """Tokenize text for detecting model loops without changing displayed output."""
+    normalized = text.lower()
+    normalized = re.sub(r"[^\w\s'-]", " ", normalized, flags=re.UNICODE)
+    return re.findall(r"[\w'-]+", normalized, flags=re.UNICODE)
+
+
+def has_repetitive_model_output(text: str) -> bool:
+    """Flag degenerate LLM loops such as the same short phrase repeated many times."""
+    words = normalize_repetition_text(text)
+    if len(words) < 24:
+        return False
+
+    unique_ratio = len(set(words)) / len(words)
+    if len(words) >= 40 and unique_ratio < 0.22:
+        return True
+
+    for size in (2, 3, 4, 5):
+        grams = [tuple(words[index:index + size]) for index in range(len(words) - size + 1)]
+        if not grams:
+            continue
+        most_common = max(grams.count(gram) for gram in set(grams))
+        if most_common >= 6 and most_common * size >= len(words) * 0.35:
+            return True
+
+    return False
+
+
 @lru_cache(maxsize=1)
 def get_idem_local_model():
     """Load an iDEM-compatible Hugging Face model only when explicitly configured."""
@@ -434,6 +462,9 @@ def parse_idem_api_response(raw: str) -> str:
     if not answer:
         preview = re.sub(r"\s+", " ", raw).strip()[:500]
         raise RuntimeError(f"iDEM API returned an empty answer. Raw response preview: {preview}")
+    if has_repetitive_model_output(answer):
+        preview = re.sub(r"\s+", " ", answer).strip()[:180]
+        raise RuntimeError(f"iDEM API returned repetitive output. Preview: {preview}")
     return answer
 
 
@@ -553,7 +584,7 @@ def simplify_with_idem(text: str, language: str) -> str:
         rewritten = run_idem_local_rewrite(text, lang)
 
     rewritten = format_chat_text(rewritten)
-    if not rewritten or rewritten == text:
+    if not rewritten or rewritten == text or has_repetitive_model_output(rewritten):
         return ""
     return rewritten
 
