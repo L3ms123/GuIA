@@ -1,0 +1,50 @@
+% =============================================================================
+% Privacy edit — accessibility analytics.
+% The analytics event now records a SINGLE non-identifying boolean,
+% "accessibilityUsed" (whether ANY accessibility preference was active), and
+% never which specific mode. Update the paper text that still lists the modes.
+% Implemented in LLM_Call.log_answer_completed (the answer_completed event).
+% =============================================================================
+
+
+% -----------------------------------------------------------------------------
+% PAPER A ("Renaixement Museum Interactive Audioguide" version) —
+% "Metadata-Only Analytics" subsection.
+% In the enumerate of collected fields, REPLACE the last item
+%   "\item response time, selected language, room, artwork, and enabled
+%    accessibility modes."
+% with:
+% -----------------------------------------------------------------------------
+
+    \item response time, selected language, room, and artwork;
+    \item whether any accessibility option was active, recorded as a single
+          yes/no flag and never which specific option.
+
+% And, in the paragraph after the list, the sentence
+%   "The text of visitor questions and generated answers is not stored in this
+%    analytics file."
+% can be extended to:
+
+% The text of visitor questions and generated answers is not stored in this
+% analytics file, and the specific accessibility modes a visitor selects are not
+% stored either. Only a single non-identifying flag indicates whether any
+% accessibility option was active, so the museum can observe overall uptake of
+% these features without recording data that could reveal an individual
+% visitor's disability or specific needs.
+
+
+% -----------------------------------------------------------------------------
+% PAPER B ("Towards Adaptive and Situated AI..." version) —
+% "Administrative Interface Design" subsection.
+% The sentence
+%   "This includes navigation paths, frequently accessed artworks, common
+%    queries, and selected language preferences."
+% can be extended (optional, only if you want to make the privacy stance explicit):
+% -----------------------------------------------------------------------------
+
+% This includes navigation paths, frequently accessed artworks, common queries,
+% and selected language preferences. To protect sensitive information, the
+% specific accessibility options a visitor selects are not recorded; the system
+% stores only a single non-identifying flag indicating whether any accessibility
+% option was used, allowing the museum to gauge uptake of these features without
+% revealing an individual visitor's needs.

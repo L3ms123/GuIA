@@ -1,0 +1,315 @@
+{
+  "version": 1,
+  "label_set": [
+    "italian_western",
+    "iberian_local",
+    "northern_flemish",
+    "byzantine_eastern",
+    "islamic_mediterranean",
+    "other_global"
+  ],
+  "_note": "Hand-curated expected cultural-origin distributions Q(c) for Part 3 (CBS). Curated to art-historical TRUTH, not to a diversity target: this is a Renaissance collection, so high Italian/Iberian mass is usually CORRECT. Distributions reflect influences attested in the museum's own descriptions + standard art history. Edit via PR; keep each row summing to 1.0 and titles matching the Excel inventory exactly. Validate with: python -m eval.cultural_groundtruth --validate",
+  "artworks": [
+    {
+      "title": "Vespasià",
+      "theme": "secular",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.85, "iberian_local": 0.1, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; Italian marble relief of a Roman emperor for Miquel Mai's Barcelona house.",
+      "rationale": "Carved in Italy in the Roman-imperial classical idiom; minor Iberian context via its Barcelona patron Miquel Mai."
+    },
+    {
+      "title": "Trajà",
+      "theme": "secular",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.85, "iberian_local": 0.1, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; acquired by humanist Miquel Mai in Italy (Rome, from 1528).",
+      "rationale": "Italian classical-revival marble medallion; Iberian thread only through its Catalan collector."
+    },
+    {
+      "title": "Faustina Maior [?]",
+      "theme": "secular",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.85, "iberian_local": 0.1, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; Roman empress relief, Mai collection.",
+      "rationale": "Italian antique-revival relief reviving a Roman imperial portrait type."
+    },
+    {
+      "title": "Arqueta",
+      "theme": "secular",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.9, "iberian_local": 0.0, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description; Northern-Italian pastiglia casket, 15th-16th c., with Diana/Actaeon myth.",
+      "rationale": "A Northern-Italian luxury type with classical-mythological decoration; squarely Italian-Western."
+    },
+    {
+      "title": "Carles V adult i la batalla de Mülberg",
+      "theme": "secular",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.65, "iberian_local": 0.25, "northern_flemish": 0.05, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; medal by the Italian sculptor Leone Leoni, Roman-imperial guise.",
+      "rationale": "Italian medallist working in a Roman-imperial style for the Habsburg (Spanish) emperor; the empire reaches the Low Countries."
+    },
+    {
+      "title": "Trattato della pittura",
+      "theme": "secular",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.95, "iberian_local": 0.0, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; compilation of Leonardo da Vinci's notes on painting.",
+      "rationale": "The Italian-Renaissance theory of painting in its purest form (the 'Florentine genius')."
+    },
+    {
+      "title": "Felip II. Commemoració de l'abdicació de Carles V",
+      "theme": "secular",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.6, "iberian_local": 0.25, "northern_flemish": 0.1, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "medium",
+      "source": "Museum description; medal by Giacomo da Trezzo (Italian) for the Spanish Habsburg court.",
+      "rationale": "Italian medallist; Iberian (Spanish Habsburg) subject and patronage; explicit Low-Countries governance thread."
+    },
+    {
+      "title": "Mare de Déu amb el Nen (\"Madonna di Trapani\")",
+      "theme": "religious",
+      "artist_origin": "italian",
+      "distribution": {"italian_western": 0.6, "iberian_local": 0.1, "northern_flemish": 0.0, "byzantine_eastern": 0.25, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "medium",
+      "source": "Museum description; Sicilian (Trapani) Virgin-and-Child type with its own iconography.",
+      "rationale": "Sicilian/Italian devotional type whose tender Virgin-and-Child iconography descends from Byzantine/Eastern-Christian icon traditions transmitted across the Mediterranean."
+    },
+
+    {
+      "title": "Davallament",
+      "theme": "religious",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.1, "iberian_local": 0.6, "northern_flemish": 0.3, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.0},
+      "confidence": "medium",
+      "source": "Museum description; anonymous painter active in Valencia, 1450-1460.",
+      "rationale": "Valencian production, but the meticulous detail and atmospheric landscape are strongly Flemish/Netherlandish in technique."
+    },
+    {
+      "title": "Flagel·lació de Crist",
+      "theme": "religious",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.25, "iberian_local": 0.7, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; from Santa Maria del Pi, Barcelona (Catalonia), 1585.",
+      "rationale": "A Catalan altar front; its 'classical' architectural setting carries a moderate Italian-Renaissance influence."
+    },
+    {
+      "title": "Pilastra de balustrada",
+      "theme": "secular",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.4, "iberian_local": 0.55, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "medium",
+      "source": "Museum description; baluster from a Barcelona house; the form originates in Venetian/Veronese palaces.",
+      "rationale": "A Catalan architectural fragment whose very form (the baluster) is an Italian-Renaissance import; the Horace inscription reinforces the classical thread."
+    },
+    {
+      "title": "Copa de vidre",
+      "theme": "secular",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.3, "iberian_local": 0.65, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "medium",
+      "source": "Museum description; Barcelona glass, c.1590, with lacticini (latticino) threadwork.",
+      "rationale": "Barcelona was a major glass centre; the lacticini/latticino white-thread technique is of Venetian (Italian) origin."
+    },
+    {
+      "title": "Crist amb la Creu",
+      "theme": "religious",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.3, "iberian_local": 0.65, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; circle of Luis de Morales, Spanish painter from Badajoz.",
+      "rationale": "A Spanish (Iberian) painter, but using the sfumato pioneered by Leonardo da Vinci - an explicit Italian-Renaissance technical debt."
+    },
+    {
+      "title": "Retrat de Carles V",
+      "theme": "secular",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.05, "iberian_local": 0.8, "northern_flemish": 0.1, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "medium",
+      "source": "Museum description; anonymous Madrid painter, likely painted in Spain; Spanish court fashion.",
+      "rationale": "Spanish portrait of the emperor in Spanish dress; the small-portrait-for-relatives format carries a faint Netherlandish-court echo."
+    },
+    {
+      "title": "Caixa amb calaixos. L'Anunciació",
+      "theme": "secular",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.05, "iberian_local": 0.85, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description; a furniture type typical of Catalonia, 15th-18th c.",
+      "rationale": "Explicitly a Catalan vernacular furniture type; the painted Annunciation is conventional devotional content."
+    },
+    {
+      "title": "Gerro de ceràmica",
+      "theme": "secular",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.45, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.45, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description: 'until the 16th c. Spanish ceramics were heavily influenced by the Arab tradition'; Talavera de la Reina.",
+      "rationale": "A Castilian (Talavera) production whose ceramic tradition is, by the museum's own text, deeply shaped by Arab/Islamic-Mediterranean craft."
+    },
+    {
+      "title": "Plat de ceràmica",
+      "theme": "secular",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.4, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.5, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description; Manises (Valencia) lustreware with golden/blue reflejos.",
+      "rationale": "Hispano-Moresque Manises lustreware: the golden-reflection (reflejo metalico) technique is a direct inheritance of al-Andalus Islamic ceramics."
+    },
+    {
+      "title": "Casc morrión",
+      "theme": "secular",
+      "artist_origin": "iberian",
+      "distribution": {"italian_western": 0.3, "iberian_local": 0.6, "northern_flemish": 0.0, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "medium",
+      "source": "Museum description; a helmet popular in 16th-c. Hispanic armies; classicist relief of Mars and Venus.",
+      "rationale": "A Spanish (Hispanic) military helmet whose refined relief decoration is classicist and mythological - a moderate Italian-Western thread."
+    },
+
+    {
+      "title": "La Visitació",
+      "theme": "religious",
+      "artist_origin": "flemish",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.0, "northern_flemish": 0.9, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description; 'of Flemish school', late 15th c.",
+      "rationale": "Explicitly Flemish-school panel painting; interior-with-windows setting is a Netherlandish convention."
+    },
+    {
+      "title": "Anunciació",
+      "theme": "religious",
+      "artist_origin": "flemish",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.0, "northern_flemish": 0.9, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description; pendant to 'La Visitació', same Flemish school, size and style.",
+      "rationale": "Companion Flemish-school panel; same Netherlandish idiom."
+    },
+    {
+      "title": "Mare de Déu de la Llet",
+      "theme": "religious",
+      "artist_origin": "flemish",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.1, "northern_flemish": 0.85, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; 'follower of Hans Memling', c.1500.",
+      "rationale": "In the manner of the Bruges master Memling - strongly Flemish; the Council-of-Trent context gives a faint local-reception thread."
+    },
+    {
+      "title": "Santa Maria Magdalena",
+      "theme": "religious",
+      "artist_origin": "flemish",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.0, "northern_flemish": 0.9, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description; 'Master of the Parrot', a Flemish painter active in Antwerp, early 16th c.",
+      "rationale": "Antwerp Flemish painter; the detailed objects/textures in an intimate setting are hallmark Netherlandish."
+    },
+    {
+      "title": "Retrat de cavaller de l'orde de sant Jaume",
+      "theme": "secular",
+      "artist_origin": "flemish",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.3, "northern_flemish": 0.65, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Museum description; Anthonis Mor (Utrecht), Habsburg court portraitist; sitter wears the Order of St James.",
+      "rationale": "A Netherlandish master, but the sober court-portrait mode and the Spanish military order place a strong Iberian-Habsburg thread."
+    },
+    {
+      "title": "Triomf del Temps sobre la Fama",
+      "theme": "secular",
+      "artist_origin": "flemish",
+      "distribution": {"italian_western": 0.35, "iberian_local": 0.1, "northern_flemish": 0.55, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.0},
+      "confidence": "medium",
+      "source": "Museum description; workshop of Willem Dermoyen (Flemish tapestry); illustrates Petrarch's Trionfi.",
+      "rationale": "A Flemish (Brussels) tapestry workshop, but the subject is Petrarch's Italian humanist poem - a large Italian-Western literary thread; acquired for the Palau de la Generalitat (local thread)."
+    },
+
+    {
+      "title": "L’Anunciació",
+      "theme": "religious",
+      "artist_origin": "german",
+      "distribution": {"italian_western": 0.15, "iberian_local": 0.0, "northern_flemish": 0.8, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "high",
+      "source": "Engraving by Albrecht Dürer, 1504 (German Renaissance).",
+      "rationale": "Quintessential German-Renaissance printmaking; Durer's documented contact with Italian masters justifies a modest Italian thread."
+    },
+    {
+      "title": "La resurrecció de Llàtzer",
+      "theme": "religious",
+      "artist_origin": "german",
+      "distribution": {"italian_western": 0.2, "iberian_local": 0.0, "northern_flemish": 0.75, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "medium",
+      "source": "Engraving by Lucas Kilian, German engraver (Augsburg) trained in Venice.",
+      "rationale": "German engraver; his Venetian training gives a real Italian-Western component."
+    },
+    {
+      "title": "Rellotge de butxaca",
+      "theme": "secular",
+      "artist_origin": "german",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.0, "northern_flemish": 0.9, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "high",
+      "source": "Museum description; the first portable pocket watches were invented and built in Germany in the 16th c.",
+      "rationale": "By the museum's own text, German horological invention - firmly Northern-European."
+    },
+    {
+      "title": "Moisès",
+      "theme": "religious",
+      "artist_origin": "german",
+      "distribution": {"italian_western": 0.1, "iberian_local": 0.0, "northern_flemish": 0.85, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "low",
+      "source": "Engraving by Jacob Matham (Dutch/Haarlem engraver, Goltzius circle). No museum description text.",
+      "rationale": "Northern (Dutch) printmaking; faint Italian thread typical of the mannerist print culture. Low confidence (no description)."
+    },
+    {
+      "title": "El Judici Final",
+      "theme": "religious",
+      "artist_origin": "german",
+      "distribution": {"italian_western": 0.1, "iberian_local": 0.0, "northern_flemish": 0.85, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.05},
+      "confidence": "low",
+      "source": "Engraving by Jan Wierix (Flemish engraver, Antwerp). No museum description text.",
+      "rationale": "Flemish/Netherlandish printmaking. Low confidence (no description)."
+    },
+
+    {
+      "title": "Enric IV, rei de França",
+      "theme": "secular",
+      "artist_origin": "french",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.0, "northern_flemish": 0.9, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "low",
+      "source": "Engraving by Thomas de Leu, French engraver of Flemish origin. No museum description text.",
+      "rationale": "French/Flemish portrait engraving - Northern-European. Low confidence (no description)."
+    },
+    {
+      "title": "Caterina de Mèdici",
+      "theme": "secular",
+      "artist_origin": "french",
+      "distribution": {"italian_western": 0.3, "iberian_local": 0.0, "northern_flemish": 0.6, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "low",
+      "source": "Engraving by Thomas de Leu; sitter is Catherine de' Medici (Italian-born queen of France).",
+      "rationale": "Northern-European engraving of an Italian-born (Medici) French queen - a genuine Italian thread via the sitter. Low confidence (no description)."
+    },
+    {
+      "title": "Joana d’Albret",
+      "theme": "secular",
+      "artist_origin": "french",
+      "distribution": {"italian_western": 0.0, "iberian_local": 0.0, "northern_flemish": 0.9, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "low",
+      "source": "Engraving by Thomas de Leu; Jeanne d'Albret, queen of Navarre. No museum description text.",
+      "rationale": "French portrait engraving - Northern-European. Low confidence (no description)."
+    },
+    {
+      "title": "María de Médici",
+      "theme": "secular",
+      "artist_origin": "french",
+      "distribution": {"italian_western": 0.3, "iberian_local": 0.0, "northern_flemish": 0.6, "byzantine_eastern": 0.0, "islamic_mediterranean": 0.0, "other_global": 0.1},
+      "confidence": "low",
+      "source": "Engraving by Thomas de Leu; Marie de' Medici (Italian-born queen of France).",
+      "rationale": "Northern-European engraving of an Italian-born (Medici) French queen. Low confidence (no description)."
+    }
+  ]
+}
