@@ -71,6 +71,7 @@ function getRoomsByFloor() {
 
 function floorSortKey(floor) {
   const floorText = String(floor || '');
+  if (floorText.toUpperCase() === 'B') return [0, -1, floorText];
   const numberMatch = floorText.match(/\d+/);
   return numberMatch ? [0, Number(numberMatch[0]), floorText] : [1, 999, floorText];
 }
@@ -92,7 +93,9 @@ function renderLocationSelects() {
   floorSelect.innerHTML = '';
   floorSelect.appendChild(new Option(t('context.selectFloor', 'Select a floor'), ''));
   floors.forEach((floor) => {
-    const floorLabel = `${t('context.floorOptionLabel', 'Floor')} ${floor}`;
+    const floorLabel = floor.toUpperCase() === 'B' 
+      ? t('context.floorB', 'Ground floor')
+      : `${t('context.floorOptionLabel', 'Floor')} ${floor}`;
     floorSelect.appendChild(new Option(floorLabel, floor));
   });
 

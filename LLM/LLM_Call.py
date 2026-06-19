@@ -52,7 +52,7 @@ LANGUAGE_RULES = {
     "spanish": "Answer strictly in Spanish.",
     "english": "Answer strictly in English.",
 }
-PERSONA_RULES = {
+EXPLAINATION_RULES = {
     "artist": "explain how the artwork was made, using simple words for colors, materials, and techniques",
     "storyteller": "explain the visit like a clear, simple story",
     "explorer": "act as a normal museum guide and explain the most important information first",
@@ -149,7 +149,7 @@ def get_language_rule(language: str) -> str:
 
 def get_persona_rule(personality: str) -> str:
     key = (personality or "explorer").strip().lower()
-    return PERSONA_RULES.get(key, personality or PERSONA_RULES["explorer"])
+    return EXPLAINATION_RULES.get(key, personality or EXPLAINATION_RULES["explorer"])
 
 
 def normalize_easy_word(value: str) -> str:
@@ -1378,7 +1378,7 @@ def load_locations_from_neo4j() -> dict[str, Any]:
 SESSION_CONTEXTS = {}
 
 # Guide style descriptions to add to the prompt.
-PERSONALITY_DESCRIPTIONS = PERSONA_RULES
+PERSONALITY_DESCRIPTIONS = EXPLAINATION_RULES
 AGE_DESCRIPTIONS = {
     "Young 10-18 years old": "You use a engaging, relatable and energetic style suitable for younger visitors.",
     "Adult 19-60 years old": "You use a mature and informative style. Full depth as defined by persona",
@@ -1498,6 +1498,14 @@ def build_system_prompt(
         "If the graph returns many rows, summarize the most relevant 3 to 5 items unless the user asks for all of them. "
         "Do not mention missing fields, null values, NaN values, or unavailable details for individual items. "
         "\n\n"
+        "EXAMPLE A - factual single-artwork answer (when graph returns data):\n"
+        "Question: Who painted this work and when was it made?\n"
+        "Context: A row with title 'Portrait of a Man', artist 'Piero della Francesca', dating 'c. 1460-1465'\n"
+        "Answer: This painting is a portrait by Piero della Francesca. It was made around 1460 to 1465. Piero della Francesca was an Italian painter known for his precise geometric style and use of light.\n\n"
+        "EXAMPLE B - no-information answer (when graph returns no relevant rows):\n"
+        "Question: What international exhibitions has this painting travelled to?\n"
+        "Context: Empty rows or rows without exhibition history\n"
+        "Answer: I do not have information about international exhibitions for this painting. The available data does not include exhibition history.\n\n"
         f"LANGUAGE RULE: {language_rule} "
         "Do not answer in any other language unless the user explicitly asks you to change language (only english, spanish or catalan) in the current message."
         "\n\n"
@@ -1571,6 +1579,13 @@ def build_system_prompt(
             prompt += f"\nGenerated Cypher: {cypher}"
         prompt += "\nRows:\n"
         prompt += json.dumps(rows, ensure_ascii=False, indent=2)
+        
+        # Grounding instruction
+        prompt += (
+            "\n\nINTERNAL GROUNDING CHECK: "
+            "Before writing your answer, silently verify each factual claim against the retrieved rows above. "
+            "If a claim cannot be grounded in the provided context, omit it rather than inventing information."
+        )
 
     return prompt
 

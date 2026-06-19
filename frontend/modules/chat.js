@@ -29,10 +29,17 @@ function initChat(audio, voice) {
     }
   }
 
+  function scrollToBottom() {
+    // Use rAF to ensure the DOM has painted the new text before measuring
+    requestAnimationFrame(() => {
+      chatThread.scrollTop = chatThread.scrollHeight;
+    });
+  }
+
   function appendToBubble(bubble, text) {
     setBubbleText(bubble, getBubbleText(bubble) + text, 'assistant');
     updateBubbleAccessibilityLabel(bubble, 'assistant');
-    chatThread.scrollTop = chatThread.scrollHeight;
+    scrollToBottom();
   }
 
   function extractCompleteSentences(buffer) {
@@ -144,7 +151,7 @@ function initChat(audio, voice) {
           updateBubbleAccessibilityLabel(assistantBubble, 'assistant');
           fullAssistantText = text;
           sentenceBuffer = '';
-          chatThread.scrollTop = chatThread.scrollHeight;
+          scrollToBottom();
 
         } else if (event.type === 'error') {
           streamErrored = true;
@@ -373,6 +380,14 @@ function initChat(audio, voice) {
 
   setThinkingIndicator(false);
   initSuggestionButtons();
+
+  // When the virtual keyboard opens or closes (visualViewport resize),
+  // scroll the thread to the bottom so the latest message stays visible.
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      scrollToBottom();
+    });
+  }
 
   sendBtn.addEventListener('click', handleSend);
   chatInput.addEventListener('keydown', (e) => {

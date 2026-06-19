@@ -70,6 +70,8 @@ function initSpokenTutorial(audio) {
     overlay.setAttribute('aria-labelledby', 'tutorial-spoken-title');
     overlay.setAttribute('aria-describedby', 'tutorial-spoken-body');
     overlay.hidden = true;
+    overlay.addEventListener('keydown', handleModalKeydown);
+
 
     const panel = document.createElement('section');
     panel.className = 'tutorial-spoken-panel';
@@ -276,6 +278,15 @@ function initSpokenTutorial(audio) {
       }
     }, 0);
   }
+  
+  //needed for WCAG compliance
+  function handleModalKeydown(event) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeSpokenTutorial();
+      return;
+    }
+  }
 
   function openSpokenTutorial(initialStep = 0) {
     if (!state.accessibilityPrefs.tutorialSpoken) return;
@@ -290,4 +301,3 @@ function initSpokenTutorial(audio) {
   window.guiaOpenSpokenTutorial = openSpokenTutorial;
   window.guiaCloseSpokenTutorial = closeSpokenTutorial;
 }
-
